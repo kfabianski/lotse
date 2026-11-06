@@ -142,7 +142,7 @@ class Article(Base):
 
 
 class Classified(Base):
-    """A notice on the employee board (Pinnwand)."""
+    """A notice on the employee board (Kleinanzeigen)."""
 
     __tablename__ = "classifieds"
 

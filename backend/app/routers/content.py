@@ -193,7 +193,7 @@ async def upload_image(file: UploadFile = File(...), _: User = Depends(current_u
     return {"url": await save_image(file, "img")}
 
 
-# --- Pinnwand -----------------------------------------------------------------
+# --- Kleinanzeigen -----------------------------------------------------------------
 
 
 @router.get("/classifieds", response_model=list[ClassifiedOut])

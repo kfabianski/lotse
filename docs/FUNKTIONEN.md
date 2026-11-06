@@ -13,7 +13,7 @@ Diese Beschreibung erklärt, was Lotse kann und wer was darf. Installation und K
 6. [Dokumente und Fotos](#6-dokumente-und-fotos)
 7. [Mitarbeitende und Abteilungen](#7-mitarbeitende-und-abteilungen)
 8. [Lageplan](#8-lageplan)
-9. [Pinnwand](#9-pinnwand)
+9. [Kleinanzeigen](#9-kleinanzeigen)
 10. [Ideenbox](#10-ideenbox)
 11. [Verwaltung](#11-verwaltung)
 12. [LDAP / Active Directory](#12-ldap--active-directory)
@@ -29,14 +29,14 @@ eine Rolle und – zusätzlich zur Rolle – einzelne Rechte.
 | Rolle | Darf (zusätzlich zum Lesen) |
 |---|---|
 | **Besucher** (nicht angemeldet) | nur lesen – wenn *Lesen ohne Anmeldung* eingeschaltet ist; keine Schulungen |
-| **Mitarbeitende** | Aushänge und Ideen (auch anonym), Sterne vergeben, bei Veranstaltungen zusagen, eigene Schulungen bestätigen, Profil |
+| **Mitarbeitende** | Anzeigen und Ideen (auch anonym), Sterne vergeben, bei Veranstaltungen zusagen, eigene Schulungen bestätigen, Profil |
 | **Autor:in** | zusätzlich **eigene** Artikel und Veranstaltungen schreiben, bearbeiten, löschen (eigene Entwürfe) |
-| **Moderator:in** | wie Autor:in, dazu **Schulungen verwalten**, **Ideen & Pinnwand moderieren**, **Schnellzugriff** pflegen |
+| **Moderator:in** | wie Autor:in, dazu **Schulungen verwalten**, **Ideen & Kleinanzeigen moderieren**, **Schnellzugriff** pflegen |
 | **Redaktion** | wie Moderator:in, dazu **alle** Artikel bearbeiten, alle Entwürfe sehen, Slider, Versionen wiederherstellen |
 | **Administrator** | alles, auch die **Systemeinstellungen** |
 
 **Einzelne Rechte**, die der Administrator pro Person zusätzlich einschalten kann: *Eigene Artikel &
-Veranstaltungen*, *Alle Artikel & Veranstaltungen*, *Schulungen verwalten*, *Ideen & Pinnwand moderieren*,
+Veranstaltungen*, *Alle Artikel & Veranstaltungen*, *Schulungen verwalten*, *Ideen & Kleinanzeigen moderieren*,
 *Schnellzugriff pflegen*, *Etagen, Räume & Plätze*, *Personen & Abteilungen* (nur Konten **ohne** besondere
 Rechte; keine Rollen- oder Rechtevergabe).
 
@@ -50,13 +50,13 @@ Die Verwaltung zeigt jeder Person nur die Bereiche, für die sie Rechte hat.
   wenn man auf *Mit Windows-Konto anmelden* klickt.
 - **Schutz vor Passwort-Raten**: Nach **5 falschen Passwörtern** für einen Benutzernamen muss man
   **30 Sekunden** warten; nach 20 Fehlversuchen von einem Rechner gilt dasselbe für diesen Rechner.
-- Wer ohne Anmeldung etwas schreiben möchte (z. B. *Aushang erstellen*), wird zur Anmeldung geführt und
+- Wer ohne Anmeldung etwas schreiben möchte (z. B. *Anzeige aufgeben*), wird zur Anmeldung geführt und
   danach auf dieselbe Seite zurückgebracht.
 - Mit *Lesen ohne Anmeldung = aus* verlangt das ganze Portal eine Anmeldung.
 
 ## 2. Oberfläche
 
-- **Navigation links**: Start, Aktuelles, Veranstaltungen, Wissen & Regeln, Dokumente, Pinnwand, Ideen,
+- **Navigation links**: Start, Aktuelles, Veranstaltungen, Wissen & Regeln, Dokumente, Kleinanzeigen, Ideen,
   Mitarbeitende, Verwaltung (nur Administratoren). Auf dem Handy als ausklappbares Menü.
 - **Oben rechts**: Suche (Tastenkürzel **Strg + K**), Sprache **DE/EN**, **helles/dunkles Design**,
   Avatar mit Profil und Abmelden.
@@ -67,7 +67,7 @@ Die Verwaltung zeigt jeder Person nur die Bereiche, für die sie Rechte hat.
   - **Artikel und Veranstaltungen** (Titel, Kurztext, Text, Ort – mit Textauszug zur Fundstelle),
   - **Dokumente** (PDF-Name und Artikel; öffnen sich direkt im Betrachter),
   - **Räume** aus dem Lageplan (Name, Ausstattung, Buchungs-E-Mail, Abteilung) – Klick öffnet die Etage,
-  - **Pinnwand** und **Ideen** (Klick springt zum Eintrag; anonyme Ideen bleiben anonym),
+  - **Kleinanzeigen** und **Ideen** (Klick springt zum Eintrag; anonyme Ideen bleiben anonym),
   - **Schnellzugriff**-Kacheln,
   - **Schulungen** nur für Angemeldete und nur die, die sie öffnen dürfen (zugewiesen oder für alle freiwillig).
   Groß-/Kleinschreibung und Akzente spielen keine Rolle: *yilmaz* findet *Yılmaz*, *schroeder* findet *Schröder*,
@@ -87,7 +87,7 @@ Die Verwaltung zeigt jeder Person nur die Bereiche, für die sie Rechte hat.
 - **Neuigkeiten** und **Neue Produkte**: der neueste Beitrag groß, die nächsten daneben.
 - **Nächste Termine** mit Anzahl der Zusagen.
 - **Neu im Team**: Kolleg:innen der letzten 90 Tage – ein Klick zeigt ihren Platz im Lageplan.
-- **Zuletzt veröffentlicht** und **Neu an der Pinnwand**.
+- **Zuletzt veröffentlicht** und **Neue Kleinanzeigen**.
 
 ## 4. Aktuelles und Wissen & Regeln
 
@@ -177,10 +177,10 @@ Drei Ansichten unter **Veranstaltungen**:
 - Die Räume zeichnet die Verwaltung im **Raum-Editor** (siehe Verwaltung). Etagen ohne Räume zeigen ihren
   hochgeladenen Grundriss mit den Plätzen darauf.
 
-## 9. Pinnwand
+## 9. Kleinanzeigen
 
 - Arten: **Biete, Suche, Zu verschenken, Fahrgemeinschaft, Sonstiges** – mit Filter.
-- Aushang mit Titel, Beschreibung, optionalem Preis und Foto; Kontakt über E-Mail oder Durchwahl der
+- Anzeige mit Titel, Beschreibung, optionalem Preis und Foto; Kontakt über E-Mail oder Durchwahl der
   Person.
 - Erstellen nur nach Anmeldung; löschen dürfen die Person selbst und die Redaktion.
 

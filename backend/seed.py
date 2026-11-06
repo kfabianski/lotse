@@ -998,7 +998,7 @@ def seed(reset: bool):
       summary_de="Noch nicht veröffentlicht – nur für Redaktion sichtbar.",
       summary_en="Not yet published – visible to editors only.")
 
-    # Pinnwand ----------------------------------------------------------------------
+    # Kleinanzeigen ----------------------------------------------------------------------
     for kind, title, body, price, who, days in [
         ("offer", "Kinderfahrrad 20 Zoll", "Gut erhalten, blau, mit Licht. Abholung Parkplatz.", "40 €", "mehmet.yilmaz", 1),
         ("carpool", "Fahrgemeinschaft aus Lüneburg", "Fahre Mo–Do um 7:15 los, zwei Plätze frei.", "", "marta.kowalska", 2),

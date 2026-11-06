@@ -2,7 +2,7 @@
 
 Lotse ist ein schlankes Mitarbeiterportal für Firmen mit Büroetagen und Lagerhallen: Neuigkeiten und Wissen,
 Veranstaltungen mit Zusagen, Dokumente mit Versionshistorie, Schulungen mit Lesebestätigung,
-Mitarbeiterverzeichnis mit interaktivem Lageplan, Pinnwand, Ideenbox und Schnellzugriff auf die
+Mitarbeiterverzeichnis mit interaktivem Lageplan, Kleinanzeigen, Ideenbox und Schnellzugriff auf die
 Firmenprogramme – zweisprachig (Deutsch/Englisch), mit hellem und dunklem Design.
 
 Lotse braucht keinen Datenbankserver und keinen Webserver davor: **ein einziger Python-Prozess** liefert
@@ -22,8 +22,8 @@ API, Uploads und Oberfläche aus. Anmeldung lokal oder über **LDAP/Active Direc
 | **Meine Schulungen** – nur die eigenen, mit Fälligkeit und Bestätigung | **Schulungen verwalten** – Zuweisung, Fortschritt, Auswertung |
 | ![Schulung bearbeiten](docs/screenshots/17-schulung-bearbeiten.png) | ![Schnellzugriff](docs/screenshots/18-schnellzugriff-verwaltung.png) |
 | **Schulung bearbeiten** – Texteditor, Zuweisung an Personen, Abteilungen, Gruppen, Unterlagen | **Schnellzugriff** – Kacheln für Programme, Sammel-Postfächer und Telefonnummern |
-| ![Ideen](docs/screenshots/07-ideen.png) | ![Pinnwand](docs/screenshots/08-pinnwand.png) |
-| **Ideenbox** – Vorschläge, Sternebewertung, Status und Antwort, auch anonym | **Pinnwand** – Biete, Suche, Zu verschenken, Fahrgemeinschaften |
+| ![Ideen](docs/screenshots/07-ideen.png) | ![Kleinanzeigen](docs/screenshots/08-kleinanzeigen.png) |
+| **Ideenbox** – Vorschläge, Sternebewertung, Status und Antwort, auch anonym | **Kleinanzeigen** – Biete, Suche, Zu verschenken, Fahrgemeinschaften |
 | ![Dokumente](docs/screenshots/13-dokumente.png) | ![Dokument im Portal](docs/screenshots/09-dokument-viewer.png) |
 | **Dokumentenbibliothek** – ISO-Dokumente, Richtlinien, Suche | **Dokumente** – PDFs öffnen sich direkt im Portal |
 | ![Raum-Editor](docs/screenshots/14-raum-editor.png) | ![Fotogalerie](docs/screenshots/10-galerie.png) |
@@ -41,7 +41,7 @@ Alle Funktionen im Detail: **[docs/FUNKTIONEN.md](docs/FUNKTIONEN.md)** · Bildn
 
 - **Startseite**: Hinweis auf **offene Schulungen** (rot bei Überfälligkeit), großer **Slider** mit den
   wichtigsten Beiträgen, **Schnellzugriff**-Kacheln, nächste **Termine** mit Monatskalender, **Fotos** aus dem
-  Firmenleben, **Neuigkeiten**, **Neu im Team**, zuletzt veröffentlichte Artikel und neue Aushänge.
+  Firmenleben, **Neuigkeiten**, **Neu im Team**, zuletzt veröffentlichte Artikel und neue Anzeigen.
 - **Schnellzugriff**: Kacheln zu Zeiterfassung, ERP, Outlook, Helpdesk usw., zu Sammel-Postfächern
   (Buchhaltung, Eingangsrechnungen, IT-Support – Adresse per Knopf kopieren) und wichtigen Telefonnummern.
 - **Aktuelles** und **Wissen & Regeln**: Neuigkeiten, Veranstaltungen, neue Kolleg:innen, neue Produkte,
@@ -63,12 +63,12 @@ Alle Funktionen im Detail: **[docs/FUNKTIONEN.md](docs/FUNKTIONEN.md)** · Bildn
 - **Lageplan**: Gebäudeansicht (Etagen übereinander, Lagerhallen daneben), Räume als echte Flächen in den
   Abteilungsfarben, Besprechungsräume mit Plätzen, Ausstattung und Raum-E-Mail, Hover-Karte mit Foto und
   Durchwahl, weiches Zoomen zur Person, Suche über alle Etagen, Minikarte, Abteilungsfilter.
-- **Pinnwand**: Biete, Suche, Zu verschenken, Fahrgemeinschaften – mit Foto, Preis und Kontakt.
+- **Kleinanzeigen**: Biete, Suche, Zu verschenken, Fahrgemeinschaften – mit Foto, Preis und Kontakt.
 - **Ideenbox**: Ideen einreichen (auf Wunsch **wirklich anonym** – der Name wird dann gar nicht gespeichert),
   mit **1–5 Sternen** bewerten, Sortierung *Beste Bewertung* oder *Neueste*, Status von *Neu* bis *Umgesetzt*
   mit Antwort der Redaktion.
 - **Profil**: Foto, Durchwahl, Sprache und Passwort (bei lokalen Konten).
-- **Suche über alles Öffentliche** (Strg + K): Personen, Artikel, Veranstaltungen, Dokumente, Räume, Pinnwand,
+- **Suche über alles Öffentliche** (Strg + K): Personen, Artikel, Veranstaltungen, Dokumente, Räume, Kleinanzeigen,
   Ideen, Schnellzugriff – angemeldet zusätzlich die eigenen Schulungen; Umlaute egal (*schroeder* findet *Schröder*), **Deutsch/Englisch** und **hell/dunkel** umschaltbar,
   **Lesen ohne Anmeldung** (abschaltbar).
 
@@ -77,7 +77,7 @@ Alle Funktionen im Detail: **[docs/FUNKTIONEN.md](docs/FUNKTIONEN.md)** · Bildn
 - Artikel in allen Bereichen schreiben (Markdown mit Vorschau), Titelbild, Fotos und PDFs anhängen,
   **Entwurf** oder **geplante Veröffentlichung** zu Datum und Uhrzeit, Beiträge für den Slider auswählen.
 - **Änderungsgrund** beim Speichern für die Versionshistorie; alte Versionen **wiederherstellen**.
-- Status und Antwort bei Ideen setzen, fremde Aushänge entfernen.
+- Status und Antwort bei Ideen setzen, fremde Anzeigen entfernen.
 
 ### Für die Verwaltung (Administrator)
 
@@ -111,9 +111,9 @@ Rolle und bei Bedarf **zusätzliche Rechte** (z. B. *Etagen, Räume & Plätze* o
 | Rolle | Darf |
 |---|---|
 | Besucher (nicht angemeldet) | lesen – nur wenn *Lesen ohne Anmeldung* eingeschaltet ist (keine Schulungen) |
-| Mitarbeitende | zusätzlich Aushänge, Ideen, Sternebewertung, Zusagen, eigene Schulungen bestätigen, Profil |
+| Mitarbeitende | zusätzlich Anzeigen, Ideen, Sternebewertung, Zusagen, eigene Schulungen bestätigen, Profil |
 | Autor:in | zusätzlich **eigene** Artikel und Veranstaltungen |
-| Moderator:in | wie Autor:in, dazu Schulungen verwalten, Ideen & Pinnwand moderieren, Schnellzugriff |
+| Moderator:in | wie Autor:in, dazu Schulungen verwalten, Ideen & Kleinanzeigen moderieren, Schnellzugriff |
 | Redaktion | wie Moderator:in, dazu **alle** Artikel, Entwürfe, Slider, Versionen wiederherstellen |
 | Administrator | alles – nur Administratoren ändern **Einstellungen, LDAP, Windows-Anmeldung, Rollen & Rechte** und starten den **LDAP-Abgleich** |
 
