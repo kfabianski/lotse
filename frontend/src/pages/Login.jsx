@@ -7,7 +7,7 @@ import { Logo } from '../components/Header';
 import { Button, Field, inputClass } from '../components/ui';
 
 export default function Login({ config }) {
-  const { login } = useAuth();
+  const { login, ssoLogin } = useAuth();
   const { t, lang, setLang } = useI18n();
   const [form, setForm] = useState({ username: '', password: '' });
   const [error, setError] = useState('');
@@ -25,7 +25,8 @@ export default function Login({ config }) {
       // Only follow same-site relative paths after sign-in.
       navigate(next && next.startsWith('/') && !next.startsWith('//') ? next : '/', { replace: true });
     } catch (err) {
-      setError(err.status === 401 ? t('login_failed') : t('error_generic', { msg: err.message }));
+      if (err.status === 429) setError(t('login_locked', { s: (/(\d+)/.exec(err.message) || [0, 30])[1] }));
+      else setError(err.status === 401 ? t('login_failed') : t('error_generic', { msg: err.message }));
     } finally {
       setBusy(false);
     }
@@ -68,6 +69,13 @@ export default function Login({ config }) {
           </div>
           {error && <p role="alert" className="mt-4 rounded-xl bg-alert/10 px-3 py-2 text-sm text-alert">{error}</p>}
           <Button type="submit" disabled={busy} className="mt-6 h-11 w-full rounded-xl">{t('sign_in')}</Button>
+          {config?.sso_enabled && (
+            <Button variant="outline" disabled={busy} className="mt-3 h-11 w-full rounded-xl" onClick={async () => {
+              setError('');
+              try { await ssoLogin(); navigate(next && next.startsWith('/') && !next.startsWith('//') ? next : '/', { replace: true }); }
+              catch { setError(t('sso_failed')); }
+            }}>{t('sso_button')}</Button>
+          )}
           {config?.public_read && <p className="mt-6 text-sm text-muted">{t('login_why')}</p>}
         </form>
 

@@ -93,7 +93,7 @@ export function ArticleGrid({ articles, lead = false }) {
 
 export default function Articles({ group, titleKey }) {
   const { t } = useI18n();
-  const { can } = useAuth();
+  const { has } = useAuth();
   const [params, setParams] = useSearchParams();
   const selected = params.get('category');
   const categories = selected && group.includes(selected) ? [selected] : group;
@@ -103,7 +103,7 @@ export default function Articles({ group, titleKey }) {
     <div>
       <div className="flex flex-wrap items-end justify-between gap-4">
         <h1 className="font-display text-[2rem] font-semibold leading-tight">{t(titleKey)}</h1>
-        {can('editor') && (
+        {has('content_own', 'content_all') && (
           <Link to={`/articles/new?category=${selected || group[0]}`}
             className="inline-flex items-center gap-2 rounded-lg bg-brand px-4 py-2 font-medium text-white hover:bg-brand-strong dark:text-[#0e151e]">
             <PenLine size={17} />{t('new_article')}

@@ -89,6 +89,22 @@ def ical_feed(lang: str = "de", _: User | None = Depends(reader), db: Session = 
                     headers={"Content-Disposition": 'inline; filename="termine.ics"'})
 
 
+@router.get("/holidays")
+def public_holidays(start: date = Query(..., alias="from"), end: date = Query(..., alias="to"),
+                    _: User | None = Depends(reader)):
+    """Public holidays (DE/AT/CH, as configured) between from and to; available for last year up to +10 years."""
+    from app.public_holidays import between
+    end = min(end, start + timedelta(days=800))
+    return between(settings.holiday_regions, start, end)
+
+
+@router.get("/holiday-regions")
+def holiday_regions(_: User | None = Depends(reader)):
+    """States/cantons that can be chosen in the admin settings."""
+    from app.public_holidays import regions
+    return regions()
+
+
 @router.get("/{article_id}", response_model=EventOut)
 def get_event(article_id: int, viewer: User | None = Depends(reader), db: Session = Depends(get_db)):
     event = db.get(Article, article_id)

@@ -3,7 +3,8 @@ from typing import Literal
 
 from pydantic import BaseModel, ConfigDict, EmailStr, Field
 
-Role = Literal["admin", "editor", "user"]
+Role = Literal["admin", "editor", "moderator", "author", "user"]
+Permission = Literal["content_own", "content_all", "trainings", "moderate", "quicklinks", "locations", "people"]
 Category = Literal["news", "events", "people", "products", "rules", "safety", "cyber", "knowhow"]
 ClassifiedKind = Literal["offer", "search", "give", "carpool", "other"]
 
@@ -39,13 +40,16 @@ class UserOut(ORM):
     is_active: bool
     show_in_directory: bool
     seat: SeatRef | None = None
+    permissions: list[str] = []  # extra permissions (only shown to admins and to the person)
+    effective_permissions: list[str] = []  # role + extras (only for the person and admins)
 
 
 class UserCreate(BaseModel):
     username: str = Field(min_length=2, max_length=80, pattern=r"^[A-Za-z0-9._-]+$")
-    password: str = Field(min_length=8)
+    password: str = Field(min_length=8, max_length=72)
     email: EmailStr | None = None
     role: Role = "user"
+    permissions: list[Permission] = []
     first_name: str = ""
     last_name: str = ""
     department: str = ""
@@ -65,15 +69,16 @@ class UserUpdate(BaseModel):
     start_date: date | None = None
     is_active: bool | None = None
     show_in_directory: bool | None = None
-    password: str | None = Field(default=None, min_length=8)
+    password: str | None = Field(default=None, min_length=8, max_length=72)
     seat_id: int | None = Field(default=None, description="0 clears the seat")
+    permissions: list[Permission] | None = None
 
 
 class MeUpdate(BaseModel):
     language: Literal["de", "en"] | None = None
     phone_ext: str | None = None
     current_password: str | None = None
-    new_password: str | None = Field(default=None, min_length=8)
+    new_password: str | None = Field(default=None, min_length=8, max_length=72)
 
 
 class LoginIn(BaseModel):
@@ -108,7 +113,7 @@ class AttachmentOut(AttachmentIn, ORM):
     id: int
 
 
-class ArticleIn(BaseModel):
+class ArticleBase(BaseModel):
     category: Category
     title_de: str = Field(min_length=1, max_length=200)
     title_en: str = ""
@@ -125,9 +130,14 @@ class ArticleIn(BaseModel):
     attachments: list[AttachmentIn] = []
 
 
-class ArticleOut(ArticleIn, ORM):
+class ArticleIn(ArticleBase):
+    change_note: str = Field(default="", max_length=300)  # reason for the change, kept in the version history
+
+
+class ArticleOut(ArticleBase, ORM):
     id: int
     published_at: datetime
+    version: int = 1  # number of saved versions
     scheduled: bool = False
     created_at: datetime
     updated_at: datetime

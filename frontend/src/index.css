@@ -121,3 +121,16 @@ body {
 .thin-scroll::-webkit-scrollbar { width: 8px; }
 .thin-scroll::-webkit-scrollbar-thumb { background: var(--line); border-radius: 8px; }
 .thin-scroll::-webkit-scrollbar-thumb:hover { background: var(--muted); }
+
+/* Rich text (editor + display): headings H1–H4 */
+.rich h1 { font-family: var(--font-display); letter-spacing: -0.02em; font-weight: 700; font-size: 1.85rem; line-height: 1.15; margin: 1.6rem 0 0.7rem; }
+.rich h2 { margin-top: 1.4rem; }
+.rich h4 { font-weight: 600; font-size: 1rem; text-transform: none; margin: 1.2rem 0 0.3rem; color: var(--muted); }
+.rich > :first-child { margin-top: 0; }
+.rich hr { border: 0; border-top: 1px solid var(--line); margin: 1.4rem 0; }
+.rich u { text-underline-offset: 3px; }
+.tiptap.prose-lotse { max-width: none; }
+.tiptap:focus, .tiptap:focus-visible { outline: none !important; box-shadow: none !important; }
+
+/* item opened from the search results */
+.hash-focus { outline: 3px solid var(--brand); outline-offset: 3px; transition: outline-color .6s; }

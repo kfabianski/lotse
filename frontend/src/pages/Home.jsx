@@ -8,6 +8,8 @@ import { useFetch } from '../lib/useFetch';
 import { useViewer } from '../lib/viewer';
 import { UpcomingCard } from './Events';
 import MiniCalendar from '../components/MiniCalendar';
+import QuickLinks from '../components/QuickLinks';
+import { OpenTrainingsBanner } from './Trainings';
 
 function ShowAll({ to, label }) {
   const { t } = useI18n();
@@ -88,7 +90,11 @@ export default function Home() {
 
   return (
     <div className="space-y-14">
-      <HeroSlider slides={data.slides} />
+      <div className="space-y-5">
+        <OpenTrainingsBanner />
+        <HeroSlider slides={data.slides} />
+        <QuickLinks />
+      </div>
 
       {/* Coming up: the most visible block after the slider. */}
       <section>

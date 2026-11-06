@@ -18,18 +18,31 @@ import Search from './pages/Search';
 import Ideas from './pages/Ideas';
 import Events from './pages/Events';
 import Documents from './pages/Documents';
+import Trainings, { TrainingView } from './pages/Trainings';
 
-function Guard({ role, children }) {
-  const { user, can } = useAuth();
+function Guard({ role, perm, children }) {
+  const { user, can, has } = useAuth();
   const { pathname } = useLocation();
   if (!user) return <Navigate to={`/login?next=${encodeURIComponent(pathname)}`} replace />;
-  return can(role) ? children : <Navigate to="/" replace />;
+  const ok = perm ? has(...perm.split(',')) : can(role);
+  return ok ? children : <Navigate to="/" replace />;
 }
 
 export default function App() {
   const { user, ready } = useAuth();
   const { t } = useI18n();
   const [config, setConfig] = useState(null);
+  const [ssoPending, setSsoPending] = useState(false);
+  const { ssoLogin } = useAuth();
+  useEffect(() => {
+    // Windows sign-in: people signed in to their company PC are recognised without typing a password.
+    let off = false;
+    try { off = sessionStorage.getItem('lotse-sso-off') === '1'; } catch { /* ignore */ }
+    if (!config?.sso_enabled || user || off || !ready) return;
+    setSsoPending(true);
+    ssoLogin().catch(() => {}).finally(() => setSsoPending(false));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [config, ready]);
   const [drawer, setDrawer] = useState(false);
   const { pathname } = useLocation();
 
@@ -38,7 +51,7 @@ export default function App() {
   }, []);
   useEffect(() => { window.scrollTo(0, 0); }, [pathname]);
 
-  if (!ready || !config) return null;
+  if (!ready || !config || ssoPending) return null;
   // Everyone may read when public_read is on; signing in is only needed to post or edit.
   if (pathname === '/login' || (!user && !config.public_read)) return <Login config={config} />;
 
@@ -55,9 +68,9 @@ export default function App() {
           <Route path="/" element={<Home />} />
           <Route path="/news" element={<Articles key="news" group={NEWS_GROUP} titleKey="nav_news" />} />
           <Route path="/knowledge" element={<Articles key="knowledge" group={KNOWLEDGE_GROUP} titleKey="nav_knowledge" />} />
-          <Route path="/articles/new" element={<Guard role="editor"><ArticleEdit /></Guard>} />
+          <Route path="/articles/new" element={<Guard perm="content_own,content_all"><ArticleEdit /></Guard>} />
           <Route path="/articles/:id" element={<ArticleView />} />
-          <Route path="/articles/:id/edit" element={<Guard role="editor"><ArticleEdit /></Guard>} />
+          <Route path="/articles/:id/edit" element={<Guard perm="content_own,content_all"><ArticleEdit /></Guard>} />
           <Route path="/board" element={<Board />} />
           <Route path="/ideas" element={<Ideas />} />
           <Route path="/calendar" element={<Events />} />
@@ -65,7 +78,9 @@ export default function App() {
           <Route path="/people" element={<People />} />
           <Route path="/search" element={<Search />} />
           <Route path="/profile" element={<Guard role="user"><Profile /></Guard>} />
-          <Route path="/admin" element={<Guard role="admin"><Admin /></Guard>} />
+          <Route path="/trainings" element={<Guard role="user"><Trainings /></Guard>} />
+          <Route path="/trainings/:id" element={<Guard role="user"><TrainingView /></Guard>} />
+          <Route path="/admin" element={<Guard perm="trainings,quicklinks,locations,people"><Admin /></Guard>} />
           <Route path="*" element={<Empty>{t('not_found')}</Empty>} />
         </Routes>
       </main>

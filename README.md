@@ -1,8 +1,9 @@
 # Lotse – das Intranet für Büro und Lager
 
-Lotse ist ein schlankes Mitarbeiterportal für Firmen mit Büroetagen und Lagerhallen: Neuigkeiten,
-Veranstaltungen mit Zusagen, Mitarbeiterverzeichnis mit interaktivem Lageplan, Pinnwand, Ideenbox,
-Dokumente und Wissen – zweisprachig (Deutsch/Englisch), mit hellem und dunklem Design.
+Lotse ist ein schlankes Mitarbeiterportal für Firmen mit Büroetagen und Lagerhallen: Neuigkeiten und Wissen,
+Veranstaltungen mit Zusagen, Dokumente mit Versionshistorie, Schulungen mit Lesebestätigung,
+Mitarbeiterverzeichnis mit interaktivem Lageplan, Pinnwand, Ideenbox und Schnellzugriff auf die
+Firmenprogramme – zweisprachig (Deutsch/Englisch), mit hellem und dunklem Design.
 
 Lotse braucht keinen Datenbankserver und keinen Webserver davor: **ein einziger Python-Prozess** liefert
 API, Uploads und Oberfläche aus. Anmeldung lokal oder über **LDAP/Active Directory (LDAPS/STARTTLS)**.
@@ -17,43 +18,116 @@ API, Uploads und Oberfläche aus. Anmeldung lokal oder über **LDAP/Active Direc
 | **Veranstaltungen** – kommende Termine mit „Ich bin dabei“, Kalender und Rückblick | **Kalender** – Monatsansicht, abonnierbar in Outlook |
 | ![Mitarbeitende](docs/screenshots/05-mitarbeitende.png) | ![Lageplan](docs/screenshots/06-lageplan.png) |
 | **Mitarbeitende** – nach Abteilungen gegliedert, mit E-Mail und Durchwahl | **Lageplan** – interaktiv: Räume, Suche über alle Etagen, Zoom zur Person, Besprechungsräume |
+| ![Meine Schulungen](docs/screenshots/15-meine-schulungen.png) | ![Schulungen verwalten](docs/screenshots/16-schulungen-verwaltung.png) |
+| **Meine Schulungen** – nur die eigenen, mit Fälligkeit und Bestätigung | **Schulungen verwalten** – Zuweisung, Fortschritt, Auswertung |
+| ![Schulung bearbeiten](docs/screenshots/17-schulung-bearbeiten.png) | ![Schnellzugriff](docs/screenshots/18-schnellzugriff-verwaltung.png) |
+| **Schulung bearbeiten** – Texteditor, Zuweisung an Personen, Abteilungen, Gruppen, Unterlagen | **Schnellzugriff** – Kacheln für Programme, Sammel-Postfächer und Telefonnummern |
 | ![Ideen](docs/screenshots/07-ideen.png) | ![Pinnwand](docs/screenshots/08-pinnwand.png) |
-| **Ideenbox** – Verbesserungsvorschläge, Sternebewertung, Status und Antwort | **Pinnwand** – Biete, Suche, Fahrgemeinschaften |
-| ![Dokument im Portal](docs/screenshots/09-dokument-viewer.png) | ![Fotogalerie](docs/screenshots/10-galerie.png) |
-| **Dokumente** – PDFs öffnen sich direkt im Portal | **Fotos** von Veranstaltungen als Galerie |
+| **Ideenbox** – Vorschläge, Sternebewertung, Status und Antwort, auch anonym | **Pinnwand** – Biete, Suche, Zu verschenken, Fahrgemeinschaften |
+| ![Dokumente](docs/screenshots/13-dokumente.png) | ![Dokument im Portal](docs/screenshots/09-dokument-viewer.png) |
+| **Dokumentenbibliothek** – ISO-Dokumente, Richtlinien, Suche | **Dokumente** – PDFs öffnen sich direkt im Portal |
+| ![Raum-Editor](docs/screenshots/14-raum-editor.png) | ![Fotogalerie](docs/screenshots/10-galerie.png) |
+| **Raum-Editor** – Räume aufziehen, verschieben, Größe ändern | **Fotos** von Veranstaltungen als Galerie |
 | ![Dunkles Design](docs/screenshots/02-startseite-dunkel.png) | ![LDAP-Einstellungen](docs/screenshots/11-verwaltung-ldap.png) |
 | **Dunkles Design** – umschaltbar oben rechts | **Verwaltung** – LDAP-Server, Abteilungen, Benutzer, Etagen |
-| ![Dokumente](docs/screenshots/13-dokumente.png) | ![Anmeldung](docs/screenshots/12-anmeldung.png) |
-| **Dokumentenbibliothek** – ISO-Dokumente, Richtlinien, Suche | **Anmeldung** – Lesen ohne Login, Anmelden nur zum Schreiben |
-| ![Raum-Editor](docs/screenshots/14-raum-editor.png) | |
-| **Raum-Editor** – Räume aufziehen, verschieben, Größe ändern; Art, Abteilung, Besprechungsraum-Daten | |
+| ![Anmeldung](docs/screenshots/12-anmeldung.png) | ![Suche](docs/screenshots/19-suche.png) |
+| **Anmeldung** – Lesen ohne Login, Anmelden nur zum Schreiben | |
 
 Alle Funktionen im Detail: **[docs/FUNKTIONEN.md](docs/FUNKTIONEN.md)** · Bildnachweise: [docs/CREDITS.md](docs/CREDITS.md)
 
-## Funktionen (Kurzfassung)
+## Funktionen
 
-- **Startseite** mit großem Slider (z. B. „Weihnachtsfeier 2026“), Neuigkeiten, nächsten Terminen,
-  neuen Kolleg:innen, Top-Ideen und den neuesten Aushängen.
+### Für alle Mitarbeitenden
+
+- **Startseite**: Hinweis auf **offene Schulungen** (rot bei Überfälligkeit), großer **Slider** mit den
+  wichtigsten Beiträgen, **Schnellzugriff**-Kacheln, nächste **Termine** mit Monatskalender, **Fotos** aus dem
+  Firmenleben, **Neuigkeiten**, **Neu im Team**, zuletzt veröffentlichte Artikel und neue Aushänge.
+- **Schnellzugriff**: Kacheln zu Zeiterfassung, ERP, Outlook, Helpdesk usw., zu Sammel-Postfächern
+  (Buchhaltung, Eingangsrechnungen, IT-Support – Adresse per Knopf kopieren) und wichtigen Telefonnummern.
 - **Aktuelles** und **Wissen & Regeln**: Neuigkeiten, Veranstaltungen, neue Kolleg:innen, neue Produkte,
-  Regeln & Richtlinien, Arbeitssicherheit, IT-Sicherheit, Know-how – jeder Artikel auf Deutsch und Englisch.
-- **Veranstaltungen**: Demnächst, Kalender, Rückblick; Zusagen mit Teilnehmerliste; `.ics`-Abo für Outlook.
-- **Mitarbeitende**: Verzeichnis nach Abteilungen (Einkauf, Verwaltung, Finanzen, IT, Versand, Fulfillment,
-  Vertrieb), Suche nach Name, Abteilung, Position oder Durchwahl.
-- **Lageplan**: Gebäudeansicht mit Etagen und Lagerhallen, Zoomen und Verschieben, Abteilungsfarben,
-  freie Plätze, Kontaktkarte mit E-Mail und Durchwahl.
-- **Pinnwand** und **Ideenbox** für alle Mitarbeitenden (nach Anmeldung).
-- **Dokumente und Fotos** öffnen sich im eingebauten Betrachter – kein neues Fenster.
-- **Lesen ohne Anmeldung** (abschaltbar); **Rollen**: Mitarbeitende, Redaktion, Administrator.
-- **LDAP/Active Directory** mit Zertifikatsprüfung; Abteilungen aus LDAP oder von Hand gepflegt.
+  Regeln & Richtlinien, Arbeitssicherheit, IT-Sicherheit, Know-how – jeder Artikel auf Deutsch und Englisch,
+  mit Bildern, Fotogalerie und PDF-Anhängen. Beispiele: ISO-Dokumente, Datenschutz, KI-Richtlinie,
+  Besprechungsraum buchen, IT-Probleme melden.
+- **Versionshistorie**: Bei jedem Artikel ist sichtbar, wer was wann geändert hat (mit Änderungsgrund) –
+  inklusive Vergleich mit der Vorversion und hinzugefügten/entfernten Dokumenten. Öffentlich wie der Artikel.
+- **Veranstaltungen**: Demnächst, Monatskalender, Rückblick mit Fotos; **„Ich bin dabei“** mit
+  Teilnehmerliste; Kalender-Abo (`.ics`) für Outlook, Google und Apple.
+- **Feiertage** im Kalender und auf der Startseite: gesetzliche Feiertage für **Deutschland, Österreich und die
+  Schweiz** bis zehn Jahre im Voraus, mit Länderkürzeln; optional inklusive Bundesland bzw. Kanton.
+- **Dokumente**: Bibliothek aller PDFs mit Suche; PDFs und Fotos öffnen sich im **eingebauten Betrachter**.
+- **Schulungen** (nach Anmeldung): **Pflichtschulungen** für die eigene Person (Reiter *Offen*, mit Fälligkeit),
+  **freiwillige Schulungen für alle** (z. B. Anleitungen, Reiter *Freiwillig*) und *Erledigt*; Unterlagen (PDF,
+  **Video**, Bild, Link) und die Bestätigung **„durchgearbeitet und verstanden“**. Fachschulungen sehen nur die
+  Zugewiesenen.
+- **Mitarbeitende**: Verzeichnis nach Abteilungen mit Suche (Name, Abteilung, Position, Durchwahl, E-Mail).
+- **Lageplan**: Gebäudeansicht (Etagen übereinander, Lagerhallen daneben), Räume als echte Flächen in den
+  Abteilungsfarben, Besprechungsräume mit Plätzen, Ausstattung und Raum-E-Mail, Hover-Karte mit Foto und
+  Durchwahl, weiches Zoomen zur Person, Suche über alle Etagen, Minikarte, Abteilungsfilter.
+- **Pinnwand**: Biete, Suche, Zu verschenken, Fahrgemeinschaften – mit Foto, Preis und Kontakt.
+- **Ideenbox**: Ideen einreichen (auf Wunsch **wirklich anonym** – der Name wird dann gar nicht gespeichert),
+  mit **1–5 Sternen** bewerten, Sortierung *Beste Bewertung* oder *Neueste*, Status von *Neu* bis *Umgesetzt*
+  mit Antwort der Redaktion.
+- **Profil**: Foto, Durchwahl, Sprache und Passwort (bei lokalen Konten).
+- **Suche über alles Öffentliche** (Strg + K): Personen, Artikel, Veranstaltungen, Dokumente, Räume, Pinnwand,
+  Ideen, Schnellzugriff – angemeldet zusätzlich die eigenen Schulungen; Umlaute egal (*schroeder* findet *Schröder*), **Deutsch/Englisch** und **hell/dunkel** umschaltbar,
+  **Lesen ohne Anmeldung** (abschaltbar).
+
+### Für die Redaktion
+
+- Artikel in allen Bereichen schreiben (Markdown mit Vorschau), Titelbild, Fotos und PDFs anhängen,
+  **Entwurf** oder **geplante Veröffentlichung** zu Datum und Uhrzeit, Beiträge für den Slider auswählen.
+- **Änderungsgrund** beim Speichern für die Versionshistorie; alte Versionen **wiederherstellen**.
+- Status und Antwort bei Ideen setzen, fremde Aushänge entfernen.
+
+### Für die Verwaltung (Administrator)
+
+- **Benutzer**: anlegen, bearbeiten, Rollen, Abteilung, Position, Durchwahl, Platz, Foto, aktiv/sichtbar.
+- **Abteilungen**: Name, Farbe, Reihenfolge; Umbenennen nimmt Personen, Räume und Schulungszuweisungen mit;
+  optional automatisch aus LDAP.
+- **Etagen & Lager**: Etagen und Hallen anlegen, Grundriss hochladen; **Plätze** setzen, zuweisen und per
+  Ziehen verschieben; **Raum-Editor** zum Zeichnen der Räume (Art, Name DE/EN, Abteilung,
+  Besprechungsraum-Daten) mit Raster und Grundriss als Vorlage.
+- **Schulungen**: anlegen mit **Texteditor** (Überschriften H1–H4, fett, kursiv, unterstrichen, Farben,
+  Listen, Links), Unterlagen hochladen (PDF bis 25 MB, Video MP4/WebM bis 500 MB, Bilder) oder verlinken,
+  Fälligkeit; **für alle freiwillig** und/oder **Pflicht** für alle, Abteilungen, **Gruppen** (z. B.
+  Geschäftsführung, Ersthelfer), **Funktionen/Positionen** (z. B. Staplerfahrer, auch aus LDAP) oder einzelne Personen; **Auswertung** (wer hat wann bestätigt, wer ist offen),
+  **CSV-Export** als Audit-Nachweis, **neue Runde** (alle bestätigen erneut, z. B. jährlich).
+  Schnellzugang über *Meine Schulungen* und das Benutzermenü.
+- **Schnellzugriff**: Kacheln der Startseite anlegen, sortieren, ausblenden – Link, E-Mail oder Telefon,
+  Symbol und Farbe, mit Vorschau.
+- **Rollen & Rechte**: Rollen (Mitarbeitende, Autor:in, Moderator:in, Redaktion, Administrator) und einzelne
+  Zusatzrechte pro Person; Systemeinstellungen bleiben immer den Administratoren vorbehalten.
+- **LDAP-Abgleich mit Vorschau**: zeigt neue, zu verknüpfende, geänderte und nicht mehr vorhandene Personen
+  sowie neue und überzählige Abteilungen – übernommen wird nur, was abgehakt ist. **LDAP ist führend**;
+  Personen werden über Benutzername und **E-Mail-Adresse** erkannt, so entstehen keine Doppelkonten.
+- **Einstellungen**: Firmenname, Anmeldebild, *Lesen ohne Anmeldung*, **Feiertage** (Länder, Bundesland/Kanton),
+  **LDAP/Active Directory** mit Verbindungstest, **Windows-Anmeldung (SSO)**.
+
+### Rollen und Rechte
+
+Der Administrator vergibt unter **Verwaltung → Rollen & Rechte** an Personen, die schon im System sind, eine
+Rolle und bei Bedarf **zusätzliche Rechte** (z. B. *Etagen, Räume & Plätze* oder *Personen & Abteilungen*).
+
+| Rolle | Darf |
+|---|---|
+| Besucher (nicht angemeldet) | lesen – nur wenn *Lesen ohne Anmeldung* eingeschaltet ist (keine Schulungen) |
+| Mitarbeitende | zusätzlich Aushänge, Ideen, Sternebewertung, Zusagen, eigene Schulungen bestätigen, Profil |
+| Autor:in | zusätzlich **eigene** Artikel und Veranstaltungen |
+| Moderator:in | wie Autor:in, dazu Schulungen verwalten, Ideen & Pinnwand moderieren, Schnellzugriff |
+| Redaktion | wie Moderator:in, dazu **alle** Artikel, Entwürfe, Slider, Versionen wiederherstellen |
+| Administrator | alles – nur Administratoren ändern **Einstellungen, LDAP, Windows-Anmeldung, Rollen & Rechte** und starten den **LDAP-Abgleich** |
 
 ## Technik
 
 | Teil | Technik |
 |---|---|
-| Backend | Python 3.11+, FastAPI, SQLAlchemy, **SQLite** (eine Datei, kein Datenbankserver) |
-| Frontend | React 19, Vite, Tailwind CSS 4, Schrift Geist, Icons Lucide |
+| Backend | Python 3.11+, FastAPI, SQLAlchemy, **SQLite** (eine Datei, kein Datenbankserver), `holidays` (Feiertage, offline) |
+| Frontend | React 19, Vite, Tailwind CSS 4, TipTap (Texteditor), Schrift Geist, Icons Lucide |
 | Anmeldung | lokal (bcrypt + JWT) oder LDAP/AD über LDAPS bzw. STARTTLS (ldap3) |
 | Betrieb | ein Prozess (uvicorn) liefert API, Uploads und die gebaute Oberfläche aus |
+
+Neue Datenbankfelder und Tabellen werden beim Start automatisch ergänzt (`backend/app/migrate.py`);
+bestehende Daten bleiben erhalten.
 
 ## Schnellstart (Windows)
 
@@ -65,13 +139,17 @@ cd lotse
 .\start.ps1
 ```
 
-`start.ps1` legt eine virtuelle Python-Umgebung an, baut die Oberfläche, erzeugt Demodaten und startet
-Lotse auf **http://localhost:8000**.
+`start.ps1` legt eine virtuelle Python-Umgebung an, baut die Oberfläche, erzeugt beim allerersten Start
+Demodaten und startet Lotse auf **http://localhost:8000**.
 
 Die Demodaten enthalten Beispielkonten. Ihre Passwörter werden bei jedem Anlegen **zufällig erzeugt** und nur
-einmal in der Konsole angezeigt – im Repository stehen keine Passwörter.
+einmal in der Konsole angezeigt – im Repository stehen keine Passwörter. Feste Passwörter für eine Vorführung
+lassen sich mit `LOTSE_DEMO_ADMIN_PASSWORD` und `LOTSE_DEMO_PASSWORD` vorgeben.
 
 > Für den echten Betrieb `seed.py` **nicht** ausführen, sondern eigene Konten anlegen bzw. LDAP verwenden.
+
+> Nach einem Update (`git pull`) die Abhängigkeiten neu installieren und die Oberfläche neu bauen:
+> `backend\.venv\Scripts\pip install -r backend\requirements.txt` und `cd frontend; npm install; npm run build`.
 
 ### Linux / manuell
 
@@ -91,13 +169,22 @@ cd backend && uvicorn app.main:app --reload          # API auf :8000
 cd frontend && npm run dev                           # Oberfläche auf :5173 mit Proxy zur API
 ```
 
-`python seed.py --reset` setzt die Demodaten zurück. `python seed.py --iso` ergänzt nur die Beispiel-Dokumente (ISO, Datenschutz, Aktenvernichtung, Mülltrennung, KI-Richtlinie, Anleitungen Raumbuchung und IT-Support) in einer bestehenden Datenbank. `python seed.py --rooms` legt die Demo-Räume für Etagen an, die noch keine Räume haben.
+### Demodaten
+
+| Befehl | Wirkung |
+|---|---|
+| `python seed.py` | legt alle Demodaten in einer **leeren** Datenbank an |
+| `python seed.py --reset` | löscht alles und legt die Demodaten neu an |
+| `python seed.py --iso` | ergänzt Beispiel-Dokumente (ISO, Datenschutz, Aktenvernichtung, Mülltrennung, KI-Richtlinie, Anleitungen Raumbuchung und IT-Support) |
+| `python seed.py --rooms` | ergänzt die Demo-Räume für Etagen, die noch keine Räume haben |
+| `python seed.py --trainings` | ergänzt Schnellzugriff-Kacheln und Beispiel-Schulungen mit Gruppen, wenn noch keine vorhanden sind |
 
 ## Konfiguration
 
 Fast alles lässt sich in der Oberfläche unter **Verwaltung → Einstellungen** einstellen:
 
-- **Allgemein**: Firmenname, *Lesen ohne Anmeldung* an/aus.
+- **Allgemein**: Firmenname, Anmeldebild, *Lesen ohne Anmeldung* an/aus.
+- **Feiertage im Kalender**: Deutschland, Österreich, Schweiz – je Land aus, landesweit oder mit Bundesland/Kanton.
 - **LDAP / Active Directory**: Server (**IP-Adresse oder Hostname**), Port, Verschlüsselung
   (LDAPS = Port 636 oder STARTTLS = Port 389), Zertifikatsprüfung, CA-Zertifikat der Firma,
   Dienstkonto (Bind-DN + Passwort), Suchbasis, Gruppen für Administratoren und Redaktion,
@@ -110,49 +197,91 @@ Installationen) `backend/.env.example` nach `backend/.env` kopieren und anpassen
 |---|---|
 | `LOTSE_COMPANY_NAME` | Firmenname im Portal |
 | `LOTSE_PUBLIC_READ` | `true`: Lesen ohne Anmeldung |
-| `LOTSE_SECRET_KEY` | Schlüssel für Anmelde-Tokens; leer = wird einmalig zufällig erzeugt |
+| `LOTSE_SECRET_KEY` | Schlüssel für Anmelde-Tokens und signierte Schulungs-Links; leer = wird einmalig zufällig erzeugt |
 | `LOTSE_DATABASE_URL` | Standard: SQLite-Datei `backend/data/lotse.db` |
+| `LOTSE_MAX_UPLOAD_MB` / `LOTSE_MAX_PDF_MB` / `LOTSE_MAX_VIDEO_MB` | Größenlimits für Bilder (8), PDFs (25) und Schulungsvideos (500) |
 | `LOTSE_LDAP_*` | LDAP-Einstellungen (siehe `.env.example`) |
 
 Lotse läuft als **ein Prozess** (Standard bei `start.ps1`). Mehrere Worker würden Änderungen aus den
 Einstellungen erst nach einem Neustart sehen.
 
-**Daten sichern:** Der Ordner `backend/data/` enthält Datenbank, Uploads und den Token-Schlüssel – diesen
-Ordner regelmäßig sichern.
+**Daten sichern:** Der Ordner `backend/data/` enthält Datenbank, Uploads, Schulungsunterlagen
+(`trainings/`) und den Token-Schlüssel – diesen Ordner regelmäßig sichern.
 
 ## Sicherheit
 
-- Passwörter mit bcrypt, Anmeldung per JWT; Rollen werden serverseitig geprüft.
-- LDAP nur verschlüsselt (LDAPS/STARTTLS) mit Zertifikatsprüfung; das Passwort des Dienstkontos wird nie an
-  den Browser zurückgegeben.
-- Uploads: Dateityp wird am Inhalt geprüft; SVGs ohne Skripte und mit CSP-Sandbox; PDFs nur innerhalb des
-  Portals einbettbar.
-- Verzeichnis und Lageplan sind bei *Lesen ohne Anmeldung* für alle im Netz sichtbar –
-  **Lotse gehört ins Firmennetz, nicht ins offene Internet.**
+- Passwörter mit bcrypt, Anmeldung per signiertem Token (JWT, HS256) im `Authorization`-Header – keine
+  Cookies, daher kein CSRF. **Rolle und Rechte werden bei jeder Anfrage aus der Datenbank gelesen**, nicht aus
+  dem Token: Ein veränderter oder selbst signierter Token bringt keine Rechte; Rechteentzug und Deaktivierung
+  wirken sofort. Geprüft mit gefälschten Tokens (`alg=none`, geänderte Nutzlast, falscher Schlüssel,
+  abgelaufen) und einem Durchlauf über alle API-Endpunkte als Besucher und als Mitarbeiter:in.
+- **Schutz vor Passwort-Raten**: 5 Fehlversuche je Benutzername → 30 Sekunden Wartezeit; 20 Fehlversuche je
+  Rechner → ebenfalls 30 Sekunden.
+- **Windows-Anmeldung** nur über den eingetragenen Webserver (IP-Prüfung); nur für LDAP-Konten.
+- Das öffentliche Verzeichnis zeigt keine Benutzernamen, Rollen oder Kontoarten; jede E-Mail-Adresse gibt es
+  nur einmal.
+- LDAP nur verschlüsselt (LDAPS/STARTTLS) mit Zertifikatsprüfung; Suchfilter werden maskiert; das Passwort
+  des Dienstkontos wird nie an den Browser zurückgegeben.
+- Uploads: Dateityp wird am Inhalt geprüft; SVGs mit CSP-Sandbox; PDFs nur innerhalb des Portals einbettbar;
+  Artikeltexte werden vor der Anzeige bereinigt (DOMPurify).
+- **Schulungen** sind nur für zugewiesene Personen sichtbar; ihre Dateien liegen außerhalb des öffentlichen
+  Upload-Ordners und werden nur über **signierte, zeitlich begrenzte Links** (2 Stunden) ausgeliefert.
+- **Anonyme Ideen** werden ohne Autor gespeichert. Kacheln im Schnellzugriff erlauben nur Web-, Mail-,
+  Telefon- und Portal-Adressen.
+- Verzeichnis, Lageplan und Versionshistorie sind bei *Lesen ohne Anmeldung* für alle im Netz sichtbar –
+  **Lotse gehört ins Firmennetz, nicht ins offene Internet.** Für den Betrieb wird HTTPS empfohlen
+  (z. B. über einen Reverse Proxy wie IIS oder Caddy), damit Passwörter nicht unverschlüsselt übertragen werden.
+
+## Windows-Anmeldung (SSO) einrichten
+
+Damit Mitarbeitende mit ihrem Windows-Profil ohne Passwort erkannt werden, läuft Lotse hinter **IIS** mit
+Windows-Authentifizierung (Kerberos):
+
+1. Lotse wie gewohnt starten, aber nur lokal erreichbar: in `start.ps1` `--host 0.0.0.0` durch `--host 127.0.0.1` ersetzen.
+2. Auf dem Server IIS mit **Windows-Authentifizierung**, **URL Rewrite** und **Application Request Routing**
+   installieren; eine Website `intranet.firma.local` anlegen, *Windows-Authentifizierung* an, *Anonym* aus.
+3. Reverse-Proxy-Regel auf `http://127.0.0.1:8000/{R:1}` und den Server-Variable-Header setzen:
+   `HTTP_X_REMOTE_USER` = `{LOGON_USER}` (unter *Zulässige Servervariablen* freigeben).
+4. Für Kerberos den SPN `HTTP/intranet.firma.local` auf das Konto des Servers bzw. App-Pools eintragen und
+   die Adresse per Gruppenrichtlinie zur **Lokales Intranet**-Zone hinzufügen (Edge/Chrome melden dann
+   automatisch an).
+5. In Lotse unter **Verwaltung → Einstellungen → Windows-Anmeldung** einschalten; Header `X-Remote-User`,
+   vertrauenswürdige Webserver `127.0.0.1`.
+
+Lotse akzeptiert den Header nur von den eingetragenen Adressen und nur für LDAP-Konten. Lokale Konten (z. B. ein
+Notfall-Administrator) melden sich weiter mit Passwort an.
 
 ## Screenshots aktualisieren
 
 ```bash
 pip install websocket-client
-python docs/make_screenshots.py          # Server mit Demodaten muss laufen; nutzt den lokalen Chrome
+# Server mit Demodaten muss laufen; nutzt den lokalen Chrome.
+python docs/make_screenshots.py --password <admin-passwort> --staff-password <passwort-der-demokonten>
 ```
 
-Die Bilder landen in [`docs/screenshots/`](docs/screenshots/).
+Die Passwörter zeigt `seed.py` beim Anlegen an (alternativ `LOTSE_DEMO_ADMIN_PASSWORD` / `LOTSE_DEMO_PASSWORD`).
+Ohne `--staff-password` entfällt das Bild *Meine Schulungen*. Die Bilder landen in
+[`docs/screenshots/`](docs/screenshots/).
 
 ## Projektstruktur
 
 ```
 backend/
-  app/            FastAPI-Anwendung (Router, Modelle, LDAP, Uploads)
-  seed.py         Demodaten inkl. generierter Grundrisse, Banner, Fotos und PDFs
-  data/           Datenbank, Uploads, Schlüssel (nicht im Repository)
+  app/              FastAPI-Anwendung
+    routers/        Artikel, Versionen, Schulungen, Schnellzugriff, Lageplan, Ideen, Kalender, Verwaltung …
+    models.py       Datenbankmodelle      migrate.py  automatische Schema-Ergänzungen
+    ldap_auth.py    LDAP/AD               uploads.py  Prüfung und Ablage von Dateien
+  seed.py           Demodaten inkl. generierter Grundrisse, Räume, Fotos, PDFs und Schulungen
+  data/             Datenbank, Uploads, Schulungsunterlagen, Schlüssel (nicht im Repository)
 frontend/
-  src/            React-Oberfläche (Seiten, Komponenten, Übersetzungen in lib/i18n.jsx)
+  src/pages/        Seiten (Startseite, Artikel, Schulungen, Mitarbeitende, Verwaltung …)
+  src/components/   Lageplan, Raum-Editor, Texteditor, Schnellzugriff, Versionshistorie, Betrachter …
+  src/lib/          API-Zugriff, Anmeldung, Übersetzungen (i18n.jsx)
 docs/
-  FUNKTIONEN.md   ausführliche Funktionsbeschreibung
-  screenshots/    Bildschirmfotos
+  FUNKTIONEN.md     ausführliche Funktionsbeschreibung
+  screenshots/      Bildschirmfotos
   make_screenshots.py
-start.ps1         Einrichtung und Start unter Windows
+start.ps1           Einrichtung und Start unter Windows
 ```
 
 ## API

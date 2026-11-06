@@ -7,7 +7,7 @@ from sqlalchemy.orm import Session, joinedload
 from app.db import get_db
 from app.models import Idea, IdeaVote, User
 from app.schemas import IdeaIn, IdeaOut, IdeaRateIn, IdeaStatusIn
-from app.security import ROLE_RANK, current_user, rank, reader, require
+from app.security import current_user, has_perm, reader, require_perm
 
 router = APIRouter(prefix="/api/ideas", tags=["ideas"])
 
@@ -18,9 +18,9 @@ PRIOR_COUNT, PRIOR_MEAN = 3, 3.0
 
 
 def idea_out(idea: Idea, viewer: User | None, count: int, total: int, my_stars: int | None) -> dict:
-    is_editor = rank(viewer) >= ROLE_RANK["editor"]
-    mine = bool(viewer and viewer.id == idea.author_id)
-    show_author = not idea.anonymous or is_editor or mine
+    # Anonymous ideas have no author stored at all, so they are never "mine" and never show a name.
+    mine = bool(viewer and idea.author_id is not None and viewer.id == idea.author_id)
+    show_author = not idea.anonymous and idea.author is not None
     return {
         "id": idea.id, "title": idea.title, "body": idea.body, "topic": idea.topic, "status": idea.status,
         "response": idea.response, "anonymous": idea.anonymous,
@@ -70,7 +70,8 @@ def get_ideas(status: str = "", sort: str = Query("top", pattern="^(top|new)$"),
 
 @router.post("", response_model=IdeaOut, status_code=201)
 def create_idea(body: IdeaIn, user: User = Depends(current_user), db: Session = Depends(get_db)):
-    idea = Idea(**body.model_dump(), author_id=user.id)
+    # Anonymous: the author is deliberately not stored (sign-in is only required to prevent spam).
+    idea = Idea(**body.model_dump(), author_id=None if body.anonymous else user.id)
     db.add(idea)
     db.commit()
     return _one(db, idea.id, user)
@@ -97,7 +98,7 @@ def rate_idea(idea_id: int, body: IdeaRateIn, user: User = Depends(current_user)
 
 
 @router.patch("/{idea_id}/status", response_model=IdeaOut)
-def set_status(idea_id: int, body: IdeaStatusIn, editor: User = Depends(require("editor")),
+def set_status(idea_id: int, body: IdeaStatusIn, editor: User = Depends(require_perm("moderate")),
                db: Session = Depends(get_db)):
     idea = db.get(Idea, idea_id)
     if not idea:
@@ -115,7 +116,8 @@ def delete_idea(idea_id: int, user: User = Depends(current_user), db: Session = 
     idea = db.get(Idea, idea_id)
     if not idea:
         raise HTTPException(404, "Idea not found")
-    if idea.author_id != user.id and rank(user) < ROLE_RANK["editor"]:
+    is_author = idea.author_id is not None and idea.author_id == user.id
+    if not is_author and not has_perm(user, "moderate"):
         raise HTTPException(403, "Only the author or an editor can remove this idea")
     db.delete(idea)
     db.commit()

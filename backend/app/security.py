@@ -1,5 +1,7 @@
 from datetime import datetime, timedelta, timezone
 
+import json
+
 import bcrypt
 import jwt
 from fastapi import Depends, HTTPException, status
@@ -11,11 +13,46 @@ from app.db import get_db
 from app.models import User
 
 _bearer = HTTPBearer(auto_error=False)
-ROLE_RANK = {"user": 0, "editor": 1, "admin": 2}
+ROLE_RANK = {"user": 0, "author": 0, "moderator": 0, "editor": 1, "admin": 2}
+
+# What a person may do. Admins can grant these per person on top of the role. Everything that touches the
+# system itself (general settings, LDAP, roles and permissions, LDAP sync) is NOT a permission: admins only.
+PERMISSIONS = ("content_own", "content_all", "trainings", "moderate", "quicklinks", "locations", "people")
+ROLE_PERMS = {
+    "user": set(),
+    "author": {"content_own"},
+    "moderator": {"content_own", "trainings", "moderate", "quicklinks"},
+    "editor": {"content_own", "content_all", "trainings", "moderate", "quicklinks"},
+    "admin": set(PERMISSIONS),
+}
+
+
+def extra_permissions(user: User | None) -> list[str]:
+    try:
+        return [p for p in json.loads(user.permissions or "[]") if p in PERMISSIONS] if user else []
+    except (ValueError, TypeError):
+        return []
+
+
+def permissions_of(user: User | None) -> set[str]:
+    if not user:
+        return set()
+    if user.role == "admin":
+        return set(PERMISSIONS)
+    return ROLE_PERMS.get(user.role, set()) | set(extra_permissions(user))
+
+
+def has_perm(user: User | None, *perms: str) -> bool:
+    """True when the user has at least one of ``perms``."""
+    mine = permissions_of(user)
+    return any(p in mine for p in perms)
 
 
 def hash_password(password: str) -> str:
-    return bcrypt.hashpw(password.encode(), bcrypt.gensalt()).decode()
+    data = password.encode()
+    if len(data) > 72:  # bcrypt limit (bytes, so umlauts count double)
+        raise HTTPException(422, "Password is too long (max. 72 bytes)")
+    return bcrypt.hashpw(data, bcrypt.gensalt()).decode()
 
 
 def verify_password(password: str, hashed: str | None) -> bool:
@@ -80,6 +117,17 @@ def require(role: str):
     def checker(user: User = Depends(current_user)) -> User:
         if ROLE_RANK.get(user.role, -1) < ROLE_RANK[role]:
             raise HTTPException(status.HTTP_403_FORBIDDEN, "Insufficient role")
+        return user
+
+    return checker
+
+
+def require_perm(*perms: str):
+    """Dependency: the current user must have one of ``perms`` (admins always pass)."""
+
+    def checker(user: User = Depends(current_user)) -> User:
+        if not has_perm(user, *perms):
+            raise HTTPException(status.HTTP_403_FORBIDDEN, "Insufficient permissions")
         return user
 
     return checker

@@ -3,6 +3,7 @@ import { CheckCircle2, ChevronDown, ImagePlus, PlugZap, RefreshCw, RotateCcw, Sh
 import { Button, Field, inputClass } from '../components/ui';
 import { useI18n } from '../lib/i18n';
 import { api } from '../lib/api';
+import { useFetch } from '../lib/useFetch';
 
 function Toggle({ checked, onChange, label, hint }) {
   return (
@@ -26,6 +27,35 @@ function Section({ title, description, children }) {
       </div>
       <div className="space-y-4">{children}</div>
     </section>
+  );
+}
+
+const COUNTRY_NAMES = { DE: ['Deutschland', 'Germany'], AT: ['Österreich', 'Austria'], CH: ['Schweiz', 'Switzerland'] };
+
+/** Which public holidays the calendar shows: per country off / nationwide / one state or canton. */
+function HolidaySettings({ value, onChange }) {
+  const { t, lang } = useI18n();
+  const { data: regions } = useFetch('/events/holiday-regions');
+  const current = (country) => value.find((v) => v.split('-')[0] === country);
+  const setCountry = (country, v) => onChange([...value.filter((x) => x.split('-')[0] !== country), ...(v ? [v] : [])]);
+  return (
+    <Section title={t('settings_holidays')} description={t('settings_holidays_hint')}>
+      {Object.entries(COUNTRY_NAMES).map(([c, names]) => {
+        const cur = current(c);
+        return (
+          <div key={c} className="grid items-center gap-2 sm:grid-cols-[180px_minmax(0,1fr)]">
+            <label className="flex items-center gap-2 font-medium">
+              <input type="checkbox" checked={Boolean(cur)} onChange={(e) => setCountry(c, e.target.checked ? c : null)} className="h-4 w-4 accent-[var(--brand)]" />
+              {names[lang === 'en' ? 1 : 0]}
+            </label>
+            <select disabled={!cur} className={inputClass} value={cur || c} onChange={(e) => setCountry(c, e.target.value)}>
+              <option value={c}>{t('settings_holidays_nationwide')}</option>
+              {(regions?.[c] || []).map((r) => <option key={r.code} value={`${c}-${r.code}`}>{r.name}</option>)}
+            </select>
+          </div>
+        );
+      })}
+    </Section>
   );
 }
 
@@ -115,6 +145,21 @@ export default function AdminSettings() {
               )}
             </div>
           </div>
+        </div>
+      </Section>
+
+      <HolidaySettings value={form.holiday_regions || []} onChange={set('holiday_regions')} />
+
+      <Section title={t('sso_title')} description={t('sso_hint')}>
+        <Toggle checked={form.sso_enabled} onChange={set('sso_enabled')} label={t('sso_enabled')} hint={t('sso_enabled_hint')} />
+        <div className="grid gap-4 sm:grid-cols-2">
+          <Field label={t('sso_header')} hint={t('sso_header_hint')}>
+            <input className={inputClass} value={form.sso_header || ''} onChange={set('sso_header')} />
+          </Field>
+          <Field label={t('sso_proxies')} hint={t('sso_proxies_hint')}>
+            <input className={inputClass} value={(form.trusted_proxies || []).join(', ')}
+              onChange={(e) => setForm((f) => ({ ...f, trusted_proxies: e.target.value.split(',').map((x) => x.trim()).filter(Boolean) }))} />
+          </Field>
         </div>
       </Section>
 

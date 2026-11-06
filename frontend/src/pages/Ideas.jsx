@@ -6,6 +6,7 @@ import { useI18n } from '../lib/i18n';
 import { useFetch } from '../lib/useFetch';
 import { useAuth } from '../lib/auth';
 import { api } from '../lib/api';
+import { useHashFocus } from '../lib/hashFocus';
 
 export const TOPICS = ['process', 'workplace', 'it', 'safety', 'sustainability', 'other'];
 const STEPS = ['new', 'review', 'planned', 'done'];
@@ -159,7 +160,7 @@ function StatusForm({ idea, onDone }) {
 
 export default function Ideas() {
   const { t, fmtDate } = useI18n();
-  const { user, can } = useAuth();
+  const { user, has } = useAuth();
   const navigate = useNavigate();
   const [status, setStatus] = useState('');
   const [sort, setSort] = useState('top');
@@ -168,6 +169,7 @@ export default function Ideas() {
   const { data, reload } = useFetch('/ideas', { params: { status, sort } }, `${status}:${sort}`);
   const [patched, setPatched] = useState({});
   const ideas = (data || []).map((i) => patched[i.id] || i);
+  useHashFocus(Boolean(data));
   const update = (idea) => idea && setPatched((p) => ({ ...p, [idea.id]: idea }));
 
   const start = () => (user ? setOpen(true) : navigate('/login?next=/ideas'));
@@ -208,7 +210,7 @@ export default function Ideas() {
         {data && !ideas.length && <Empty action={<Button onClick={start}>{t('idea_submit')}</Button>}>{t('ideas_empty')}</Empty>}
         <ul className="space-y-4">
           {ideas.map((idea) => (
-            <li key={idea.id} className="flex gap-5 card p-5">
+            <li key={idea.id} id={`idea-${idea.id}`} className="flex gap-5 card p-5">
               <RatingSummary idea={idea} />
               <div className="min-w-0 flex-1">
                 <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-2">
@@ -233,8 +235,8 @@ export default function Ideas() {
                   <span>{relativeDay(t, idea.created_at)}</span>
                   <StarInput idea={idea} onChange={update} />
                   <span className="ml-auto flex gap-1">
-                    {can('editor') && <Button variant="ghost" className="px-3 py-1 text-sm" onClick={() => setEditing(idea)}>{t('idea_set_status')}</Button>}
-                    {user && (idea.mine || can('editor')) && (
+                    {has('moderate') && <Button variant="ghost" className="px-3 py-1 text-sm" onClick={() => setEditing(idea)}>{t('idea_set_status')}</Button>}
+                    {user && (idea.mine || has('moderate')) && (
                       <button type="button" onClick={() => remove(idea)} aria-label={t('delete')} className="rounded p-1.5 hover:bg-surface-2 hover:text-alert"><Trash2 size={16} /></button>
                     )}
                   </span>

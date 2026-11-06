@@ -62,3 +62,20 @@ export async function uploadImage(file, path = '/images') {
   form.append('file', file);
   return api(path, { method: 'POST', form });
 }
+
+/** Download a file from a signed-in API endpoint (e.g. a CSV report) and save it in the browser. */
+export async function downloadFile(path, filename) {
+  const headers = {};
+  const token = getToken();
+  if (token) headers.Authorization = `Bearer ${token}`;
+  const res = await fetch(new URL(`/api${path}`, window.location.origin), { headers });
+  if (!res.ok) throw new ApiError(res.status, res.statusText);
+  const url = URL.createObjectURL(await res.blob());
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = filename;
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  setTimeout(() => URL.revokeObjectURL(url), 1000);
+}

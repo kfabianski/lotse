@@ -1,20 +1,28 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { RefreshCw, Trash2, Upload, UserPlus, Plus } from 'lucide-react';
 import FloorPlan from '../components/FloorPlan';
 import RoomEditor from '../components/RoomEditor';
 import AdminSettings from './AdminSettings';
 import AdminDepartments from './AdminDepartments';
+import AdminTrainings from './AdminTrainings';
+import AdminQuickLinks from './AdminQuickLinks';
+import AdminPermissions, { ROLES } from './AdminPermissions';
+import LdapSyncDialog from './AdminLdapSync';
 import { Avatar, Button, Field, Modal, inputClass } from '../components/ui';
 import { useI18n } from '../lib/i18n';
 import { useFetch } from '../lib/useFetch';
 import { useAuth } from '../lib/auth';
 import { api, uploadImage } from '../lib/api';
 
-const ROLES = ['user', 'editor', 'admin'];
 
 function UserForm({ user, locations, onDone }) {
   const { t, lang } = useI18n();
+  const { can } = useAuth();
   const departments = useFetch('/departments');
+  const config = useFetch('/auth/config', undefined, 'auth-config');
+  // LDAP is leading: these fields come from the directory and are overwritten at every sign-in/sync.
+  const fromLdap = Boolean(user && user.auth_source === 'ldap' && config.data?.ldap_enabled);
   const isNew = !user;
   const [form, setForm] = useState(() => ({
     username: '', password: '', email: user?.email || '', role: user?.role || 'user',
@@ -29,6 +37,7 @@ function UserForm({ user, locations, onDone }) {
     e.preventDefault();
     const body = { ...form, email: form.email || null, start_date: form.start_date || null, seat_id: Number(form.seat_id) };
     if (!body.password) delete body.password;
+    if (!can('admin')) delete body.role;  // roles and permissions: admins only
     try {
       if (isNew) {
         const { seat_id, is_active, show_in_directory, ...create } = body;
@@ -48,20 +57,20 @@ function UserForm({ user, locations, onDone }) {
     <form onSubmit={submit} className="grid gap-4 sm:grid-cols-2">
       {isNew && <Field label={t('username')}><input required pattern="[A-Za-z0-9._\-]+" className={inputClass} value={form.username} onChange={set('username')} /></Field>}
       {local && <Field label={t('password')} hint={t('password_min')}><input type="password" minLength={8} required={isNew} autoComplete="new-password" className={inputClass} value={form.password} onChange={set('password')} /></Field>}
-      <Field label={t('first_name')}><input className={inputClass} value={form.first_name} onChange={set('first_name')} /></Field>
-      <Field label={t('last_name')}><input className={inputClass} value={form.last_name} onChange={set('last_name')} /></Field>
-      <Field label={t('email')}><input type="email" className={inputClass} value={form.email} onChange={set('email')} /></Field>
-      <Field label={t('extension')}><input className={inputClass} value={form.phone_ext} onChange={set('phone_ext')} /></Field>
-      <Field label={t('department')}>
-        <select className={inputClass} value={form.department} onChange={set('department')}>
+      <Field label={t('first_name')} hint={fromLdap ? t('from_ldap') : undefined}><input disabled={fromLdap} className={inputClass} value={form.first_name} onChange={set('first_name')} /></Field>
+      <Field label={t('last_name')} hint={fromLdap ? t('from_ldap') : undefined}><input disabled={fromLdap} className={inputClass} value={form.last_name} onChange={set('last_name')} /></Field>
+      <Field label={t('email')} hint={fromLdap ? t('from_ldap') : t('email_unique')}><input type="email" disabled={fromLdap} className={inputClass} value={form.email} onChange={set('email')} /></Field>
+      <Field label={t('extension')} hint={fromLdap ? t('from_ldap') : undefined}><input disabled={fromLdap} className={inputClass} value={form.phone_ext} onChange={set('phone_ext')} /></Field>
+      <Field label={t('department')} hint={fromLdap ? t('from_ldap') : undefined}>
+        <select disabled={fromLdap} className={inputClass} value={form.department} onChange={set('department')}>
           <option value="">{t('no_department')}</option>
           {(departments.data || []).map((d) => <option key={d.id} value={d.name}>{d.name}</option>)}
           {form.department && departments.data && !departments.data.some((d) => d.name === form.department) && <option value={form.department}>{form.department}</option>}
         </select>
       </Field>
-      <Field label={t('position')}><input className={inputClass} value={form.position} onChange={set('position')} /></Field>
-      <Field label={t('role')}>
-        <select className={inputClass} value={form.role} onChange={set('role')}>
+      <Field label={t('position')} hint={fromLdap ? t('from_ldap') : undefined}><input disabled={fromLdap} className={inputClass} value={form.position} onChange={set('position')} /></Field>
+      <Field label={t('role')} hint={can('admin') ? t('perm_role_hint') : t('perm_admin_only')}>
+        <select disabled={!can('admin')} className={inputClass} value={form.role} onChange={set('role')}>
           {ROLES.map((r) => <option key={r} value={r}>{t(`role_${r}`)}</option>)}
         </select>
       </Field>
@@ -95,7 +104,7 @@ function UserForm({ user, locations, onDone }) {
 
 function UsersTab({ locations, reloadLocations }) {
   const { t } = useI18n();
-  const { user: me } = useAuth();
+  const { user: me, can } = useAuth();
   const { data, reload } = useFetch('/users', { params: { include_hidden: true } }, 'admin-users');
   const [editing, setEditing] = useState(undefined); // undefined = closed, null = new
   const [note, setNote] = useState('');
@@ -103,16 +112,8 @@ function UsersTab({ locations, reloadLocations }) {
   const rows = (data || []).filter((u) => !filter || `${u.full_name} ${u.username} ${u.department}`.toLowerCase().includes(filter.toLowerCase()));
 
   const done = () => { setEditing(undefined); reload(); reloadLocations(); };
-  const sync = async () => {
-    setNote('');
-    try {
-      const res = await api('/users/ldap-sync', { method: 'POST' });
-      setNote(t('ldap_synced', { n: res.synced }));
-      reload();
-    } catch (err) {
-      setNote(t('error_generic', { msg: err.message }));
-    }
-  };
+  const [syncOpen, setSyncOpen] = useState(false);
+  const sync = () => { setNote(''); setSyncOpen(true); };
   const avatar = async (u, file) => { await uploadImage(file, `/users/${u.id}/avatar`); reload(); };
   const remove = async (u) => {
     if (!window.confirm(t('confirm_delete'))) return;
@@ -125,7 +126,7 @@ function UsersTab({ locations, reloadLocations }) {
       <div className="flex flex-wrap items-center gap-2">
         <input value={filter} onChange={(e) => setFilter(e.target.value)} placeholder={t('search')} className={`${inputClass} max-w-xs`} />
         <div className="ml-auto flex gap-2">
-          <Button variant="outline" onClick={sync}><RefreshCw size={17} />{t('ldap_sync')}</Button>
+          {can('admin') && <Button variant="outline" onClick={sync}><RefreshCw size={17} />{t('ldap_sync')}</Button>}
           <Button onClick={() => setEditing(null)}><UserPlus size={17} />{t('new_user')}</Button>
         </div>
       </div>
@@ -154,14 +155,15 @@ function UsersTab({ locations, reloadLocations }) {
                 <td className="px-4 py-2.5 text-sm text-muted">{u.auth_source === 'ldap' ? 'LDAP' : t('local_account')}</td>
                 <td className="px-4 py-2.5 text-sm">{u.seat ? `${u.seat.location_code}, ${u.seat.label}` : '–'}</td>
                 <td className="px-4 py-2.5 text-right">
-                  <Button variant="ghost" className="px-3 py-1" onClick={() => setEditing(u)}>{t('edit')}</Button>
-                  {u.id !== me.id && <button type="button" onClick={() => remove(u)} aria-label={t('delete')} className="rounded p-1.5 text-muted hover:text-alert"><Trash2 size={16} /></button>}
+                  {(can('admin') || u.role === 'user') && <Button variant="ghost" className="px-3 py-1" onClick={() => setEditing(u)}>{t('edit')}</Button>}
+                  {u.id !== me.id && (can('admin') || u.role === 'user') && <button type="button" onClick={() => remove(u)} aria-label={t('delete')} className="rounded p-1.5 text-muted hover:text-alert"><Trash2 size={16} /></button>}
                 </td>
               </tr>
             ))}
           </tbody>
         </table>
       </div>
+      {syncOpen && <LdapSyncDialog onClose={() => setSyncOpen(false)} onDone={() => { reload(); reloadLocations(); }} />}
       {editing !== undefined && (
         <Modal wide title={editing ? editing.full_name : t('new_user')} onClose={() => setEditing(undefined)}>
           <UserForm user={editing} locations={locations} onDone={done} />
@@ -307,13 +309,21 @@ function LocationsTab({ locations, reload }) {
 
 export default function Admin() {
   const { t } = useI18n();
-  const [tab, setTab] = useState(() => new URLSearchParams(window.location.search).get('tab') || 'users');
+  const [params] = useSearchParams();
+  const { can, has } = useAuth();
+  const tabs = [['users', t('admin_users'), has('people')], ['departments', t('admin_departments'), has('people')],
+    ['locations', t('admin_locations'), has('locations')], ['trainings', t('admin_trainings'), has('trainings')],
+    ['quicklinks', t('admin_quicklinks'), has('quicklinks')], ['permissions', t('admin_permissions'), can('admin')],
+    ['settings', t('admin_settings'), can('admin')]].filter((x) => x[2]);
+  const [wanted, setTab] = useState(() => params.get('tab') || 'users');
+  const tab = tabs.some((x) => x[0] === wanted) ? wanted : tabs[0]?.[0];
+  useEffect(() => { if (params.get('tab')) setTab(params.get('tab')); }, [params]);
   const locations = useFetch('/locations');
   return (
     <div>
       <h1 className="font-display text-[2rem] font-semibold leading-tight">{t('nav_admin')}</h1>
-      <div role="tablist" className="mt-6 flex gap-6 border-b border-line">
-        {[['users', t('admin_users')], ['departments', t('admin_departments')], ['locations', t('admin_locations')], ['settings', t('admin_settings')]].map(([key, label]) => (
+      <div role="tablist" className="thin-scroll mt-6 flex gap-6 overflow-x-auto border-b border-line">
+        {tabs.map(([key, label]) => (
           <button key={key} type="button" role="tab" aria-selected={tab === key} onClick={() => setTab(key)}
             className={`-mb-px border-b-[3px] pb-2.5 font-medium ${tab === key ? 'border-signal text-ink' : 'border-transparent text-muted hover:text-ink'}`}>
             {label}
@@ -325,6 +335,9 @@ export default function Admin() {
         {locations.data && tab === 'locations' && <LocationsTab locations={locations.data} reload={locations.reload} />}
         {tab === 'settings' && <AdminSettings />}
         {tab === 'departments' && <AdminDepartments />}
+        {tab === 'trainings' && <AdminTrainings />}
+        {tab === 'quicklinks' && <AdminQuickLinks />}
+        {tab === 'permissions' && <AdminPermissions />}
       </div>
     </div>
   );

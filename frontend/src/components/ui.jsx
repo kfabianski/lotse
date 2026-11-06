@@ -81,7 +81,7 @@ export function Field({ label, hint, children, className = '' }) {
 export const inputClass = 'w-full rounded-lg border border-line bg-surface px-3 py-2 text-ink placeholder:text-muted/70 focus:border-brand focus:outline-none';
 
 /** Dialog: one scroll area (the body) – the header stays put and the <dialog> itself never scrolls.
- *  size: 'md' (default), 'lg' or 'xl'; `wide` is kept as an alias for 'xl'. */
+ *  size: 'md' (default), 'lg', 'xl' or 'full'; `wide` is kept as an alias for 'xl'. */
 export function Modal({ title, onClose, children, wide = false, size = wide ? 'xl' : 'md' }) {
   const ref = useRef(null);
   const { t } = useI18n();
@@ -92,7 +92,7 @@ export function Modal({ title, onClose, children, wide = false, size = wide ? 'x
   }, []);
   return (
     <dialog ref={ref} onCancel={(e) => { e.preventDefault(); onClose(); }}
-      className={`m-auto w-[calc(100%-2rem)] ${{ md: 'max-w-lg', lg: 'max-w-2xl', xl: 'max-w-3xl' }[size]} card max-h-[calc(100dvh-2rem)] flex-col overflow-hidden p-0 text-ink shadow-2xl backdrop:bg-black/40 open:flex`}>
+      className={`m-auto w-[calc(100%-2rem)] ${{ md: 'max-w-lg', lg: 'max-w-2xl', xl: 'max-w-3xl', full: 'max-w-6xl' }[size]} card max-h-[calc(100dvh-2rem)] flex-col overflow-hidden p-0 text-ink shadow-2xl backdrop:bg-black/40 open:flex`}>
       <div className="flex shrink-0 items-center justify-between border-b border-line px-6 py-4">
         <h2 className="font-display text-xl font-semibold">{title}</h2>
         <button type="button" onClick={onClose} aria-label={t('close')} className="rounded-md p-1 text-muted hover:bg-surface-2">

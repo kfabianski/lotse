@@ -19,9 +19,18 @@ class Settings(BaseSettings):
     cors_origins: list[str] = ["http://localhost:5173"]
     max_upload_mb: int = 8
     max_pdf_mb: int = 25
+    max_video_mb: int = 500  # training videos
+    training_dir: Path = BACKEND_DIR / "data" / "trainings"  # NOT public: served only via signed links
     # True: everyone on the network can read everything without signing in; sign-in is only needed
     # to post or edit. False: the whole intranet requires sign-in.
     public_read: bool = True
+    # Public holidays shown in the calendar: country ("DE") or country-region ("DE-NI", "AT-9", "CH-ZH").
+    holiday_regions: list[str] = ["DE", "AT", "CH"]
+    # Windows sign-in (SSO): a reverse proxy with Windows authentication (e.g. IIS) passes the signed-in
+    # Windows user in a header. Only requests from the trusted proxy addresses are believed.
+    sso_enabled: bool = False
+    sso_header: str = "X-Remote-User"
+    trusted_proxies: list[str] = ["127.0.0.1", "::1"]
 
     # LDAP / Active Directory. With ldaps:// (or start_tls) the server certificate is verified.
     ldap_enabled: bool = False
@@ -52,7 +61,7 @@ class Settings(BaseSettings):
 # Settings an administrator may change in the web UI; stored in the app_settings table and applied
 # on top of the .env values at startup and on every save.
 EDITABLE = {
-    "company_name", "public_read", "login_image_url", "ldap_enabled", "ldap_host", "ldap_port", "ldap_mode", "ldap_ca_pem",
+    "company_name", "public_read", "login_image_url", "holiday_regions", "sso_enabled", "sso_header", "trusted_proxies", "ldap_enabled", "ldap_host", "ldap_port", "ldap_mode", "ldap_ca_pem",
     "ldap_verify_cert", "ldap_bind_dn", "ldap_bind_password", "ldap_base_dn", "ldap_user_filter",
     "ldap_sync_filter", "ldap_admin_group", "ldap_departments_auto", "ldap_editor_group", "ldap_attr_username", "ldap_attr_first_name",
     "ldap_attr_last_name", "ldap_attr_email", "ldap_attr_department", "ldap_attr_title", "ldap_attr_phone",
@@ -62,6 +71,7 @@ SECRET = {"ldap_bind_password"}  # never sent back to the browser
 
 settings = Settings()
 settings.upload_dir.mkdir(parents=True, exist_ok=True)
+settings.training_dir.mkdir(parents=True, exist_ok=True)
 if not settings.secret_key:
     _key_file = BACKEND_DIR / "data" / ".secret_key"
     _key_file.parent.mkdir(parents=True, exist_ok=True)

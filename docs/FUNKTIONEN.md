@@ -17,19 +17,39 @@ Diese Beschreibung erklärt, was Lotse kann und wer was darf. Installation und K
 10. [Ideenbox](#10-ideenbox)
 11. [Verwaltung](#11-verwaltung)
 12. [LDAP / Active Directory](#12-ldap--active-directory)
+13. [Schulungen und Pflichtlektüre](#13-schulungen-und-pflichtlektüre)
 
 ---
 
 ## 1. Rollen und Anmeldung
 
-| Rolle | Darf |
+Der **Administrator** vergibt unter **Verwaltung → Rollen & Rechte** jeder Person, die schon im System ist,
+eine Rolle und – zusätzlich zur Rolle – einzelne Rechte.
+
+| Rolle | Darf (zusätzlich zum Lesen) |
 |---|---|
-| **Besucher** (nicht angemeldet) | Alles lesen: Artikel, Veranstaltungen, Dokumente, Pinnwand, Ideen, Verzeichnis und Lageplan. Gilt nur, wenn *Lesen ohne Anmeldung* eingeschaltet ist. |
-| **Mitarbeitende** | Zusätzlich: Aushänge an der Pinnwand und Ideen einreichen (auch anonym), eigene löschen, für Ideen stimmen, bei Veranstaltungen zusagen, Profilfoto, Durchwahl und Passwort ändern. |
-| **Redaktion** | Zusätzlich: Artikel in allen Bereichen schreiben, bearbeiten, löschen; Entwürfe sehen; Beiträge für den Slider auswählen; Fotos und PDFs anhängen; Status und Antwort bei Ideen setzen; fremde Aushänge entfernen. |
-| **Administrator** | Zusätzlich: Benutzer, Rollen, Fotos und Plätze verwalten; Abteilungen pflegen; Etagen und Lager mit Grundrissen anlegen; Einstellungen und LDAP konfigurieren. |
+| **Besucher** (nicht angemeldet) | nur lesen – wenn *Lesen ohne Anmeldung* eingeschaltet ist; keine Schulungen |
+| **Mitarbeitende** | Aushänge und Ideen (auch anonym), Sterne vergeben, bei Veranstaltungen zusagen, eigene Schulungen bestätigen, Profil |
+| **Autor:in** | zusätzlich **eigene** Artikel und Veranstaltungen schreiben, bearbeiten, löschen (eigene Entwürfe) |
+| **Moderator:in** | wie Autor:in, dazu **Schulungen verwalten**, **Ideen & Pinnwand moderieren**, **Schnellzugriff** pflegen |
+| **Redaktion** | wie Moderator:in, dazu **alle** Artikel bearbeiten, alle Entwürfe sehen, Slider, Versionen wiederherstellen |
+| **Administrator** | alles, auch die **Systemeinstellungen** |
+
+**Einzelne Rechte**, die der Administrator pro Person zusätzlich einschalten kann: *Eigene Artikel &
+Veranstaltungen*, *Alle Artikel & Veranstaltungen*, *Schulungen verwalten*, *Ideen & Pinnwand moderieren*,
+*Schnellzugriff pflegen*, *Etagen, Räume & Plätze*, *Personen & Abteilungen* (nur Konten **ohne** besondere
+Rechte; keine Rollen- oder Rechtevergabe).
+
+**Nie übertragbar** – nur Administratoren: allgemeine Einstellungen, **LDAP**, Windows-Anmeldung,
+**Rollen & Rechte**, **LDAP-Abgleich**. Wer kein Administrator ist, kann sich und anderen keine Rechte geben.
+Die Verwaltung zeigt jeder Person nur die Bereiche, für die sie Rechte hat.
 
 - **Anmeldung**: oben rechts über *Anmelden*. Lokale Konten oder Windows-Konto (LDAP).
+- **Windows-Anmeldung (SSO)**: Ist sie eingerichtet, werden Mitarbeitende mit LDAP-Konto am Firmen-PC
+  **automatisch erkannt** – ohne Passwort (siehe Kapitel 12). Nach *Abmelden* geschieht das erst wieder,
+  wenn man auf *Mit Windows-Konto anmelden* klickt.
+- **Schutz vor Passwort-Raten**: Nach **5 falschen Passwörtern** für einen Benutzernamen muss man
+  **30 Sekunden** warten; nach 20 Fehlversuchen von einem Rechner gilt dasselbe für diesen Rechner.
 - Wer ohne Anmeldung etwas schreiben möchte (z. B. *Aushang erstellen*), wird zur Anmeldung geführt und
   danach auf dieselbe Seite zurückgebracht.
 - Mit *Lesen ohne Anmeldung = aus* verlangt das ganze Portal eine Anmeldung.
@@ -42,13 +62,28 @@ Diese Beschreibung erklärt, was Lotse kann und wer was darf. Installation und K
   Avatar mit Profil und Abmelden.
 - **Zweisprachig**: Alle Bedienelemente auf Deutsch und Englisch; Artikel haben einen deutschen und einen
   englischen Text. Fehlt die englische Fassung, wird die deutsche gezeigt.
-- **Suche**: findet Artikel (Titel, Kurztext, Text) und Personen (Name, Abteilung, Position, E-Mail, Durchwahl).
+- **Suche** über alles, was die Person sehen darf, gruppiert nach Bereichen:
+  - **Personen** (Vor- und Nachname auch zusammen, Abteilung, Position, E-Mail, Durchwahl, Platz z. B. „1OG-01“),
+  - **Artikel und Veranstaltungen** (Titel, Kurztext, Text, Ort – mit Textauszug zur Fundstelle),
+  - **Dokumente** (PDF-Name und Artikel; öffnen sich direkt im Betrachter),
+  - **Räume** aus dem Lageplan (Name, Ausstattung, Buchungs-E-Mail, Abteilung) – Klick öffnet die Etage,
+  - **Pinnwand** und **Ideen** (Klick springt zum Eintrag; anonyme Ideen bleiben anonym),
+  - **Schnellzugriff**-Kacheln,
+  - **Schulungen** nur für Angemeldete und nur die, die sie öffnen dürfen (zugewiesen oder für alle freiwillig).
+  Groß-/Kleinschreibung und Akzente spielen keine Rolle: *yilmaz* findet *Yılmaz*, *schroeder* findet *Schröder*,
+  *strasse* findet *Straße*. Mehrere Wörter müssen alle vorkommen (z. B. „Mehmet Yılmaz“). Entwürfe sehen nur
+  Redaktion bzw. die eigenen Autor:innen.
 
 ## 3. Startseite
 
+- **Offene Schulungen** (nur angemeldet, nur wenn etwas offen ist): Hinweis ganz oben mit Anzahl und Titeln,
+  rot markiert, wenn eine Schulung überfällig ist.
 - **Slider** über die ganze Breite mit den Beiträgen, die die Redaktion als *Im Slider zeigen* markiert hat
   (z. B. *Weihnachtsfeier 2026*). Wechselt automatisch, hält beim Überfahren mit der Maus an, lässt sich
   pausieren und mit Pfeilen steuern. Bei „Bewegung reduzieren“ im Betriebssystem läuft er nicht von selbst.
+- **Schnellzugriff** unter dem Slider: Kacheln zu Firmenprogrammen (Zeiterfassung, ERP, Helpdesk …),
+  Sammel-Postfächern (Buchhaltung, Rechnungen, IT-Support – mit Knopf zum Kopieren der Adresse) und wichtigen
+  Nummern. Die Kacheln pflegt die Verwaltung.
 - **Neuigkeiten** und **Neue Produkte**: der neueste Beitrag groß, die nächsten daneben.
 - **Nächste Termine** mit Anzahl der Zusagen.
 - **Neu im Team**: Kolleg:innen der letzten 90 Tage – ein Klick zeigt ihren Platz im Lageplan.
@@ -72,6 +107,12 @@ Diese Beschreibung erklärt, was Lotse kann und wer was darf. Installation und K
   Kalender-Abo). Bis dahin sieht ihn nur die Redaktion, markiert mit *Geplant für …*. Der Knopf heißt dann
   *Einplanen* statt *Veröffentlichen*.
 - Entwürfe sieht nur die Redaktion.
+- **Versionen** (Historie): Jede Änderung eines Artikels wird als Version gespeichert – mit Datum, Person und
+  optionalem **Änderungsgrund** (Feld beim Speichern). Unter dem Artikel steht die Liste der Versionen; ein Klick
+  zeigt, was sich gegenüber der Vorversion geändert hat (Titel, Kurztext, Text zeilenweise, hinzugefügte und
+  entfernte Dokumente). Die Historie ist so öffentlich wie der Artikel selbst – auch ohne Anmeldung, wenn
+  *Lesen ohne Anmeldung* eingeschaltet ist. Die Redaktion kann eine alte Version **wiederherstellen**; der
+  vorherige Stand bleibt dabei in der Historie (wichtig für ISO 9001, *Lenkung dokumentierter Information*).
 
 ## 5. Veranstaltungen und Kalender
 
@@ -80,6 +121,12 @@ Drei Ansichten unter **Veranstaltungen**:
 - **Demnächst**: Karten mit Datum, Uhrzeit, Ort, Kurztext und Teilnehmenden. Mit **„Ich bin dabei“** sagen
   angemeldete Mitarbeitende zu (noch einmal klicken = absagen).
 - **Kalender**: Monatsansicht (Woche beginnt Montag). Ein Klick auf einen Tag zeigt dessen Termine.
+- **Gesetzliche Feiertage** für **Deutschland, Österreich und die Schweiz** – vom letzten Jahr bis zehn Jahre im
+  Voraus, auch die beweglichen (Ostern, Pfingsten, Fronleichnam …). Feiertage sind rot markiert, mit Namen im Tag
+  und Länderkürzeln (**DE**, **AT**, **CH**) in der Monatsliste; derselbe Feiertag in mehreren Ländern steht
+  nur einmal da. Auch der kleine Kalender auf der Startseite zeigt sie. Welche Länder und ob zusätzlich die
+  Feiertage eines Bundeslands bzw. Kantons erscheinen, legt die Verwaltung fest. Die Daten werden lokal
+  berechnet (Python-Paket `holidays`) – keine Internetverbindung nötig.
 - **Rückblick**: vergangene Veranstaltungen mit Anzahl der Teilnehmenden und Fotos.
 
 **Kalender abonnieren** kopiert einen Link (`/api/events.ics`), den man in Outlook unter
@@ -141,7 +188,8 @@ Drei Ansichten unter **Veranstaltungen**:
 
 - **Idee einreichen** mit Thema (*Abläufe, Arbeitsplatz, IT & Software, Sicherheit, Nachhaltigkeit,
   Sonstiges*), einem Satz als Titel und einer Beschreibung.
-- **Anonym einreichen** möglich: Der Name ist öffentlich verborgen, die Redaktion sieht ihn für Rückfragen.
+- **Anonym einreichen** möglich: Der Name wird dann **gar nicht gespeichert** – weder Kolleg:innen noch Redaktion oder
+  Verwaltung können sehen, von wem die Idee stammt. Eine anonyme Idee kann deshalb nur die Redaktion löschen.
 - **Bewerten mit Sternen**: jede angemeldete Person gibt einer Idee 1 bis 5 Sterne (nicht der eigenen);
   erneuter Klick auf denselben Stern nimmt die Bewertung zurück. Jede Idee zeigt den **Durchschnitt** und die
   Anzahl der Bewertungen. Sortierung nach *Beste Bewertung* (Ideen mit wenigen Bewertungen werden vorsichtig
@@ -155,6 +203,10 @@ Nur für Administratoren, über **Verwaltung** in der Navigation:
 
 - **Benutzer**: anlegen, bearbeiten, Rolle, Abteilung (Auswahl aus der Liste), Position, Durchwahl,
   Eintrittsdatum, Platz, aktiv / im Verzeichnis sichtbar, Foto hochladen (Klick auf das Bild), löschen.
+  Jede **E-Mail-Adresse** darf nur einmal vorkommen. Bei LDAP-Konten sind Name, E-Mail, Abteilung,
+  Position und Durchwahl gesperrt (*aus LDAP*) – sie werden im Verzeichnis gepflegt.
+- **Rollen & Rechte** (nur Administrator): Übersicht, welche Rolle welche Rechte hat; darunter alle Personen mit
+  Rolle und zusätzlichen Rechten zum Anklicken (Filter *Nur Personen mit Rechten*).
 - **Abteilungen**: Name, Farbe und Reihenfolge; neue Abteilungen anlegen; Umbenennen nimmt alle Personen
   mit; löschen nur, wenn niemand mehr zugeordnet ist. Kennzeichnung *aus LDAP* oder *manuell*.
 - **Etagen & Lager**: neue Etage oder Halle anlegen, **Grundriss hochladen** (PNG, JPG oder SVG),
@@ -167,7 +219,13 @@ Nur für Administratoren, über **Verwaltung** in der Navigation:
   Besprechungsräumen **Plätze, Ausstattung und Raum-E-Mail**; Position und Größe auch als Zahlen.
   **Raster** (abschaltbar, *Alt* = frei) und der hochgeladene **Grundriss im Hintergrund** helfen beim
   Nachzeichnen. Die Plätze werden zur Orientierung angezeigt; Änderungen erscheinen sofort im Lageplan.
-- **Einstellungen**: Firmenname, *Lesen ohne Anmeldung*, LDAP (siehe unten).
+- **Schulungen**: siehe [Schulungen und Pflichtlektüre](#13-schulungen-und-pflichtlektüre).
+- **Schnellzugriff**: Kacheln der Startseite anlegen, bearbeiten, ausblenden und sortieren – Titel und
+  Untertitel Deutsch/Englisch, **Link, E-Mail-Adresse oder Telefon** (`https://…`, `buchhaltung@firma.de`,
+  `tel:100` oder ein Pfad im Portal wie `/documents`), Symbol und Farbe, mit Vorschau. Andere Adressarten
+  (z. B. `javascript:`) werden abgelehnt.
+- **Einstellungen**: Firmenname, *Lesen ohne Anmeldung*, **Feiertage im Kalender** (je Land aus/landesweit oder
+  inklusive eines Bundeslands/Kantons, z. B. Niedersachsen oder Zürich), LDAP (siehe unten).
 
 ## 12. LDAP / Active Directory
 
@@ -192,6 +250,68 @@ Unter **Verwaltung → Einstellungen → LDAP / Active Directory**:
 - **Abteilungen aus LDAP übernehmen**: an = unbekannte Abteilungen aus dem Attribut `department` werden
   automatisch angelegt (Schreibweise einer vorhandenen Abteilung wird beibehalten); aus = nur die von Hand
   gepflegte Liste gilt.
-- **Aus LDAP synchronisieren** importiert alle aktiven Konten auf einmal.
+- **LDAP ist führend.** Personen werden über den **Benutzernamen** und die **E-Mail-Adresse** erkannt – nie über
+  den Namen (der unterschiedlich geschrieben sein kann). Ein lokales Konto mit derselben E-Mail-Adresse wird
+  beim ersten Anmelden **verknüpft** statt doppelt angelegt (Platz, Schulungen, Bewertungen bleiben). Konten
+  mit besonderen Rechten (z. B. ein lokaler Administrator) werden **nie automatisch** verknüpft.
+- **LDAP-Abgleich** (Verwaltung → Benutzer, nur Administrator): liest das Verzeichnis und zeigt **vorher**, was
+  sich ändern würde – zum Abhaken:
+  - *Neue Personen* aus dem Verzeichnis anlegen;
+  - *Bestehende Konten verknüpfen* (gleiche E-Mail-Adresse oder gleicher Benutzername);
+  - *Daten aktualisieren* (Name, Abteilung, Position …) und wieder aktiv setzen;
+  - *Nicht mehr im Verzeichnis*: LDAP-Konten **deaktivieren** (nicht löschen);
+  - *Abteilungen*: neue aus dem Verzeichnis werden angelegt; Abteilungen, die es dort nicht gibt, können
+    entfernt werden, sobald niemand mehr darin ist.
+  Doppelte E-Mail-Adressen im Verzeichnis werden angezeigt und nicht angelegt.
+- **Abteilungen aus LDAP** lassen sich in Lotse nicht umbenennen, solange *Abteilungen aus LDAP übernehmen*
+  an ist – so entsteht keine Mischung aus Verzeichnis- und Handpflege.
+- Eine Rolle, die der Administrator in Lotse vergeben hat, bleibt beim Anmelden erhalten. Rollen aus den
+  LDAP-Gruppen (Administratoren, Redaktion) werden bei jeder Anmeldung neu geprüft und auch wieder entzogen.
+- **Windows-Anmeldung (SSO)** – *Verwaltung → Einstellungen → Windows-Anmeldung*: Lotse läuft hinter einem
+  Webserver mit Windows-Authentifizierung (z. B. **IIS**), der den angemeldeten Windows-Benutzer in einem Header
+  (Standard `X-Remote-User`) weitergibt. Lotse glaubt diesem Header **nur** von den eingetragenen Adressen
+  (*Vertrauenswürdige Webserver*, z. B. `127.0.0.1`). Nur LDAP-Konten melden sich so an; lokale Konten
+  (z. B. der Notfall-Administrator) immer mit Passwort. Einrichtung: siehe README.
 - Bei einer **IP-Adresse** muss das Zertifikat des Servers diese IP enthalten – sonst den Hostnamen eintragen.
 - Lokale Konten (z. B. ein Notfall-Administrator) funktionieren weiterhin.
+
+## 13. Schulungen und Pflichtlektüre
+
+Unterweisungen, Schulungen und Pflichtlektüre (z. B. Datenschutz, KI-Richtlinie, Stapler, Brandschutz) sowie
+allgemeine Anleitungen. Es gibt zwei Arten der Sichtbarkeit, frei kombinierbar:
+
+- **Für alle freiwillig verfügbar** – allgemeine Schulungen (z. B. *Besprechungsraum buchen*, *IT-Probleme melden*):
+  jede angemeldete Person sieht sie unter **Freiwillig** und kann sie bestätigen, ohne Pflicht und ohne Frist.
+- **Pflicht für** bestimmte Personen – Fachschulungen: nur die Zugewiesenen sehen sie; für alle anderen sind sie
+  unsichtbar (auch nicht über die Adresse erreichbar).
+
+**Für Mitarbeitende** (Navigation **Schulungen**, nur angemeldet):
+
+- Reiter **Offen** (Pflicht), **Freiwillig** (für alle) und **Erledigt**, mit Fälligkeitsdatum; überfällige
+  Schulungen sind rot markiert. Der Hinweis auf der Startseite zählt nur Pflichtschulungen.
+- Eine Schulung enthält eine Beschreibung und **Unterlagen**: PDFs (öffnen im Portal), **Videos** (MP4/WebM,
+  direkt abspielbar), Bilder und Links.
+- Am Ende: **„Ich habe die Schulung durchgearbeitet und verstanden“** – die Bestätigung wird mit Datum und
+  Uhrzeit gespeichert.
+- Startet die Verwaltung eine **neue Runde** (z. B. jährliche Unterweisung), steht die Schulung wieder unter
+  *Offen* mit dem Hinweis *Neue Runde – bitte erneut bestätigen*.
+
+**Für die Verwaltung** (Verwaltung → **Schulungen**):
+
+- **Neue Schulung** (auch direkt aus *Meine Schulungen* oder dem Benutzermenü): großes Fenster mit Titel und
+  Beschreibung (Deutsch/Englisch) im **Texteditor** – Überschriften H1–H4, fett, kursiv, unterstrichen,
+  durchgestrichen, Textfarbe, Listen, Zitat, Trennlinie, Link; rechts *Aktiv*, *Fällig bis*, Zuweisung und Unterlagen.
+- **Für alle Mitarbeitenden freiwillig verfügbar** (Häkchen) – und/oder **Pflicht für**: *Alle Mitarbeitenden*,
+  **Abteilungen**, **Gruppen**, **Funktionen/Positionen** (Stellenbezeichnung aus dem Profil bzw. LDAP, z. B.
+  *Staplerfahrer*) und/oder **einzelne Personen** – beliebig kombinierbar. Wer neu in eine Abteilung, Gruppe oder
+  Position kommt, bekommt die Schulung automatisch.
+- **Gruppen** (unten auf der Seite) für Zuweisungen, die nicht an Abteilungen hängen, z. B.
+  *Geschäftsführung*, *Ersthelfer*, *Staplerfahrer*.
+- **Unterlagen**: Dateien hineinziehen oder auswählen (PDF bis 25 MB, Video MP4/WebM bis 500 MB, Bilder) oder
+  Links hinzufügen – auch schon vor dem ersten Speichern; sie werden beim Anlegen hochgeladen.
+- **Auswertung**: Fortschritt (*x von y erledigt*), Listen *Noch offen*, *Erledigt* und *Freiwillig erledigt* mit Datum,
+  **CSV-Export** als Nachweis für Audits, **Neue Runde starten** (alle müssen erneut bestätigen).
+- **Sicherheit**: Die Dateien liegen **nicht** im öffentlichen Upload-Ordner, sondern in `backend/data/trainings/`
+  und werden nur über **zeitlich begrenzte, signierte Links** (2 Stunden) an zugewiesene Personen ausgeliefert.
+  Wer eine Schulung nicht zugewiesen hat, sieht sie nicht – auch nicht über die Adresse.
+

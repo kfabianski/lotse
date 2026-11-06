@@ -8,7 +8,7 @@ from app.db import get_db
 from app.models import Article, Attachment, Classified, User
 from app.schemas import (ArticleCard, ArticleIn, ArticleOut, ClassifiedIn, ClassifiedOut, DocumentOut, HomeOut,
                          PersonBrief, PhotoOut)
-from app.security import ROLE_RANK, current_user, rank, reader, require
+from app.security import current_user, has_perm, reader, require_perm
 from app.uploads import save_file, save_image
 
 router = APIRouter(prefix="/api", tags=["content"])
@@ -16,10 +16,16 @@ NEW_PEOPLE_DAYS = 90
 
 
 def _visible(query, user: User | None):
-    """Editors see drafts; everyone else (including anonymous visitors) only published articles."""
-    if rank(user) >= ROLE_RANK["editor"]:
+    """Editors see all drafts, authors their own; everyone else (incl. anonymous visitors) only published articles."""
+    if has_perm(user, "content_all"):
         return query
+    if has_perm(user, "content_own"):
+        return query.filter(or_(Article.live(), Article.author_id == user.id))
     return query.filter(Article.live())
+
+
+def _may_edit(user: User, article: Article) -> bool:
+    return has_perm(user, "content_all") or (has_perm(user, "content_own") and article.author_id == user.id)
 
 
 @router.get("/home", response_model=HomeOut)
@@ -95,9 +101,16 @@ def _get_article(db: Session, article_id: int, user: User | None) -> Article:
     return article
 
 
+def article_out(db: Session, article: Article, viewer: User | None) -> dict:
+    from app.routers.revisions import version_count  # local import avoids a cycle
+    data = ArticleOut.model_validate(article, from_attributes=True).model_dump()
+    data["version"] = version_count(db, article.id)
+    return data
+
+
 @router.get("/articles/{article_id}", response_model=ArticleOut)
 def get_article(article_id: int, user: User | None = Depends(reader), db: Session = Depends(get_db)):
-    return _get_article(db, article_id, user)
+    return article_out(db, _get_article(db, article_id, user), user)
 
 
 def _set_attachments(article: Article, items) -> None:
@@ -106,39 +119,56 @@ def _set_attachments(article: Article, items) -> None:
 
 
 @router.post("/articles", response_model=ArticleOut, status_code=201)
-def create_article(body: ArticleIn, editor: User = Depends(require("editor")), db: Session = Depends(get_db)):
-    data = body.model_dump(exclude={"attachments"})
+def create_article(body: ArticleIn, editor: User = Depends(require_perm("content_own", "content_all")),
+                   db: Session = Depends(get_db)):
+    from app.routers.revisions import record_revision
+    data = body.model_dump(exclude={"attachments", "change_note"})
     data["published_at"] = data["published_at"] or datetime.now()
+    if not has_perm(editor, "content_all"):
+        data["featured"] = False  # the home slider is chosen by the editors
     article = Article(**data, author_id=editor.id)
     _set_attachments(article, body.attachments)
     db.add(article)
+    db.flush()
+    record_revision(db, article, editor, body.change_note or "Erstellt", force=True)
     db.commit()
     db.refresh(article)
-    return article
+    return article_out(db, article, editor)
 
 
 @router.put("/articles/{article_id}", response_model=ArticleOut)
-def update_article(article_id: int, body: ArticleIn, editor: User = Depends(require("editor")),
+def update_article(article_id: int, body: ArticleIn, editor: User = Depends(require_perm("content_own", "content_all")),
                    db: Session = Depends(get_db)):
+    from app.routers.revisions import record_revision
     article = _get_article(db, article_id, editor)
-    for key, value in body.model_dump(exclude={"attachments"}).items():
+    if not _may_edit(editor, article):
+        raise HTTPException(403, "Authors can only edit their own articles")
+    for key, value in body.model_dump(exclude={"attachments", "change_note"}).items():
         if key == "published_at" and value is None:
             continue  # keep the existing date
+        if key == "featured" and not has_perm(editor, "content_all"):
+            continue  # slider stays as the editors set it
         setattr(article, key, value)
     _set_attachments(article, body.attachments)
+    db.flush()
+    record_revision(db, article, editor, body.change_note)
     db.commit()
     db.refresh(article)
-    return article
+    return article_out(db, article, editor)
 
 
 @router.delete("/articles/{article_id}", status_code=204)
-def delete_article(article_id: int, editor: User = Depends(require("editor")), db: Session = Depends(get_db)):
-    db.delete(_get_article(db, article_id, editor))
+def delete_article(article_id: int, editor: User = Depends(require_perm("content_own", "content_all")),
+                   db: Session = Depends(get_db)):
+    article = _get_article(db, article_id, editor)
+    if not _may_edit(editor, article):
+        raise HTTPException(403, "Authors can only delete their own articles")
+    db.delete(article)
     db.commit()
 
 
 @router.post("/files")
-async def upload_file(file: UploadFile = File(...), _: User = Depends(require("editor"))):
+async def upload_file(file: UploadFile = File(...), _: User = Depends(require_perm("content_own", "content_all"))):
     """Article attachment: photo (gallery) or PDF document."""
     return await save_file(file)
 
@@ -188,7 +218,7 @@ def delete_classified(item_id: int, user: User = Depends(current_user), db: Sess
     item = db.get(Classified, item_id)
     if not item:
         raise HTTPException(404, "Notice not found")
-    if item.author_id != user.id and ROLE_RANK[user.role] < ROLE_RANK["editor"]:
+    if item.author_id != user.id and not has_perm(user, "moderate"):
         raise HTTPException(403, "Only the author or an editor can remove this notice")
     db.delete(item)
     db.commit()

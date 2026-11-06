@@ -16,7 +16,8 @@ from datetime import date, datetime, timedelta
 from app.config import settings
 from app.db import Base, SessionLocal, engine
 from app.models import (DEFAULT_DEPARTMENTS, Article, Attachment, Classified, Department, EventRsvp, Idea, IdeaVote, Location,
-                        Room, Seat, User)
+                        QuickLink, Room, Seat, Training, TrainingCompletion, TrainingGroup, TrainingGroupMember,
+                        TrainingMaterial, TrainingTarget, User)
 from app.security import hash_password
 
 random.seed(7)
@@ -649,6 +650,122 @@ def add_demo_rooms(db) -> int:
     return n
 
 
+# ---------------------------------------------------------------------------
+# Quick-access tiles and trainings (Schulungen)
+# ---------------------------------------------------------------------------
+
+DEMO_LINKS = [  # title de, title en, subtitle de, subtitle en, url, icon, color
+    ("Zeiterfassung", "Time tracking", "Kommen, Gehen, Urlaub", "Clock in/out, leave", "https://zeit.muster-gmbh.de", "clock", "#13995b"),
+    ("ERP", "ERP", "Aufträge, Bestand, Versand", "Orders, stock, shipping", "https://erp.muster-gmbh.de", "package", "#3557f5"),
+    ("Outlook im Web", "Outlook on the web", "E-Mail und Kalender", "Mail and calendar", "https://outlook.office.com", "mail", "#0891b2"),
+    ("IT-Helpdesk", "IT helpdesk", "Ticket erstellen", "Open a ticket", "https://helpdesk.muster-gmbh.de", "lifebuoy", "#e0484d"),
+    ("IT-Support", "IT support", "support@muster-gmbh.de", "support@muster-gmbh.de", "mailto:support@muster-gmbh.de", "monitor", "#e0484d"),
+    ("Buchhaltung", "Accounting", "buchhaltung@muster-gmbh.de", "buchhaltung@muster-gmbh.de", "mailto:buchhaltung@muster-gmbh.de", "calculator", "#d97706"),
+    ("Eingangsrechnungen", "Incoming invoices", "rechnungen@muster-gmbh.de", "rechnungen@muster-gmbh.de", "mailto:rechnungen@muster-gmbh.de", "receipt", "#d97706"),
+    ("Personalabteilung", "HR", "personal@muster-gmbh.de", "personal@muster-gmbh.de", "mailto:personal@muster-gmbh.de", "users", "#8b5cf6"),
+    ("Empfang", "Reception", "Durchwahl 100", "Extension 100", "tel:100", "phone", "#64748b"),
+]
+
+
+def add_demo_links(db) -> int:
+    if db.query(QuickLink).count():
+        return 0
+    for i, (tde, ten, sde, sen, url, icon, color) in enumerate(DEMO_LINKS):
+        db.add(QuickLink(title_de=tde, title_en=ten, subtitle_de=sde, subtitle_en=sen, url=url, icon=icon, color=color, sort=i))
+    return len(DEMO_LINKS)
+
+
+def _training_pdf(name: str, title: str, lines: list[str]) -> dict:
+    stored = f"tr-demo-{name}"
+    data = make_pdf(title, lines)
+    (settings.training_dir / stored).write_bytes(data)
+    return {"kind": "pdf", "name": name, "file": stored, "size": len(data)}
+
+
+def add_demo_trainings(db) -> int:
+    """Groups, trainings and some confirmations. Skips when trainings exist already."""
+    if db.query(Training).count():
+        return 0
+    rng = random.Random(11)
+    people = {u.username: u for u in db.query(User).filter(User.show_in_directory.is_(True))}
+    groups = {}
+    for name, members in [("Geschäftsführung", ["anna.becker"]),
+                          ("Ersthelfer", ["sophie.schulz", "lukas.fischer", "marta.kowalska"]),
+                          ("Staplerfahrer", ["ahmed.haddad", "paul.schroeder", "lukas.fischer"])]:
+        g = TrainingGroup(name=name, members=[TrainingGroupMember(user_id=people[m].id) for m in members if m in people])
+        db.add(g)
+        db.flush()
+        groups[name] = g.id
+    today = date.today()
+    items = [
+        ("Datenschutz-Unterweisung 2026", "Data protection instruction 2026",
+         "Jährliche Unterweisung nach DSGVO. Bitte die Richtlinie lesen und bestätigen.",
+         "Yearly GDPR instruction. Please read the policy and confirm.",
+         today + timedelta(days=21), [("all", "")],
+         [_training_pdf("Datenschutz-Unterweisung-2026.pdf", "Datenschutz-Unterweisung 2026", [
+             "Personenbezogene Daten nur verarbeiten, wenn es für die Aufgabe nötig ist.",
+             "Keine Firmendaten auf private Geräte oder in private Cloud-Speicher.",
+             "Bildschirm sperren beim Verlassen des Platzes (Windows + L).",
+             "Datenpannen sofort an datenschutz@muster-gmbh.de melden."])], 0.55),
+        ("KI-Richtlinie: keine Firmendokumente an externe KI", "AI policy: no company documents to external AI",
+         "Was mit Chatbots und Übersetzern erlaubt ist – und was nicht.",
+         "What is allowed with chatbots and translators – and what is not.",
+         today + timedelta(days=14), [("all", "")],
+         [_training_pdf("KI-Richtlinie.pdf", "Richtlinie zur Nutzung von KI-Diensten", [
+             "Keine Firmendokumente, Kundendaten, Preise oder Verträge an externe KI-Dienste.",
+             "Nur von der IT freigegebene Werkzeuge verwenden.",
+             "KI-Ergebnisse immer selbst prüfen."]),
+          {"kind": "link", "name": "Artikel im Intranet: Richtlinien", "url": "/knowledge"}], 0.4),
+        ("Unterweisung Flurförderzeuge (Stapler)", "Forklift instruction",
+         "Jährliche Pflichtunterweisung für alle Staplerfahrer:innen nach DGUV Vorschrift 68.",
+         "Yearly mandatory instruction for forklift drivers (DGUV regulation 68).",
+         today - timedelta(days=3), [("group", str(groups["Staplerfahrer"]))],
+         [_training_pdf("Unterweisung-Stapler-2026.pdf", "Unterweisung Flurfoerderzeuge 2026", [
+             "Nur unterwiesene Personen mit Fahrausweis fahren Stapler.",
+             "Vor Schichtbeginn: Sichtprüfung, Bremsen, Hupe, Licht.",
+             "Fußgänger nutzen ausschließlich die gelb markierten Wege."])], 0.34),
+        ("Brandschutz im Lager", "Fire safety in the warehouse",
+         "Verhalten im Brandfall, Fluchtwege und Sammelplatz für Versand und Fulfillment.",
+         "What to do in case of fire, escape routes and assembly point for shipping and fulfilment.",
+         today + timedelta(days=30), [("department", "Versand"), ("department", "Fulfillment")],
+         [_training_pdf("Brandschutz-Lager.pdf", "Brandschutz im Lager", [
+             "Brand melden: Notruf 112, intern 999.",
+             "Sammelplatz: Parkplatz vor dem Haupteingang.",
+             "Feuerlöscher an jedem Hallentor."])], 0.5),
+        ("Compliance für Führungskräfte", "Compliance for managers",
+         "Geschenke, Interessenkonflikte, Vier-Augen-Prinzip bei Zahlungen.",
+         "Gifts, conflicts of interest, four-eyes principle for payments.",
+         None, [("group", str(groups["Geschäftsführung"])), ("user", str(people["felix.zimmermann"].id))],
+         [_training_pdf("Compliance-Fuehrungskraefte.pdf", "Compliance fuer Fuehrungskraefte", [
+             "Geschenke über 35 € werden gemeldet.",
+             "Zahlungen über 10.000 € nur nach dem Vier-Augen-Prinzip."])], 0.0),
+    ]
+    from app.routers.trainings import assigned_ids
+    for tde, ten, dde, den, due, targets, materials, share in items:
+        t = Training(title_de=tde, title_en=ten, description_de=dde, description_en=den, due_date=due,
+                     targets=[TrainingTarget(kind=k, value=v) for k, v in targets],
+                     materials=[TrainingMaterial(sort=i, **m) for i, m in enumerate(materials)])
+        db.add(t)
+        db.flush()
+        for uid in sorted(assigned_ids(db, t)):
+            if rng.random() < share:
+                db.add(TrainingCompletion(training_id=t.id, user_id=uid, version=1,
+                                          completed_at=datetime.now() - timedelta(days=rng.randint(0, 9), hours=rng.randint(0, 8))))
+    # General how-tos: voluntary for everybody, linked to the matching articles
+    for tde, ten, dde, den, article_title in [
+        ("Besprechungsraum per E-Mail buchen", "Booking a meeting room by email",
+         "So reservieren Sie einen Besprechungsraum über Outlook – Schritt für Schritt.",
+         "How to book a meeting room in Outlook – step by step.", ROOM_TITLE),
+        ("IT-Probleme richtig melden", "Reporting IT problems",
+         "Ticketsystem oder support@ – und welche Angaben die IT braucht.",
+         "Ticket system or support@ – and what IT needs to know.", SUPPORT_TITLE),
+    ]:
+        art = db.query(Article).filter(Article.title_de == article_title).first()
+        db.add(Training(title_de=tde, title_en=ten, description_de=dde, description_en=den, open_to_all=True,
+                        materials=[TrainingMaterial(kind="link", name=article_title, url=f"/articles/{art.id}", sort=0)] if art else []))
+    return len(items) + 2
+
+
 PEOPLE = [  # first, last, department, position, ext, role, start offset (days ago)
     ("Anna", "Becker", "Verwaltung", "Geschäftsführerin", "100", "admin", 2900),
     ("Sophie", "Schulz", "Verwaltung", "Personalreferentin", "140", "editor", 700),
@@ -971,17 +1088,20 @@ def seed(reset: bool):
          "Ein Bürohund für bessere Stimmung.", "Leider wegen Allergien im Team nicht möglich.", "david.klein", False, 40, 6),
     ]:
         idea = Idea(topic=topic, status=status, title=title, body=body, response=response, anonymous=anon,
-                    author_id=users[who].id, created_at=now - timedelta(days=days),
+                    author_id=None if anon else users[who].id, created_at=now - timedelta(days=days),
                     status_changed_at=(now - timedelta(days=days // 2)) if status != "new" else None)
         db.add(idea)
         db.flush()
         # Star ratings: well-received ideas mostly get 4-5 stars, the declined one a mixed picture.
         weights = [1, 1, 3, 6, 9] if status != "declined" else [3, 3, 3, 2, 1]
-        for voter in [v for v in voters if v.id != idea.author_id][:n_votes]:
+        for voter in [v for v in voters if v.username != who][:n_votes]:
             db.add(IdeaVote(idea_id=idea.id, user_id=voter.id, stars=random.choices(range(1, 6), weights)[0]))
 
     add_iso_documents(db, editor.id, now)
     add_demo_rooms(db)
+    db.flush()
+    add_demo_links(db)
+    add_demo_trainings(db)
     db.commit()
     print("Demo data created. Passwords are shown only now - note them down:")
     print(f"  admin            {admin_pw}   (administrator)")
@@ -989,7 +1109,11 @@ def seed(reset: bool):
 
 
 if __name__ == "__main__":
-    if "--rooms" in sys.argv:  # add the demo rooms to an existing database (floors that have none yet)
+    if "--trainings" in sys.argv:  # quick-access tiles + trainings for an existing database
+        db = SessionLocal()
+        print(f"{add_demo_links(db)} tiles, {add_demo_trainings(db)} trainings added.")
+        db.commit()
+    elif "--rooms" in sys.argv:  # add the demo rooms to an existing database (floors that have none yet)
         db = SessionLocal()
         print(f"{add_demo_rooms(db)} rooms added.")
         db.commit()

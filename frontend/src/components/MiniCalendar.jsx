@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { ArrowUpRight, ChevronLeft, ChevronRight } from 'lucide-react';
 import { useI18n } from '../lib/i18n';
 import { useFetch } from '../lib/useFetch';
+import { CountryBadges, useHolidays } from '../lib/holidays';
 
 const iso = (d) => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
 
@@ -24,11 +25,16 @@ export default function MiniCalendar() {
     (data || []).forEach((e) => { (m[iso(new Date(e.event_date))] ||= []).push(e); });
     return m;
   }, [data]);
+  const holidays = useHolidays(days[0], new Date(days[days.length - 1].getTime() + 86400000));
+  const hName = (h) => (lang === 'en' ? h.name_en : h.name_de);
   const weekdays = Array.from({ length: 7 }, (_, i) => new Intl.DateTimeFormat(locale, { weekday: 'narrow' }).format(new Date(2024, 0, 1 + i)));
   const go = (d) => { setMonth(new Date(month.getFullYear(), month.getMonth() + d, 1)); setSelected(null); };
   const list = selected
     ? byDay[selected] || []
     : (data || []).filter((e) => new Date(e.event_date) >= new Date(today.toDateString()) && new Date(e.event_date).getMonth() === month.getMonth()).slice(0, 3);
+  const hols = selected
+    ? holidays.byDay[selected] || []
+    : holidays.list.filter((h) => h.date >= iso(today) && new Date(`${h.date}T12:00`).getMonth() === month.getMonth()).slice(0, 2);
 
   return (
     <div className="card flex h-full flex-col p-5">
@@ -47,14 +53,16 @@ export default function MiniCalendar() {
         {days.map((d) => {
           const key = iso(d);
           const has = Boolean(byDay[key]);
+          const hol = holidays.byDay[key];
           const isToday = key === iso(today);
           const isSel = key === selected;
           const inMonth = d.getMonth() === month.getMonth();
           return (
-            <button key={key} type="button" disabled={!has} onClick={() => setSelected(isSel ? null : key)}
-              aria-label={`${fmtDate(d)}${has ? `, ${byDay[key].length}` : ''}`} aria-pressed={isSel}
+            <button key={key} type="button" disabled={!has && !hol} onClick={() => setSelected(isSel ? null : key)}
+              aria-label={`${fmtDate(d)}${hol ? `, ${hol.map(hName).join(', ')}` : ''}${has ? `, ${byDay[key].length}` : ''}`} aria-pressed={isSel}
+              title={hol ? hol.map(hName).join(', ') : undefined}
               className={`relative mx-auto flex h-9 w-9 items-center justify-center rounded-full transition-colors ${
-                isSel ? 'bg-ink text-surface' : isToday ? 'bg-brand font-semibold text-white dark:text-[#0d0f13]' : has ? 'font-semibold hover:bg-surface-2' : ''} ${
+                isSel ? 'bg-ink text-surface' : isToday ? 'bg-brand font-semibold text-white dark:text-[#0d0f13]' : hol ? 'bg-alert/10 font-semibold text-alert hover:bg-alert/15' : has ? 'font-semibold hover:bg-surface-2' : ''} ${
                 inMonth ? '' : 'opacity-35'} disabled:cursor-default`}>
               {d.getDate()}
               {has && !isSel && <span className={`absolute bottom-1 h-1 w-1 rounded-full ${isToday ? 'bg-white' : 'bg-brand'}`} />}
@@ -67,6 +75,17 @@ export default function MiniCalendar() {
         <p className="mb-2 text-xs font-medium text-muted">
           {selected ? fmtDate(`${selected}T12:00`, { weekday: 'long', day: 'numeric', month: 'long' }) : t('events_next_in_month')}
         </p>
+        {hols.length > 0 && (
+          <ul className="mb-2 space-y-1.5">
+            {hols.map((h) => (
+              <li key={`${h.date}-${h.name_en}`} className="flex items-center gap-2 text-sm">
+                <span className="w-12 shrink-0 tabular-nums font-medium text-alert">{fmtDate(`${h.date}T12:00`, { day: '2-digit', month: '2-digit' })}</span>
+                <span className="min-w-0 flex-1 truncate font-medium">{hName(h)}</span>
+                <CountryBadges holiday={h} />
+              </li>
+            ))}
+          </ul>
+        )}
         {list.length ? (
           <ul className="space-y-2">
             {list.map((e) => (
@@ -78,7 +97,7 @@ export default function MiniCalendar() {
               </li>
             ))}
           </ul>
-        ) : <p className="text-sm text-muted">{t('no_events_day')}</p>}
+        ) : !hols.length && <p className="text-sm text-muted">{t('no_events_day')}</p>}
       </div>
 
       <Link to="/calendar?view=calendar" className="mt-4 inline-flex items-center gap-1 text-sm font-medium text-brand hover:underline">

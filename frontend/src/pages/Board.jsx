@@ -8,6 +8,7 @@ import { useFetch } from '../lib/useFetch';
 import { useAuth } from '../lib/auth';
 import { api } from '../lib/api';
 import { useViewer } from '../lib/viewer';
+import { useHashFocus } from '../lib/hashFocus';
 
 const KINDS = ['offer', 'search', 'give', 'carpool', 'other'];
 const KIND_COLOR = { offer: 'var(--brand)', search: '#8a5cc7', give: 'var(--safe)', carpool: 'var(--signal)', other: 'var(--muted)' };
@@ -54,7 +55,7 @@ function NoticeForm({ onDone }) {
 
 export default function Board() {
   const { t } = useI18n();
-  const { user, can } = useAuth();
+  const { user, has } = useAuth();
   const [kind, setKind] = useState('');
   const [open, setOpen] = useState(false);
   const navigate = useNavigate();
@@ -62,6 +63,7 @@ export default function Board() {
   // Visitors can read the board; posting asks them to sign in first.
   const startNotice = () => (user ? setOpen(true) : navigate('/login?next=/board'));
   const { data, reload } = useFetch('/classifieds', { params: { kind } }, kind);
+  useHashFocus(Boolean(data));
 
   const remove = async (id) => {
     if (!window.confirm(t('confirm_delete'))) return;
@@ -91,7 +93,7 @@ export default function Board() {
         {data && !data.length && <Empty action={<Button onClick={startNotice}>{t('new_notice')}</Button>}>{t('board_empty')}</Empty>}
         <ul className="grid gap-5 sm:grid-cols-2 xl:grid-cols-3">
           {data?.map((c) => (
-            <li key={c.id} className="card flex h-full flex-col overflow-hidden">
+            <li key={c.id} id={`notice-${c.id}`} className="card flex h-full flex-col overflow-hidden">
               <div className="h-1.5" style={{ background: KIND_COLOR[c.kind] }} />
               {c.image_url && (
                 <button type="button" onClick={() => openViewer([{ url: c.image_url, name: c.title, kind: 'image' }])} className="block w-full cursor-zoom-in">
@@ -115,7 +117,7 @@ export default function Board() {
                       {c.author.phone_ext && <a href={`tel:${c.author.phone_ext}`} className="inline-flex items-center gap-1"><Phone size={15} />{c.author.phone_ext}</a>}
                     </div>
                   </div>
-                  {user && (c.author.id === user.id || can('editor')) && (
+                  {user && (c.author.id === user.id || has('moderate')) && (
                     <button type="button" onClick={() => remove(c.id)} aria-label={t('delete')} className="rounded p-1.5 text-muted hover:bg-surface-2 hover:text-alert">
                       <Trash2 size={17} />
                     </button>

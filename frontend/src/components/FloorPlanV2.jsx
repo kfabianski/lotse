@@ -142,12 +142,12 @@ function findPerson(locations, personId) {
   return null;
 }
 
-export default function FloorPlanV2({ locations, deptColors = {}, focusPersonId = null }) {
+export default function FloorPlanV2({ locations, deptColors = {}, focusPersonId = null, focusLocationId = null }) {
   const { lang } = useI18n();
   const s = L[lang] || L.de;
   const ordered = useMemo(() => [...locations].sort((a, b) => a.sort - b.sort), [locations]);
   const initialFocus = useMemo(() => findPerson(ordered, focusPersonId), []); // eslint-disable-line react-hooks/exhaustive-deps
-  const [activeId, setActiveId] = useState(initialFocus?.loc.id || ordered[0]?.id);
+  const [activeId, setActiveId] = useState(initialFocus?.loc.id || (ordered.some((l) => l.id === focusLocationId) ? focusLocationId : ordered[0]?.id));
   const active = ordered.find((l) => l.id === activeId) || ordered[0];
   const { W, H, rooms, seats, hasRooms } = useLayout(active);
   const full = useMemo(() => ({ x: 0, y: 0, w: W, h: H }), [W, H]);

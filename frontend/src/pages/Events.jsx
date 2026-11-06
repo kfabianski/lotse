@@ -2,6 +2,7 @@ import { useMemo, useState } from 'react';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { CalendarDays, CalendarPlus, Check, ChevronLeft, ChevronRight, Clock, Link2, MapPin, PartyPopper } from 'lucide-react';
 import { Avatar, Button, Empty } from '../components/ui';
+import { CountryBadges, useHolidays } from '../lib/holidays';
 import { useI18n } from '../lib/i18n';
 import { useFetch } from '../lib/useFetch';
 import { useAuth } from '../lib/auth';
@@ -116,8 +117,12 @@ function MonthGrid({ month, setMonth, events }) {
     events.forEach((e) => { (m[iso(new Date(e.event_date))] ||= []).push(e); });
     return m;
   }, [events]);
+  const holidays = useHolidays(days[0], new Date(days[41].getTime() + 86400000));
+  const hName = (h) => (lang === 'en' ? h.name_en : h.name_de);
   const monthEvents = events.filter((e) => new Date(e.event_date).getMonth() === month.getMonth());
   const shown = selected ? (byDay[selected] || []) : monthEvents;
+  const shownHolidays = selected ? (holidays.byDay[selected] || [])
+    : holidays.list.filter((h) => new Date(`${h.date}T12:00`).getMonth() === month.getMonth());
 
   return (
     <div className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_340px]">
@@ -137,15 +142,18 @@ function MonthGrid({ month, setMonth, events }) {
           {days.map((d) => {
             const key = iso(d);
             const list = byDay[key] || [];
+            const hol = holidays.byDay[key] || [];
             const inMonth = d.getMonth() === month.getMonth();
             const isToday = sameDay(d, today);
             const isSel = selected === key;
             return (
               <button key={key} type="button" onClick={() => setSelected(isSel ? null : key)} aria-pressed={isSel}
-                aria-label={`${fmtDate(d)}${list.length ? `, ${list.length}` : ''}`}
+                aria-label={`${fmtDate(d)}${hol.length ? `, ${hol.map(hName).join(', ')}` : ''}${list.length ? `, ${list.length}` : ''}`}
+                title={hol.map((h) => `${hName(h)} (${h.regions.join(', ')})`).join('\n') || undefined}
                 className={`flex min-h-[4.25rem] flex-col items-stretch rounded-xl p-1.5 text-left transition-colors sm:min-h-[5.5rem] ${
-                  isSel ? 'bg-brand-soft ring-1 ring-brand' : 'hover:bg-surface-2'} ${inMonth ? '' : 'opacity-40'}`}>
-                <span className={`mb-1 flex h-6 w-6 items-center justify-center self-start rounded-full text-sm ${isToday ? 'bg-brand font-semibold text-white dark:text-[#0d0f13]' : ''}`}>{d.getDate()}</span>
+                  isSel ? 'bg-brand-soft ring-1 ring-brand' : hol.length ? 'bg-alert/[0.06] hover:bg-alert/10' : 'hover:bg-surface-2'} ${inMonth ? '' : 'opacity-40'}`}>
+                <span className={`mb-1 flex h-6 w-6 items-center justify-center self-start rounded-full text-sm ${isToday ? 'bg-brand font-semibold text-white dark:text-[#0d0f13]' : hol.length ? 'font-semibold text-alert' : ''}`}>{d.getDate()}</span>
+                {hol.length > 0 && <span className="hidden truncate px-0.5 text-[11px] font-medium leading-tight text-alert sm:block">{hName(hol[0])}{hol.length > 1 ? ` +${hol.length - 1}` : ''}</span>}
                 <span className="hidden space-y-0.5 sm:block">
                   {list.slice(0, 2).map((e) => (
                     <span key={e.id} className="block truncate rounded-md bg-brand/12 px-1.5 py-0.5 text-[11px] font-medium text-brand">{loc(e, 'title')}</span>
@@ -161,6 +169,17 @@ function MonthGrid({ month, setMonth, events }) {
 
       <div>
         <h3 className="mb-3 font-medium text-muted">{selected ? fmtDate(`${selected}T12:00`, { weekday: 'long', day: 'numeric', month: 'long' }) : t('events_this_month')}</h3>
+        {shownHolidays.length > 0 && (
+          <ul className="mb-3 space-y-1.5">
+            {shownHolidays.map((h) => (
+              <li key={`${h.date}-${h.name_en}`} className="flex items-center gap-3 rounded-xl border border-alert/20 bg-alert/[0.05] px-3 py-2 text-sm">
+                <span className="w-12 shrink-0 tabular-nums font-semibold text-alert">{fmtDate(`${h.date}T12:00`, { day: '2-digit', month: '2-digit' })}</span>
+                <span className="min-w-0 flex-1 truncate font-medium">{hName(h)}</span>
+                <CountryBadges holiday={h} />
+              </li>
+            ))}
+          </ul>
+        )}
         {shown.length ? (
           <ul className="space-y-2">
             {shown.map((e) => (
@@ -175,7 +194,8 @@ function MonthGrid({ month, setMonth, events }) {
               </li>
             ))}
           </ul>
-        ) : <p className="text-muted">{t('no_events_day')}</p>}
+        ) : !shownHolidays.length && <p className="text-muted">{t('no_events_day')}</p>}
+        <p className="mt-4 text-xs text-muted">{t('holidays_note')}</p>
       </div>
     </div>
   );
@@ -183,7 +203,7 @@ function MonthGrid({ month, setMonth, events }) {
 
 export default function Events() {
   const { t, lang, loc, fmtDate } = useI18n();
-  const { can } = useAuth();
+  const { has } = useAuth();
   const [params, setParams] = useSearchParams();
   const view = params.get('view') || 'upcoming';
   const [month, setMonth] = useState(() => { const n = new Date(); return new Date(n.getFullYear(), n.getMonth(), 1); });
@@ -218,7 +238,7 @@ export default function Events() {
           <Button variant="outline" onClick={copyIcs} title={icsUrl}>
             {copied ? <Check size={17} /> : <Link2 size={17} />}{copied ? t('ics_copied') : t('ics_subscribe')}
           </Button>
-          {can('editor') && (
+          {has('content_own', 'content_all') && (
             <Link to="/articles/new?category=events" className="inline-flex items-center gap-2 rounded-xl bg-brand px-4 py-2 font-medium text-white hover:bg-brand-strong dark:text-[#0d0f13]">
               <CalendarPlus size={17} />{t('event_new')}
             </Link>

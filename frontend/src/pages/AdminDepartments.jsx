@@ -9,6 +9,8 @@ import { api } from '../lib/api';
 export default function AdminDepartments() {
   const { t } = useI18n();
   const { data, reload } = useFetch('/departments', undefined, 'admin-departments');
+  const config = useFetch('/auth/config', undefined, 'auth-config');
+  const ldapLeads = Boolean(config.data?.ldap_departments_auto);
   const [edits, setEdits] = useState({});
   const [name, setName] = useState('');
   const [error, setError] = useState('');
@@ -28,6 +30,7 @@ export default function AdminDepartments() {
 
   return (
     <div className="max-w-3xl">
+      {ldapLeads && <p className="mb-4 rounded-xl border border-brand/30 bg-brand-soft px-4 py-3 text-sm">{t('dept_ldap_leads')}</p>}
       <p className="text-muted">{t('departments_intro')}</p>
       <ul className="card mt-5 divide-y divide-line">
         {list.map((d, i) => {
@@ -40,7 +43,7 @@ export default function AdminDepartments() {
                 <input type="color" value={e.color} className="absolute inset-0 cursor-pointer opacity-0"
                   onChange={(ev) => setEdits({ ...edits, [d.id]: { ...edits[d.id], color: ev.target.value } })} />
               </label>
-              <input className={`${inputClass} min-w-[180px] flex-1`} value={e.name} aria-label={t('name')}
+              <input disabled={ldapLeads && d.source === 'ldap'} title={ldapLeads && d.source === 'ldap' ? t('dept_ldap_locked') : undefined} className={`${inputClass} min-w-[180px] flex-1`} value={e.name} aria-label={t('name')}
                 onChange={(ev) => setEdits({ ...edits, [d.id]: { ...edits[d.id], name: ev.target.value } })} />
               <span className={`rounded-full px-2 py-0.5 text-xs font-medium ${d.source === 'ldap' ? 'bg-brand-soft text-brand' : 'bg-surface-2 text-muted'}`}>
                 {d.source === 'ldap' ? t('source_ldap') : t('source_manual')}

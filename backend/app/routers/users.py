@@ -1,12 +1,16 @@
 from fastapi import APIRouter, Depends, File, HTTPException, Query, UploadFile
+from pydantic import BaseModel
 from sqlalchemy import or_
 from sqlalchemy.orm import Session
 
 from app import ldap_auth
+from app.config import settings
 from app.db import get_db
 from app.models import Seat, User
 from app.schemas import UserCreate, UserOut, UserUpdate
-from app.security import hash_password, reader, require
+import json
+
+from app.security import has_perm, hash_password, reader, require, require_perm
 from app.routers.departments import department_names
 from app.serialize import user_out
 from app.uploads import save_image
@@ -29,7 +33,7 @@ def directory(
     db: Session = Depends(get_db),
 ):
     query = db.query(User)
-    if not (include_hidden and viewer and viewer.role == "admin"):
+    if not (include_hidden and has_perm(viewer, "people")):
         query = query.filter(User.is_active.is_(True), User.show_in_directory.is_(True))
     if q.strip():
         like = f"%{q.strip()}%"
@@ -38,38 +42,83 @@ def directory(
                                  User.email.ilike(like), User.phone_ext.ilike(like)))
     if department:
         query = query.filter(User.department == department)
-    return [user_out(u) for u in query.order_by(User.last_name, User.first_name).all()]
+    full = has_perm(viewer, "people")
+    return [user_out(u, full=full) for u in query.order_by(User.last_name, User.first_name).all()]
 
 
 @router.get("/{user_id}", response_model=UserOut)
 def get_user(user_id: int, viewer: User | None = Depends(reader), db: Session = Depends(get_db)):
     user = db.get(User, user_id)
     hidden = user and not (user.is_active and user.show_in_directory)
-    if not user or (hidden and (not viewer or viewer.role != "admin")):
+    if not user or (hidden and not has_perm(viewer, "people")):
         raise HTTPException(404, "User not found")
-    return user_out(user)
+    return user_out(user, full=has_perm(viewer, "people") or (viewer is not None and viewer.id == user.id))
+
+
+def _check_email(db: Session, email: str | None, user_id: int | None = None) -> str | None:
+    """E-mail addresses identify a person (also for LDAP matching) - each may exist only once."""
+    if not email:
+        return None
+    email = email.strip().lower()
+    q = db.query(User).filter(User.email.isnot(None), User.email.ilike(email))
+    if user_id:
+        q = q.filter(User.id != user_id)
+    if q.first():
+        raise HTTPException(409, "This e-mail address is already used by another account")
+    return email
+
+
+LDAP_FIELDS = {"first_name", "last_name", "email", "department", "position", "phone_ext"}
+
+
+def _special(user: User) -> bool:
+    """Accounts with a role above 'user' or extra permissions - only admins may change those."""
+    return user.role != "user" or bool(json.loads(user.permissions or "[]"))
 
 
 @router.post("", response_model=UserOut, status_code=201)
-def create_user(body: UserCreate, _: User = Depends(require("admin")), db: Session = Depends(get_db)):
+def create_user(body: UserCreate, actor: User = Depends(require_perm("people")), db: Session = Depends(get_db)):
+    if actor.role != "admin" and (body.role != "user" or body.permissions):
+        raise HTTPException(403, "Only administrators can grant roles and permissions")
     username = body.username.lower()
     if db.query(User).filter(User.username == username).first():
         raise HTTPException(409, "Username already exists")
     _check_department(db, body.department)
-    data = body.model_dump(exclude={"password", "username"})
-    user = User(username=username, password_hash=hash_password(body.password), auth_source="local", **data)
+    data = body.model_dump(exclude={"password", "username", "permissions"})
+    data["email"] = _check_email(db, body.email)
+    user = User(username=username, password_hash=hash_password(body.password), auth_source="local",
+                permissions=json.dumps(sorted(set(body.permissions))), **data)
     db.add(user)
     db.commit()
-    return user_out(user)
+    return user_out(user, full=True)
 
 
 @router.patch("/{user_id}", response_model=UserOut)
-def update_user(user_id: int, body: UserUpdate, admin: User = Depends(require("admin")),
+def update_user(user_id: int, body: UserUpdate, admin: User = Depends(require_perm("people")),
                 db: Session = Depends(get_db)):
     user = db.get(User, user_id)
     if not user:
         raise HTTPException(404, "User not found")
     data = body.model_dump(exclude_unset=True)
+    if admin.role != "admin":
+        # People managers edit ordinary staff only and never touch roles or permissions.
+        if _special(user):
+            raise HTTPException(403, "Only administrators can edit accounts with special rights")
+        if data.get("role", "user") != "user" or data.get("permissions"):
+            raise HTTPException(403, "Only administrators can grant roles and permissions")
+        data.pop("role", None)
+        data.pop("permissions", None)
+    if user.auth_source == "ldap" and settings.ldap_enabled:
+        for f in LDAP_FIELDS & set(data):  # the directory is leading for these fields
+            data.pop(f)
+    if "email" in data:
+        data["email"] = _check_email(db, data["email"], user.id)
+    if "permissions" in data:
+        perms = data.pop("permissions")
+        user.permissions = json.dumps(sorted(set(perms or [])))
+    if "role" in data and data["role"] != user.role:
+        user.role_source = "local"  # set by an admin: LDAP group sync will not take it away
+        user.role_local = None
     if "department" in data:
         _check_department(db, data["department"])
     if user.id == admin.id and (data.get("role", "admin") != "admin" or data.get("is_active") is False):
@@ -96,14 +145,16 @@ def update_user(user_id: int, body: UserUpdate, admin: User = Depends(require("a
         setattr(user, key, value)
     db.commit()
     db.refresh(user)
-    return user_out(user)
+    return user_out(user, full=True)
 
 
 @router.delete("/{user_id}", status_code=204)
-def delete_user(user_id: int, admin: User = Depends(require("admin")), db: Session = Depends(get_db)):
+def delete_user(user_id: int, admin: User = Depends(require_perm("people")), db: Session = Depends(get_db)):
     user = db.get(User, user_id)
     if not user:
         raise HTTPException(404, "User not found")
+    if admin.role != "admin" and _special(user):
+        raise HTTPException(403, "Only administrators can delete accounts with special rights")
     if user.id == admin.id:
         raise HTTPException(400, "You cannot delete your own account")
     db.delete(user)
@@ -111,19 +162,36 @@ def delete_user(user_id: int, admin: User = Depends(require("admin")), db: Sessi
 
 
 @router.post("/{user_id}/avatar", response_model=UserOut)
-async def upload_avatar(user_id: int, file: UploadFile = File(...), _: User = Depends(require("admin")),
+async def upload_avatar(user_id: int, file: UploadFile = File(...), _: User = Depends(require_perm("people")),
                         db: Session = Depends(get_db)):
     user = db.get(User, user_id)
     if not user:
         raise HTTPException(404, "User not found")
     user.avatar_url = await save_image(file, "avatar")
     db.commit()
-    return user_out(user)
+    return user_out(user, full=True)
 
 
-@router.post("/ldap-sync")
-def ldap_sync(_: User = Depends(require("admin")), db: Session = Depends(get_db)):
+class SyncChoices(BaseModel):
+    add: list[str] = []  # directory user names to create
+    link: list[int] = []  # local accounts to link with their directory person (matched by user name or e-mail)
+    update: bool = True  # refresh names, departments, positions of existing LDAP accounts
+    deactivate: list[int] = []  # LDAP accounts no longer in the directory
+    remove_departments: list[int] = []  # departments that do not exist in the directory
+
+
+@router.post("/ldap-sync/preview")
+def ldap_sync_preview(_: User = Depends(require("admin")), db: Session = Depends(get_db)):
+    """What a sync would change. Nothing is written; the admin chooses in the dialog."""
     try:
-        return {"synced": ldap_auth.sync_all(db)}
+        return ldap_auth.plan(db, ldap_auth.fetch_directory())
+    except ldap_auth.LdapError as exc:
+        raise HTTPException(503, str(exc))
+
+
+@router.post("/ldap-sync/apply")
+def ldap_sync_apply(body: SyncChoices, _: User = Depends(require("admin")), db: Session = Depends(get_db)):
+    try:
+        return ldap_auth.apply_plan(db, ldap_auth.fetch_directory(), body.model_dump())
     except ldap_auth.LdapError as exc:
         raise HTTPException(503, str(exc))

@@ -19,7 +19,11 @@ class User(Base):
     email: Mapped[str | None] = mapped_column(String(200))
     password_hash: Mapped[str | None] = mapped_column(String(200))  # None for LDAP accounts
     auth_source: Mapped[str] = mapped_column(String(10), default="local")  # local | ldap
-    role: Mapped[str] = mapped_column(String(10), default="user")
+    role: Mapped[str] = mapped_column(String(10), default="user")  # user | author | moderator | editor | admin
+    # "ldap": role comes from AD groups (and is taken away again); "local": set by an admin in Lotse.
+    role_source: Mapped[str] = mapped_column(String(8), default="local")
+    role_local: Mapped[str | None] = mapped_column(String(10))  # role set in Lotse, restored when an AD group no longer grants more
+    permissions: Mapped[str] = mapped_column(Text, default="[]")  # extra permissions (JSON list) on top of the role
     first_name: Mapped[str] = mapped_column(String(80), default="")
     last_name: Mapped[str] = mapped_column(String(80), default="")
     department: Mapped[str] = mapped_column(String(80), default="")
@@ -169,12 +173,13 @@ class Idea(Base):
     topic: Mapped[str] = mapped_column(String(16), default="other")
     status: Mapped[str] = mapped_column(String(10), default="new", index=True)
     response: Mapped[str] = mapped_column(Text, default="")  # answer from the editors / management
+    # Anonymous ideas are stored WITHOUT an author (author_id NULL) - nobody, not even admins, can see who it was.
     anonymous: Mapped[bool] = mapped_column(Boolean, default=False)
-    author_id: Mapped[int] = mapped_column(ForeignKey("users.id", ondelete="CASCADE"))
+    author_id: Mapped[int | None] = mapped_column(ForeignKey("users.id", ondelete="CASCADE"))
     created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow, index=True)
     status_changed_at: Mapped[datetime | None] = mapped_column(DateTime)
 
-    author: Mapped[User] = relationship()
+    author: Mapped[User | None] = relationship()
     votes: Mapped[list["IdeaVote"]] = relationship(cascade="all, delete-orphan")
 
 
@@ -237,3 +242,124 @@ class Attachment(Base):
     name: Mapped[str] = mapped_column(String(200), default="")
     size: Mapped[int] = mapped_column(Integer, default=0)
     sort: Mapped[int] = mapped_column(Integer, default=0)
+
+
+class ArticleRevision(Base):
+    """One saved version of an article (text and document list) - who changed what and when (ISO 9001)."""
+
+    __tablename__ = "article_revisions"
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    article_id: Mapped[int] = mapped_column(ForeignKey("articles.id", ondelete="CASCADE"), index=True)
+    number: Mapped[int] = mapped_column(Integer)
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.now)
+    editor_id: Mapped[int | None] = mapped_column(ForeignKey("users.id", ondelete="SET NULL"))
+    editor_name: Mapped[str] = mapped_column(String(160), default="")  # kept even if the account is deleted
+    note: Mapped[str] = mapped_column(String(300), default="")  # reason for the change
+    category: Mapped[str] = mapped_column(String(12), default="")
+    title_de: Mapped[str] = mapped_column(String(200), default="")
+    title_en: Mapped[str] = mapped_column(String(200), default="")
+    summary_de: Mapped[str] = mapped_column(Text, default="")
+    summary_en: Mapped[str] = mapped_column(Text, default="")
+    body_de: Mapped[str] = mapped_column(Text, default="")
+    body_en: Mapped[str] = mapped_column(Text, default="")
+    attachments: Mapped[str] = mapped_column(Text, default="[]")  # JSON list of {name, url, kind, size}
+
+
+class QuickLink(Base):
+    """A quick-access tile on the home page: company tool, shared mailbox or phone number."""
+
+    __tablename__ = "quick_links"
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    title_de: Mapped[str] = mapped_column(String(80))
+    title_en: Mapped[str] = mapped_column(String(80), default="")
+    subtitle_de: Mapped[str] = mapped_column(String(120), default="")
+    subtitle_en: Mapped[str] = mapped_column(String(120), default="")
+    url: Mapped[str] = mapped_column(String(500))
+    icon: Mapped[str] = mapped_column(String(20), default="link")
+    color: Mapped[str] = mapped_column(String(7), default="#3557f5")
+    sort: Mapped[int] = mapped_column(Integer, default=0)
+    active: Mapped[bool] = mapped_column(Boolean, default=True)
+
+
+# --- Trainings (Schulungen): assigned to people, departments or groups; each person confirms ----------
+
+
+class TrainingGroup(Base):
+    """A named set of people for assigning trainings, e.g. "Geschäftsführung", "Ersthelfer", "Staplerfahrer"."""
+
+    __tablename__ = "training_groups"
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    name: Mapped[str] = mapped_column(String(80), unique=True)
+    members: Mapped[list["TrainingGroupMember"]] = relationship(cascade="all, delete-orphan")
+
+
+class TrainingGroupMember(Base):
+    __tablename__ = "training_group_members"
+
+    group_id: Mapped[int] = mapped_column(ForeignKey("training_groups.id", ondelete="CASCADE"), primary_key=True)
+    user_id: Mapped[int] = mapped_column(ForeignKey("users.id", ondelete="CASCADE"), primary_key=True)
+
+
+class Training(Base):
+    """A training or mandatory reading: description plus materials (PDF, video, image, link).
+    Only assigned people (and admins) can see it. Raising ``version`` asks everyone to confirm again."""
+
+    __tablename__ = "trainings"
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    title_de: Mapped[str] = mapped_column(String(200))
+    title_en: Mapped[str] = mapped_column(String(200), default="")
+    description_de: Mapped[str] = mapped_column(Text, default="")  # Markdown
+    description_en: Mapped[str] = mapped_column(Text, default="")
+    due_date: Mapped[date | None] = mapped_column(Date)
+    active: Mapped[bool] = mapped_column(Boolean, default=True)
+    # True: every signed-in employee can see and do it voluntarily (no obligation, no due date for them).
+    open_to_all: Mapped[bool] = mapped_column(Boolean, default=False)
+    version: Mapped[int] = mapped_column(Integer, default=1)
+    created_by: Mapped[int | None] = mapped_column(ForeignKey("users.id", ondelete="SET NULL"))
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.now)
+    updated_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.now, onupdate=datetime.now)
+
+    materials: Mapped[list["TrainingMaterial"]] = relationship(cascade="all, delete-orphan",
+                                                               order_by="TrainingMaterial.sort")
+    targets: Mapped[list["TrainingTarget"]] = relationship(cascade="all, delete-orphan")
+
+
+class TrainingMaterial(Base):
+    """A file (stored outside the public uploads folder) or a link belonging to a training."""
+
+    __tablename__ = "training_materials"
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    training_id: Mapped[int] = mapped_column(ForeignKey("trainings.id", ondelete="CASCADE"), index=True)
+    kind: Mapped[str] = mapped_column(String(8))  # pdf | video | image | link
+    name: Mapped[str] = mapped_column(String(200), default="")
+    file: Mapped[str | None] = mapped_column(String(80))  # stored file name in data/trainings
+    url: Mapped[str | None] = mapped_column(String(500))  # for links
+    size: Mapped[int] = mapped_column(Integer, default=0)
+    sort: Mapped[int] = mapped_column(Integer, default=0)
+
+
+class TrainingTarget(Base):
+    """Who must do a training: everyone, a department (name), a group (id), a job title/position (text) or a person (user id)."""
+
+    __tablename__ = "training_targets"
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    training_id: Mapped[int] = mapped_column(ForeignKey("trainings.id", ondelete="CASCADE"), index=True)
+    kind: Mapped[str] = mapped_column(String(12))  # all | department | group | position | user
+    value: Mapped[str] = mapped_column(String(80), default="")
+
+
+class TrainingCompletion(Base):
+    """A person confirmed the training ("worked through and understood") in round ``version``."""
+
+    __tablename__ = "training_completions"
+
+    training_id: Mapped[int] = mapped_column(ForeignKey("trainings.id", ondelete="CASCADE"), primary_key=True)
+    user_id: Mapped[int] = mapped_column(ForeignKey("users.id", ondelete="CASCADE"), primary_key=True)
+    version: Mapped[int] = mapped_column(Integer, default=1)
+    completed_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.now)

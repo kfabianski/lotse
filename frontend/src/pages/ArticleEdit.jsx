@@ -4,10 +4,11 @@ import { ArrowDown, ArrowUp, FileText, ImagePlus, Paperclip, X } from 'lucide-re
 import { Button, Field, Markdown, inputClass } from '../components/ui';
 import { CATEGORIES, useI18n } from '../lib/i18n';
 import { api, uploadImage } from '../lib/api';
+import { useAuth } from '../lib/auth';
 
 const EMPTY = {
   category: 'news', title_de: '', title_en: '', summary_de: '', summary_en: '', body_de: '', body_en: '',
-  image_url: null, event_date: null, event_location: '', featured: false, published: true, attachments: [],
+  image_url: null, event_date: null, event_location: '', featured: false, published: true, attachments: [], change_note: '',
 };
 
 function Attachments({ value, onChange }) {
@@ -93,6 +94,7 @@ export default function ArticleEdit() {
   const { id } = useParams();
   const [params] = useSearchParams();
   const { t } = useI18n();
+  const { has } = useAuth();
   const navigate = useNavigate();
   const [form, setForm] = useState({ ...EMPTY, category: params.get('category') || 'news' });
   const [tab, setTab] = useState('de');
@@ -139,7 +141,7 @@ export default function ArticleEdit() {
           </select>
         </Field>
         <div className="flex flex-col justify-end gap-2">
-          <label className="flex items-center gap-2"><input type="checkbox" checked={form.featured} onChange={set('featured')} className="h-4 w-4 accent-[var(--brand)]" />{t('featured')}</label>
+          {has('content_all') && <label className="flex items-center gap-2"><input type="checkbox" checked={form.featured} onChange={set('featured')} className="h-4 w-4 accent-[var(--brand)]" />{t('featured')}</label>}
           <label className="flex items-center gap-2"><input type="checkbox" checked={form.published} onChange={set('published')} className="h-4 w-4 accent-[var(--brand)]" />{t('published')}</label>
         </div>
         <Field label={t('publish_at')} hint={isScheduled ? t('publish_at_scheduled') : t('publish_at_hint')}>
@@ -193,6 +195,12 @@ export default function ArticleEdit() {
           {preview
             ? <div className="min-h-[300px] rounded-lg border border-line bg-surface p-4"><Markdown source={form[`body_${tab}`]} /></div>
             : <textarea rows={14} className={`${inputClass} font-mono text-sm`} value={form[`body_${tab}`]} onChange={set(`body_${tab}`)} />}
+        </Field>
+      </div>
+
+      <div className="mt-6">
+        <Field label={t('rev_note')} hint={t('rev_note_hint')}>
+          <input maxLength={300} className={inputClass} value={form.change_note || ''} onChange={set('change_note')} />
         </Field>
       </div>
 

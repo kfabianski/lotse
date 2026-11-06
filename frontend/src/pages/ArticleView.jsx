@@ -10,13 +10,14 @@ import { Attendees, RsvpButton } from './Events';
 import { useViewer } from '../lib/viewer';
 import { fileSize } from './Documents';
 import { FileText, Images } from 'lucide-react';
+import VersionHistory from '../components/VersionHistory';
 
 export default function ArticleView() {
   const { id } = useParams();
   const { t, loc, fmtDate } = useI18n();
-  const { can } = useAuth();
+  const { has, user } = useAuth();
   const navigate = useNavigate();
-  const { data: a, error, loading } = useFetch(`/articles/${id}`);
+  const { data: a, error, loading, reload } = useFetch(`/articles/${id}`);
   const [event, setEvent] = useState(null);
   const { open } = useViewer();
   useEffect(() => {
@@ -27,6 +28,7 @@ export default function ArticleView() {
   if (loading && !a) return <p className="text-muted">{t('loading')}</p>;
   if (error) return <Empty>{error.status === 404 ? t('not_found') : t('error_generic', { msg: error.message })}</Empty>;
 
+  const mayEdit = has('content_all') || (has('content_own') && a.author?.id === user?.id);
   const photos = (a.attachments || []).filter((x) => x.kind === 'image');
   const docs = (a.attachments || []).filter((x) => x.kind === 'pdf');
 
@@ -46,7 +48,7 @@ export default function ArticleView() {
           <CategoryTag category={a.category} />
           <StatusBadge article={a} />
         </div>
-        {can('editor') && (
+        {mayEdit && (
           <div className="flex gap-1">
             <Link to={`/articles/${a.id}/edit`} className="inline-flex items-center gap-2 rounded-lg px-3 py-1.5 font-medium hover:bg-surface-2">
               <PenLine size={16} />{t('edit')}
@@ -109,6 +111,7 @@ export default function ArticleView() {
               </ul>
             </section>
           )}
+          <VersionHistory key={`${a.id}-${a.version}`} articleId={a.id} canRestore={mayEdit} onRestored={reload} />
         </div>
         <aside className="order-first text-sm text-muted md:order-last">
           {a.author && (

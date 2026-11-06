@@ -1,7 +1,7 @@
-from fastapi import APIRouter, Depends, File, HTTPException, UploadFile, status
+from fastapi import APIRouter, Depends, File, HTTPException, Request, UploadFile, status
 from sqlalchemy.orm import Session
 
-from app import ldap_auth
+from app import ldap_auth, ratelimit
 from app.config import settings
 from app.db import get_db
 from app.models import User
@@ -17,12 +17,19 @@ router = APIRouter(prefix="/api/auth", tags=["auth"])
 def public_config():
     """What the login screen needs to know before anyone is signed in."""
     return {"company_name": settings.company_name, "ldap_enabled": settings.ldap_enabled,
-            "public_read": settings.public_read, "login_image_url": settings.login_image_url or None}
+            "public_read": settings.public_read, "login_image_url": settings.login_image_url or None,
+            "ldap_departments_auto": settings.ldap_enabled and settings.ldap_departments_auto,
+            "sso_enabled": settings.sso_enabled and settings.ldap_enabled}
 
 
 @router.post("/login", response_model=TokenOut)
-def login(body: LoginIn, db: Session = Depends(get_db)):
+def login(body: LoginIn, request: Request, db: Session = Depends(get_db)):
     username = body.username.strip().lower()
+    ip = ratelimit.client_ip(request)
+    wait = ratelimit.wait_seconds(username, ip)
+    if wait:
+        raise HTTPException(status.HTTP_429_TOO_MANY_REQUESTS, f"Too many failed attempts - try again in {wait} seconds",
+                            headers={"Retry-After": str(wait)})
     user = db.query(User).filter(User.username == username).first()
     if user and user.auth_source == "local":
         if not verify_password(body.password, user.password_hash):
@@ -31,17 +38,51 @@ def login(body: LoginIn, db: Session = Depends(get_db)):
         try:
             user = ldap_auth.authenticate(db, username, body.password)
         except ldap_auth.LdapError as exc:
-            raise HTTPException(status.HTTP_503_SERVICE_UNAVAILABLE, f"Directory unavailable: {exc}")
+            raise HTTPException(status.HTTP_503_SERVICE_UNAVAILABLE, "Directory unavailable") from exc
     else:
         user = None
     if not user or not user.is_active:
+        wait = ratelimit.failed(username, ip)
+        if wait:
+            raise HTTPException(status.HTTP_429_TOO_MANY_REQUESTS, f"Too many failed attempts - try again in {wait} seconds",
+                                headers={"Retry-After": str(wait)})
         raise HTTPException(status.HTTP_401_UNAUTHORIZED, "Wrong username or password")
-    return {"access_token": create_token(user), "user": user_out(user)}
+    ratelimit.succeeded(username)
+    return {"access_token": create_token(user), "user": user_out(user, full=True)}
+
+
+def _windows_name(raw: str) -> str:
+    """'FIRMA\\m.mustermann' or 'm.mustermann@FIRMA.LOCAL' -> 'm.mustermann'."""
+    name = raw.strip().split("\\")[-1].split("@")[0].strip().lower()
+    return name if name and len(name) <= 80 and all(c.isalnum() or c in "._-$" for c in name) else ""
+
+
+@router.get("/sso")
+def windows_sign_in(request: Request, db: Session = Depends(get_db)):
+    """Windows sign-in: trusted only from the configured reverse proxy, which has verified the Windows account."""
+    if not (settings.sso_enabled and settings.ldap_enabled):
+        raise HTTPException(404, "Windows sign-in is not enabled")
+    if not request.client or request.client.host not in settings.trusted_proxies:
+        raise HTTPException(403, "Windows sign-in only via the company web server")
+    username = _windows_name(request.headers.get(settings.sso_header, ""))
+    if not username:
+        raise HTTPException(401, "No Windows account was passed on")
+    user = db.query(User).filter(User.username == username).first()
+    if user is not None and user.auth_source != "ldap":
+        raise HTTPException(403, "This account is not a directory (LDAP) account")
+    try:
+        user = ldap_auth.lookup_and_upsert(db, username) or user
+    except ldap_auth.LdapError as exc:
+        if user is None:
+            raise HTTPException(503, "Directory unavailable") from exc
+    if not user or not user.is_active:
+        raise HTTPException(403, "No active account for this Windows user")
+    return {"access_token": create_token(user), "user": user_out(user, full=True)}
 
 
 @router.get("/me", response_model=UserOut)
 def me(user: User = Depends(current_user)):
-    return user_out(user)
+    return user_out(user, full=True)
 
 
 @router.patch("/me", response_model=UserOut)
@@ -57,7 +98,7 @@ def update_me(body: MeUpdate, user: User = Depends(current_user), db: Session = 
             raise HTTPException(400, "Current password is wrong")
         user.password_hash = hash_password(body.new_password)
     db.commit()
-    return user_out(user)
+    return user_out(user, full=True)
 
 
 @router.post("/me/avatar", response_model=UserOut)
@@ -65,4 +106,4 @@ async def upload_my_avatar(file: UploadFile = File(...), user: User = Depends(cu
                            db: Session = Depends(get_db)):
     user.avatar_url = await save_image(file, "avatar")
     db.commit()
-    return user_out(user)
+    return user_out(user, full=True)

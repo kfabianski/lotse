@@ -6,7 +6,8 @@ from fastapi.staticfiles import StaticFiles
 from app import migrate
 from app.config import settings
 from app.db import Base, engine
-from app.routers import admin_settings, auth, calendar, content, departments, ideas, locations, users
+from app.routers import (admin_settings, auth, calendar, content, departments, ideas, locations, quicklinks, revisions, search,
+                         trainings, users)
 from app.db import SessionLocal
 
 Base.metadata.create_all(bind=engine)
@@ -14,13 +15,15 @@ migrate.upgrade(engine)
 admin_settings.load_overrides_at_startup()
 with SessionLocal() as _db:
     departments.ensure_defaults(_db)
+    revisions.ensure_initial_revisions(_db)  # articles from before the version history get version 1
 
 app = FastAPI(title="Lotse Intranet API", version="1.0.0")
 app.add_middleware(CORSMiddleware, allow_origins=settings.cors_origins, allow_credentials=True,
                    allow_methods=["*"], allow_headers=["*"])
 
-for module in (auth, users, content, locations, ideas, calendar, admin_settings, departments):
+for module in (auth, users, content, search, revisions, quicklinks, trainings, locations, ideas, calendar, admin_settings, departments):
     app.include_router(module.router)
+app.include_router(trainings.files_router)
 
 
 

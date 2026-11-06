@@ -7,3 +7,4 @@ pyjwt>=2.8
 bcrypt>=4.1
 python-multipart>=0.0.9
 ldap3>=2.9
+holidays==0.107

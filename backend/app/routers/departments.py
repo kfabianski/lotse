@@ -3,9 +3,10 @@ from pydantic import BaseModel, Field
 from sqlalchemy import func
 from sqlalchemy.orm import Session
 
+from app.config import settings
 from app.db import get_db
-from app.models import DEFAULT_DEPARTMENTS, Department, User
-from app.security import reader, require
+from app.models import DEFAULT_DEPARTMENTS, Department, Room, TrainingTarget, User
+from app.security import reader, require_perm
 
 router = APIRouter(prefix="/api/departments", tags=["departments"])
 
@@ -82,7 +83,7 @@ def list_departments(_: User | None = Depends(reader), db: Session = Depends(get
 
 
 @router.post("", response_model=DepartmentOut, status_code=201)
-def create_department(body: DepartmentIn, _: User = Depends(require("admin")), db: Session = Depends(get_db)):
+def create_department(body: DepartmentIn, _: User = Depends(require_perm("people")), db: Session = Depends(get_db)):
     name = body.name.strip()
     if db.query(Department).filter(func.lower(Department.name) == name.lower()).first():
         raise HTTPException(409, "Department already exists")
@@ -93,7 +94,7 @@ def create_department(body: DepartmentIn, _: User = Depends(require("admin")), d
 
 
 @router.put("/{dept_id}", response_model=DepartmentOut)
-def update_department(dept_id: int, body: DepartmentIn, _: User = Depends(require("admin")),
+def update_department(dept_id: int, body: DepartmentIn, _: User = Depends(require_perm("people")),
                       db: Session = Depends(get_db)):
     dept = db.get(Department, dept_id)
     if not dept:
@@ -102,15 +103,20 @@ def update_department(dept_id: int, body: DepartmentIn, _: User = Depends(requir
     clash = db.query(Department).filter(func.lower(Department.name) == name.lower(), Department.id != dept_id).first()
     if clash:
         raise HTTPException(409, "Department already exists")
-    if name != dept.name:  # rename: move everyone along
+    if name != dept.name and dept.source == "ldap" and settings.ldap_enabled and settings.ldap_departments_auto:
+        raise HTTPException(409, "This department comes from LDAP - rename it in the directory")
+    if name != dept.name:  # rename: move everyone along - people, rooms on the plan and training assignments
         db.query(User).filter(User.department == dept.name).update({User.department: name})
+        db.query(Room).filter(Room.department == dept.name).update({Room.department: name})
+        db.query(TrainingTarget).filter(TrainingTarget.kind == "department", TrainingTarget.value == dept.name) \
+            .update({TrainingTarget.value: name})
     dept.name, dept.color, dept.sort = name, body.color, body.sort
     db.commit()
     return _out(db, dept)
 
 
 @router.delete("/{dept_id}", status_code=204)
-def delete_department(dept_id: int, _: User = Depends(require("admin")), db: Session = Depends(get_db)):
+def delete_department(dept_id: int, _: User = Depends(require_perm("people")), db: Session = Depends(get_db)):
     dept = db.get(Department, dept_id)
     if not dept:
         raise HTTPException(404, "Department not found")

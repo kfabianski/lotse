@@ -99,6 +99,8 @@ def main():
     ap.add_argument("--user", default="admin")
     ap.add_argument("--password", default=os.environ.get("LOTSE_DEMO_ADMIN_PASSWORD"),
                     help="admin password shown by seed.py (or env LOTSE_DEMO_ADMIN_PASSWORD)")
+    ap.add_argument("--staff-password", default=os.environ.get("LOTSE_DEMO_PASSWORD"),
+                    help="password of the other demo accounts (or env LOTSE_DEMO_PASSWORD); optional, for the employee views")
     args = ap.parse_args()
     if not args.password:
         ap.error("admin password missing: --password or LOTSE_DEMO_ADMIN_PASSWORD")
@@ -106,12 +108,12 @@ def main():
     OUT.mkdir(parents=True, exist_ok=True)
     b = Browser(args.chrome)
 
-    def session(theme, login):
+    def session(theme, login, user=None, password=None):
         b.goto(base + "/", wait=0.3)
         token = "null"
         if login:
             token = b.js(f"""fetch('/api/auth/login', {{method: 'POST', headers: {{'Content-Type': 'application/json'}},
-                body: JSON.stringify({{username: {json.dumps(args.user)}, password: {json.dumps(args.password)}}})}})
+                body: JSON.stringify({{username: {json.dumps(user or args.user)}, password: {json.dumps(password or args.password)}}})}})
                 .then(r => r.json()).then(r => JSON.stringify(r.access_token))""")
         b.js(f"""localStorage.setItem('lotse-lang', 'de'); localStorage.setItem('lotse-theme', '{theme}');
                  {'localStorage.setItem("lotse-token", ' + token + ')' if login else 'localStorage.removeItem("lotse-token")'}; true""")
@@ -149,6 +151,8 @@ def main():
         b.js("[...document.querySelectorAll('main section button')].find(x => x.querySelector('img')).click()")
         time.sleep(1.5)
         b.shot("10-galerie.png")
+        b.goto(base + "/search?q=Lager", wait=2)
+        b.shot("19-suche.png", full=True)
         b.goto(base + "/login")
         b.shot("12-anmeldung.png")
 
@@ -169,6 +173,20 @@ def main():
         b.js("[...document.querySelectorAll('aside li button')].find(x => x.textContent.includes('Besprechung Elbe')).click(); true")
         time.sleep(0.8)
         b.shot("14-raum-editor.png")
+
+        b.goto(base + "/admin?tab=trainings", wait=2)
+        b.shot("16-schulungen-verwaltung.png")
+        b.js("[...document.querySelectorAll('main li')].find(li => li.textContent.includes('Datenschutz-Unterweisung'))"
+             ".querySelectorAll('button')[1].click(); true")
+        time.sleep(1.2)
+        b.shot("17-schulung-bearbeiten.png")
+        b.goto(base + "/admin?tab=quicklinks", wait=1.5)
+        b.shot("18-schnellzugriff-verwaltung.png")
+
+        if args.staff_password:  # employee view: only the person's own trainings
+            session("light", login=True, user="ahmed.haddad", password=args.staff_password)
+            b.goto(base + "/trainings", wait=2)
+            b.shot("15-meine-schulungen.png")
     finally:
         b.close()
 

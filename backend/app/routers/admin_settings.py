@@ -20,6 +20,10 @@ router = APIRouter(prefix="/api/admin/settings", tags=["admin"])
 class SettingsIn(BaseModel):
     company_name: str = Field(min_length=1, max_length=120)
     public_read: bool
+    holiday_regions: list[str] = Field(default=["DE", "AT", "CH"], max_length=12)
+    sso_enabled: bool = False
+    sso_header: str = Field(default="X-Remote-User", pattern=r"^[A-Za-z][A-Za-z0-9-]{1,60}$")
+    trusted_proxies: list[str] = Field(default=["127.0.0.1", "::1"], max_length=10)
     ldap_enabled: bool
     ldap_host: str = Field(default="", max_length=255, pattern=r"^[A-Za-z0-9.\-:\[\]]*$")
     ldap_port: int = Field(ge=1, le=65535)
@@ -76,6 +80,18 @@ def get_settings(_: User = Depends(require("admin"))):
 
 @router.put("")
 def save_settings(body: SettingsIn, _: User = Depends(require("admin")), db: Session = Depends(get_db)):
+    from app.public_holidays import valid_region
+    bad = [r for r in body.holiday_regions if not valid_region(r)]
+    if bad:
+        raise HTTPException(422, f"Unknown holiday region: {', '.join(bad)}")
+    body.holiday_regions = list(dict.fromkeys(body.holiday_regions))
+    import ipaddress
+    try:
+        body.trusted_proxies = [str(ipaddress.ip_address(x.strip())) for x in body.trusted_proxies if x.strip()]
+    except ValueError:
+        raise HTTPException(422, "Trusted proxies must be IP addresses")
+    if body.sso_enabled and not (body.ldap_enabled and body.trusted_proxies):
+        raise HTTPException(422, "Windows sign-in needs LDAP and at least one trusted proxy address")
     if "{username}" not in body.ldap_user_filter:
         raise HTTPException(422, "The user filter must contain {username}")
     if body.ldap_ca_pem.strip() and "BEGIN CERTIFICATE" not in body.ldap_ca_pem:

@@ -110,7 +110,7 @@ export default function People() {
 
       <div className="mt-8">
         {(users.loading || locations.loading) && !users.data && <p className="text-muted">{t('loading')}</p>}
-        {view === 'plan' && locations.data && <FloorPlanV2 locations={locations.data} deptColors={colors} focusPersonId={focus} />}
+        {view === 'plan' && locations.data && <FloorPlanV2 locations={locations.data} deptColors={colors} focusPersonId={focus} focusLocationId={Number(params.get('loc')) || null} />}
         {view === 'list' && users.data && (groups.length ? (
           <div className="space-y-10">
             {groups.map((g) => (

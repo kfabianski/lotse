@@ -1,8 +1,8 @@
 import { useEffect, useRef, useState } from 'react';
 import { Link, NavLink, useLocation, useNavigate } from 'react-router-dom';
 import {
-  BookOpen, CalendarDays, FileText, Home, Lightbulb, LogIn, LogOut, Menu, Moon, Newspaper, Search, Settings, StickyNote,
-  Sun, UserRound, Users, X,
+  BookOpen, CalendarDays, FileText, GraduationCap, Home, Lightbulb, LogIn, LogOut, Menu, Moon, Newspaper, Search, Settings,
+  StickyNote, Sun, UserRound, Users, X,
 } from 'lucide-react';
 import { useAuth } from '../lib/auth';
 import { useI18n } from '../lib/i18n';
@@ -38,17 +38,18 @@ export function Logo({ company }) {
 
 function useNavItems() {
   const { t } = useI18n();
-  const { can } = useAuth();
+  const { has, user } = useAuth();
   return [
     { to: '/', label: t('nav_home'), icon: Home, end: true },
     { to: '/news', label: t('nav_news'), icon: Newspaper },
     { to: '/calendar', label: t('nav_calendar'), icon: CalendarDays },
     { to: '/knowledge', label: t('nav_knowledge'), icon: BookOpen },
     { to: '/documents', label: t('nav_documents'), icon: FileText },
+    ...(user ? [{ to: '/trainings', label: t('nav_trainings'), icon: GraduationCap }] : []),
     { to: '/board', label: t('nav_board'), icon: StickyNote },
     { to: '/ideas', label: t('nav_ideas'), icon: Lightbulb },
     { to: '/people', label: t('nav_people'), icon: Users },
-    ...(can('admin') ? [{ to: '/admin', label: t('nav_admin'), icon: Settings }] : []),
+    ...(has('trainings', 'quicklinks', 'locations', 'people') ? [{ to: '/admin', label: t('nav_admin'), icon: Settings }] : []),
   ];
 }
 
@@ -189,6 +190,10 @@ export default function Header({ onMenu }) {
                   <div className="my-1 h-px bg-line" />
                   <Link role="menuitem" to="/profile" onClick={() => setMenuOpen(false)}
                     className="flex items-center gap-3 rounded-lg px-2.5 py-2 hover:bg-surface-2"><UserRound size={17} />{t('profile')}</Link>
+                  {(user.role === 'admin' || (user.effective_permissions || []).includes('trainings')) && (
+                    <Link role="menuitem" to="/admin?tab=trainings&new=1" onClick={() => setMenuOpen(false)}
+                      className="flex items-center gap-3 rounded-lg px-2.5 py-2 hover:bg-surface-2"><GraduationCap size={17} />{t('tr_new')}</Link>
+                  )}
                   <button role="menuitem" type="button" onClick={() => { logout(); setMenuOpen(false); navigate('/'); }}
                     className="flex w-full items-center gap-3 rounded-lg px-2.5 py-2 text-left hover:bg-surface-2"><LogOut size={17} />{t('sign_out')}</button>
                 </div>
