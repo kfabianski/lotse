@@ -68,7 +68,24 @@ def _check_email(db: Session, email: str | None, user_id: int | None = None) -> 
     return email
 
 
-LDAP_FIELDS = {"first_name", "last_name", "email", "department", "position", "phone_ext"}
+LDAP_FIELDS = {"first_name", "last_name", "email", "department", "position", "phone_ext", "manager_id"}
+
+
+def check_manager(db: Session, user: User, manager_id: int | None) -> int | None:
+    """A manager must exist and must not report (directly or indirectly) to the person - no loops."""
+    if manager_id is None:
+        return None
+    if manager_id == user.id:
+        raise HTTPException(400, "Eine Person kann nicht sich selbst vorgesetzt sein.")
+    seen, current = set(), db.get(User, manager_id)
+    if current is None:
+        raise HTTPException(404, "Vorgesetzte Person nicht gefunden")
+    while current is not None and current.id not in seen:
+        if current.id == user.id:
+            raise HTTPException(400, "Das ergäbe einen Kreis im Organigramm.")
+        seen.add(current.id)
+        current = db.get(User, current.manager_id) if current.manager_id else None
+    return manager_id
 
 
 def _special(user: User) -> bool:
@@ -129,6 +146,8 @@ def update_user(user_id: int, body: UserUpdate, admin: User = Depends(require_pe
             if user.auth_source != "local":
                 raise HTTPException(400, "Directory accounts have no local password")
             user.password_hash = hash_password(password)
+    if "manager_id" in data:
+        user.manager_id = check_manager(db, user, data.pop("manager_id") or None)
     if "seat_id" in data:
         seat_id = data.pop("seat_id")
         if seat_id:

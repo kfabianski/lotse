@@ -34,7 +34,10 @@ class User(Base):
     language: Mapped[str] = mapped_column(String(2), default="de")
     is_active: Mapped[bool] = mapped_column(Boolean, default=True)
     show_in_directory: Mapped[bool] = mapped_column(Boolean, default=True)
-    ideas_seen_at: Mapped[datetime | None] = mapped_column(DateTime)  # last visit of the ideas page (for "new answers")
+    ideas_seen_at: Mapped[datetime | None] = mapped_column(DateTime)
+    # Org chart: who the person reports to (from LDAP "manager" or set by an admin)
+    manager_id: Mapped[int | None] = mapped_column(ForeignKey("users.id", ondelete="SET NULL"), index=True)
+    ldap_dn: Mapped[str | None] = mapped_column(String(400))  # directory DN, to resolve other people's "manager"  # last visit of the ideas page (for "new answers")
     seat_id: Mapped[int | None] = mapped_column(ForeignKey("seats.id", ondelete="SET NULL"), unique=True)
     created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
 

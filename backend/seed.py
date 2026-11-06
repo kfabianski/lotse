@@ -1103,10 +1103,35 @@ def seed(reset: bool):
     add_demo_links(db)
     add_demo_trainings(db)
     add_demo_polls(db)
+    db.flush()
+    add_demo_org(db)
     db.commit()
     print("Demo data created. Passwords are shown only now - note them down:")
     print(f"  admin            {admin_pw}   (administrator)")
     print(f"  all other users  {staff_pw}   (e.g. lea.hoffmann = editor, mehmet.yilmaz = user)")
+
+
+ORG = {  # person -> manager (demo org chart)
+    "sophie.schulz": "anna.becker", "lea.hoffmann": "anna.becker", "katrin.lange": "anna.becker",
+    "elena.richter": "katrin.lange", "clara.braun": "anna.becker", "tim.neumann": "clara.braun",
+    "jonas.weber": "anna.becker", "david.klein": "jonas.weber", "mehmet.yilmaz": "anna.becker",
+    "hannah.wolf": "mehmet.yilmaz", "nina.krueger": "mehmet.yilmaz", "lukas.fischer": "anna.becker",
+    "paul.schroeder": "lukas.fischer", "ahmed.haddad": "lukas.fischer", "felix.zimmermann": "lukas.fischer",
+    "marta.kowalska": "felix.zimmermann", "jana.peters": "felix.zimmermann",
+}
+
+
+def add_demo_org(db) -> int:
+    """Who reports to whom - only when nobody has a manager yet."""
+    if db.query(User).filter(User.manager_id.isnot(None)).count():
+        return 0
+    users = {u.username: u for u in db.query(User).all()}
+    n = 0
+    for person, manager in ORG.items():
+        if person in users and manager in users:
+            users[person].manager_id = users[manager].id
+            n += 1
+    return n
 
 
 def add_demo_polls(db) -> int:
@@ -1144,7 +1169,11 @@ def add_demo_polls(db) -> int:
 
 
 if __name__ == "__main__":
-    if "--polls" in sys.argv:  # demo polls for an existing database
+    if "--org" in sys.argv:  # demo org chart for an existing database
+        db = SessionLocal()
+        print(f"{add_demo_org(db)} reporting lines added.")
+        db.commit()
+    elif "--polls" in sys.argv:  # demo polls for an existing database
         db = SessionLocal()
         print(f"{add_demo_polls(db)} polls added.")
         db.commit()

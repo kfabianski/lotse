@@ -100,6 +100,8 @@ def entry_data(entry) -> dict:
         "phone_ext": str(_first(entry, settings.ldap_attr_phone) or ""),
         "role": _role_for(entry),
         "photo": _first(entry, settings.ldap_attr_photo),
+        "dn": str(getattr(entry, "entry_dn", "") or ""),
+        "manager_dn": str(_first(entry, settings.ldap_attr_manager) or "").strip(),
     }
 
 
@@ -149,6 +151,29 @@ def apply_data(db: Session, user: User, data: dict) -> None:
     photo = _save_photo(data["photo"])
     if photo:
         user.avatar_url = photo
+    if data.get("dn"):
+        user.ldap_dn = data["dn"]
+
+
+def resolve_manager(db: Session, user: User, manager_dn: str) -> bool:
+    """Set ``user.manager_id`` from the directory DN of the manager (when that person is in Lotse).
+    Returns True when something changed. Never creates a loop."""
+    manager = None
+    if manager_dn:
+        manager = db.query(User).filter(User.ldap_dn.isnot(None), User.ldap_dn.ilike(manager_dn)).first()
+        if manager is None or manager.id == user.id:
+            return False  # manager not (yet) in Lotse: keep what is there
+        seen, cur = {user.id}, manager
+        while cur is not None and cur.manager_id:
+            if cur.manager_id in seen:
+                return False
+            seen.add(cur.manager_id)
+            cur = db.get(User, cur.manager_id)
+    new = manager.id if manager else None
+    if user.manager_id != new:
+        user.manager_id = new
+        return True
+    return False
 
 
 def _upsert(db: Session, entry) -> User:
@@ -165,6 +190,8 @@ def _upsert(db: Session, entry) -> User:
     elif how == "email":
         user.username = data["username"]  # linked: from now on the directory user name is used
     apply_data(db, user, data)
+    db.flush()
+    resolve_manager(db, user, data.get("manager_dn", ""))
     return user
 
 
@@ -273,6 +300,7 @@ FIELDS = ("first_name", "last_name", "email", "department", "position", "phone_e
 def plan(db: Session, people: list[dict]) -> dict:
     """What a sync would change - nothing is written. The admin chooses what to apply."""
     by_username = {p["username"]: p for p in people}
+    by_dn = {p["dn"].lower(): p for p in people if p.get("dn")}
     emails = {}
     for p in people:
         if p["email"]:
@@ -306,6 +334,13 @@ def plan(db: Session, people: list[dict]) -> dict:
                 continue  # empty directory values keep what is there
             if (old or "") != (new or ""):
                 changes.append({"field": f, "old": old or "", "new": new or ""})
+        new_mgr = by_dn.get((p.get("manager_dn") or "").lower())
+        if p.get("manager_dn") and new_mgr is not None:
+            mgr_user, _ = match(db, new_mgr)
+            new_name = mgr_user.full_name if mgr_user else f"{new_mgr['first_name']} {new_mgr['last_name']}".strip()
+            old_name = db.get(User, user.manager_id).full_name if user.manager_id and db.get(User, user.manager_id) else ""
+            if new_name != old_name:
+                changes.append({"field": "manager", "old": old_name, "new": new_name})
         if changes:
             result["update"].append({"user_id": user.id, "name": user.full_name, "changes": changes})
         if not user.is_active:
@@ -361,6 +396,12 @@ def apply_plan(db: Session, people: list[dict], choices: dict) -> dict:
             user.is_active = True
             done["updated"] += 1
         db.flush()
+    managers = 0  # second pass: everybody exists now, so "manager" DNs can be resolved
+    for p in people:
+        user, _ = match(db, p)
+        if user is not None and user.auth_source == "ldap" and (do_update or user.id in link or p["username"] in add):
+            managers += resolve_manager(db, user, p.get("manager_dn", ""))
+    done["managers"] = managers
     for uid in deactivate:
         u = db.get(User, uid)
         if u and u.auth_source == "ldap" and u.is_active:

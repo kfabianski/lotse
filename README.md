@@ -68,6 +68,8 @@ Alle Funktionen im Detail: **[docs/FUNKTIONEN.md](docs/FUNKTIONEN.md)** · Bildn
 - **Lageplan**: Gebäudeansicht (Etagen übereinander, Lagerhallen daneben), Räume als echte Flächen in den
   Abteilungsfarben, Besprechungsräume mit Plätzen, Ausstattung und Raum-E-Mail, Hover-Karte mit Foto und
   Durchwahl, weiches Zoomen zur Person, Suche über alle Etagen, Minikarte, Abteilungsfilter.
+- **Organigramm** (Mitarbeitende → Organigramm): wer wem unterstellt ist – aus LDAP (`manager`) oder in der
+  Verwaltung eingetragen; Äste ein-/ausklappen, an Breite anpassen, Zoom, Suche und Abteilungsfilter heben Personen hervor.
 - **Kleinanzeigen**: Biete, Suche, Zu verschenken, Fahrgemeinschaften – mit Foto, Preis und Kontakt.
 - **Ideenbox**: Ideen einreichen (auf Wunsch **wirklich anonym** – der Name wird dann gar nicht gespeichert),
   mit **1–5 Sternen** bewerten, Sortierung *Beste Bewertung* oder *Neueste*, Status von *Neu* bis *Umgesetzt*

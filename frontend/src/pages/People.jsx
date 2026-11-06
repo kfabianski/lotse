@@ -1,6 +1,7 @@
 import { useMemo, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
-import { LayoutGrid, Mail, Map as MapIcon, Phone, Search } from 'lucide-react';
+import { LayoutGrid, Mail, Map as MapIcon, Network, Phone, Search } from 'lucide-react';
+import OrgChart from '../components/OrgChart';
 import FloorPlanV2 from '../components/FloorPlanV2';
 import { Avatar, Empty, inputClass } from '../components/ui';
 import { useI18n } from '../lib/i18n';
@@ -76,7 +77,7 @@ export default function People() {
           <p className="mt-1 text-muted">{t('people_count', { n: filtered.length })}{dept && `, ${dept}`}</p>
         </div>
         <div role="tablist" className="inline-flex rounded-xl border border-line bg-surface p-1">
-          {[['list', LayoutGrid, t('view_list')], ['plan', MapIcon, t('view_plan')]].map(([v, Icon, label]) => (
+          {[['list', LayoutGrid, t('view_list')], ['org', Network, t('view_org')], ['plan', MapIcon, t('view_plan')]].map(([v, Icon, label]) => (
             <button key={v} type="button" role="tab" aria-selected={view === v} onClick={() => update({ view: v })}
               className={`inline-flex items-center gap-2 rounded-[10px] px-4 py-1.5 text-sm font-medium ${view === v ? 'bg-ink text-surface' : 'text-muted hover:text-ink'}`}>
               <Icon size={16} />{label}
@@ -111,6 +112,7 @@ export default function People() {
       <div className="mt-8">
         {(users.loading || locations.loading) && !users.data && <p className="text-muted">{t('loading')}</p>}
         {view === 'plan' && locations.data && <FloorPlanV2 locations={locations.data} deptColors={colors} focusPersonId={focus} focusLocationId={Number(params.get('loc')) || null} />}
+        {view === 'org' && users.data && <OrgChart people={people} colors={colors} isMatch={matches} filtering={Boolean(needle || dept)} />}
         {view === 'list' && users.data && (groups.length ? (
           <div className="space-y-10">
             {groups.map((g) => (

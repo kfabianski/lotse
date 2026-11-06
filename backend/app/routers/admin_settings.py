@@ -46,6 +46,7 @@ class SettingsIn(BaseModel):
     ldap_attr_title: str = "title"
     ldap_attr_phone: str = "telephoneNumber"
     ldap_attr_photo: str = "thumbnailPhoto"
+    ldap_attr_manager: str = "manager"
 
 
 class TestIn(BaseModel):

@@ -115,7 +115,7 @@ export default function AdminSettings() {
     } finally { setBusy(false); }
   };
 
-  const attrs = ['username', 'first_name', 'last_name', 'email', 'department', 'title', 'phone', 'photo'];
+  const attrs = ['username', 'first_name', 'last_name', 'email', 'department', 'title', 'phone', 'photo', 'manager'];
 
   return (
     <form onSubmit={save} className="space-y-5">

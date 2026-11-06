@@ -14,6 +14,8 @@ COLUMNS = [
     ("users", "role_local", "VARCHAR(10)", None),
     ("trainings", "open_to_all", "BOOLEAN NOT NULL DEFAULT 0", None),
     ("users", "ideas_seen_at", "DATETIME", None),
+    ("users", "manager_id", "INTEGER REFERENCES users(id) ON DELETE SET NULL", None),
+    ("users", "ldap_dn", "VARCHAR(400)", None),
 ]
 
 

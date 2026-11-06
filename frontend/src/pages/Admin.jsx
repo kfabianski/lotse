@@ -29,20 +29,23 @@ function UserForm({ user, locations, onDone }) {
     first_name: user?.first_name || '', last_name: user?.last_name || '', department: user?.department || '',
     position: user?.position || '', phone_ext: user?.phone_ext || '', start_date: user?.start_date || '',
     is_active: user?.is_active ?? true, show_in_directory: user?.show_in_directory ?? true, seat_id: user?.seat?.id || 0,
+    manager_id: user?.manager_id || 0,
   }));
+  const everyone = useFetch('/users', { params: { include_hidden: true } }, 'all-users-for-manager');
   const [error, setError] = useState('');
   const set = (k) => (e) => setForm({ ...form, [k]: e.target.type === 'checkbox' ? e.target.checked : e.target.value });
 
   const submit = async (e) => {
     e.preventDefault();
-    const body = { ...form, email: form.email || null, start_date: form.start_date || null, seat_id: Number(form.seat_id) };
+    const body = { ...form, email: form.email || null, start_date: form.start_date || null, seat_id: Number(form.seat_id), manager_id: Number(form.manager_id) };
+    if (fromLdap) delete body.manager_id;
     if (!body.password) delete body.password;
     if (!can('admin')) delete body.role;  // roles and permissions: admins only
     try {
       if (isNew) {
-        const { seat_id, is_active, show_in_directory, ...create } = body;
+        const { seat_id, is_active, show_in_directory, manager_id, ...create } = body;
         const created = await api('/users', { method: 'POST', body: create });
-        if (seat_id) await api(`/users/${created.id}`, { method: 'PATCH', body: { seat_id } });
+        if (seat_id || manager_id) await api(`/users/${created.id}`, { method: 'PATCH', body: { seat_id, manager_id } });
       } else {
         await api(`/users/${user.id}`, { method: 'PATCH', body });
       }
@@ -69,6 +72,13 @@ function UserForm({ user, locations, onDone }) {
         </select>
       </Field>
       <Field label={t('position')} hint={fromLdap ? t('from_ldap') : undefined}><input disabled={fromLdap} className={inputClass} value={form.position} onChange={set('position')} /></Field>
+      <Field label={t('manager')} hint={fromLdap ? t('from_ldap') : t('manager_hint')}>
+        <select disabled={fromLdap} className={inputClass} value={form.manager_id} onChange={set('manager_id')}>
+          <option value={0}>{t('manager_none')}</option>
+          {(everyone.data || []).filter((p) => p.id !== user?.id && p.is_active).sort((a, b) => a.last_name.localeCompare(b.last_name))
+            .map((p) => <option key={p.id} value={p.id}>{p.full_name}{p.position ? ` – ${p.position}` : ''}</option>)}
+        </select>
+      </Field>
       <Field label={t('role')} hint={can('admin') ? t('perm_role_hint') : t('perm_admin_only')}>
         <select disabled={!can('admin')} className={inputClass} value={form.role} onChange={set('role')}>
           {ROLES.map((r) => <option key={r} value={r}>{t(`role_${r}`)}</option>)}

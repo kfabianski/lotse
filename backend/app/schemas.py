@@ -40,6 +40,7 @@ class UserOut(ORM):
     is_active: bool
     show_in_directory: bool
     seat: SeatRef | None = None
+    manager_id: int | None = None
     permissions: list[str] = []  # extra permissions (only shown to admins and to the person)
     effective_permissions: list[str] = []  # role + extras (only for the person and admins)
 
@@ -71,6 +72,7 @@ class UserUpdate(BaseModel):
     show_in_directory: bool | None = None
     password: str | None = Field(default=None, min_length=8, max_length=72)
     seat_id: int | None = Field(default=None, description="0 clears the seat")
+    manager_id: int | None = Field(default=None, description="0 clears the manager")
     permissions: list[Permission] | None = None
 
 

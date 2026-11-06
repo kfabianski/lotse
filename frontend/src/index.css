@@ -134,3 +134,11 @@ body {
 
 /* item opened from the search results */
 .hash-focus { outline: 3px solid var(--brand); outline-offset: 3px; transition: outline-color .6s; }
+
+/* org chart connectors: horizontal bar over the direct reports, short vertical line down to each card */
+.org-col::before { content: ''; position: absolute; top: 0; left: 0; right: 0; border-top: 2px solid var(--line); }
+.org-col:first-child::before { left: 50%; }
+.org-col:last-child::before { right: 50%; }
+.org-col:only-child::before { display: none; }
+.org-col::after { content: ''; position: absolute; top: 0; left: 50%; height: 1.5rem; border-left: 2px solid var(--line); }
+.org-list > li::before { content: ''; position: absolute; left: -0.75rem; top: 1.6rem; width: 0.75rem; border-top: 2px solid var(--line); }

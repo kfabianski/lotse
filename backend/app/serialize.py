@@ -19,7 +19,7 @@ def user_out(user: User, full: bool = False) -> dict:
         "full_name": user.full_name, "department": user.department, "position": user.position,
         "phone_ext": user.phone_ext, "avatar_url": user.avatar_url, "start_date": user.start_date,
         "language": user.language, "is_active": user.is_active,
-        "show_in_directory": user.show_in_directory, "seat": seat_ref(user),
+        "show_in_directory": user.show_in_directory, "seat": seat_ref(user), "manager_id": user.manager_id,
         "permissions": extra_permissions(user) if full else [],
         "effective_permissions": sorted(permissions_of(user)) if full else [],
     }
