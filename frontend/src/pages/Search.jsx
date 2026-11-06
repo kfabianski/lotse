@@ -1,5 +1,5 @@
 import { Link, useSearchParams } from 'react-router-dom';
-import { DoorOpen, FileText, GraduationCap, Lightbulb, Link2, StickyNote } from 'lucide-react';
+import { BarChart3, DoorOpen, FileText, GraduationCap, Lightbulb, Link2, StickyNote } from 'lucide-react';
 import { Avatar, CategoryTag, Empty } from '../components/ui';
 import { QUICK_ICONS } from '../components/QuickLinks';
 import { ArticleGrid } from './Articles';
@@ -132,6 +132,16 @@ export default function Search() {
             {data.classifieds.map((c) => (
               <li key={c.id}><Row to={`/board#notice-${c.id}`} icon={StickyNote} color="#d97706" title={c.title}
                 meta={[c.price, c.author].filter(Boolean).join(' · ')} snippet={c.snippet} /></li>
+            ))}
+          </ul>
+        </Section>
+      )}
+
+      {data?.polls?.length > 0 && (
+        <Section title={t('nav_polls')} count={data.polls.length}>
+          <ul className={grid}>
+            {data.polls.map((x) => (
+              <li key={x.id}><Row to="/polls" icon={BarChart3} color="#2563eb" title={pick(x, 'question')} meta={t(x.open ? 'poll_open' : 'poll_closed')} /></li>
             ))}
           </ul>
         </Section>

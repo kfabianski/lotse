@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom';
-import { CalendarCheck, ChevronRight, GraduationCap, Lightbulb, Sparkles } from 'lucide-react';
+import { BarChart3, CalendarCheck, ChevronRight, GraduationCap, Lightbulb, Sparkles } from 'lucide-react';
 import { useAuth } from '../lib/auth';
 import { useI18n } from '../lib/i18n';
 import { useFetch } from '../lib/useFetch';
@@ -38,9 +38,10 @@ export default function Greeting() {
   const ev = data?.events_today || [];
   const tr = data?.trainings_open || [];
   const ideas = data?.idea_news || [];
+  const polls = data?.polls_open || [];
   const overdue = tr.some((x) => x.overdue);
   const plural = (key, n) => t(n === 1 ? `${key}_one` : key, { n });
-  const nothing = data && !ev.length && !tr.length && !ideas.length;
+  const nothing = data && !ev.length && !tr.length && !ideas.length && !polls.length;
 
   return (
     <section aria-label={t('greet_label')} className="card overflow-hidden p-5 sm:p-6">
@@ -50,7 +51,7 @@ export default function Greeting() {
       </h1>
       {nothing && <p className="mt-2 inline-flex items-center gap-2 text-muted"><Sparkles size={16} className="text-brand" />{t('greet_nothing')}</p>}
       {data && !nothing && (
-        <div className="mt-4 grid gap-3 md:grid-cols-3">
+        <div className="mt-4 grid gap-3 md:grid-cols-2 xl:grid-cols-4">
           {ev.length > 0 && (
             <Reminder to={ev.length === 1 ? `/articles/${ev[0].id}` : '/calendar'} icon={CalendarCheck} tone="brand"
               title={plural('greet_events', ev.length)}
@@ -64,6 +65,9 @@ export default function Greeting() {
             <Reminder to={ideas.length === 1 ? `/ideas#idea-${ideas[0].id}` : '/ideas'} icon={Lightbulb} tone="safe"
               title={plural('greet_ideas', ideas.length)}
               lines={ideas.map((i) => `${i.title} – ${t(`idea_status_${i.status}`)}`)} />
+          )}
+          {polls.length > 0 && (
+            <Reminder to="/polls" icon={BarChart3} tone="brand" title={plural('greet_polls', polls.length)} lines={polls.map((p) => loc(p, 'question'))} />
           )}
         </div>
       )}

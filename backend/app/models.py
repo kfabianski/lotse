@@ -364,3 +364,34 @@ class TrainingCompletion(Base):
     user_id: Mapped[int] = mapped_column(ForeignKey("users.id", ondelete="CASCADE"), primary_key=True)
     version: Mapped[int] = mapped_column(Integer, default=1)
     completed_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.now)
+
+
+class Poll(Base):
+    """Short survey (e.g. date of the summer party, satisfaction). Votes are counted, never shown per person."""
+
+    __tablename__ = "polls"
+    id: Mapped[int] = mapped_column(primary_key=True)
+    question_de: Mapped[str] = mapped_column(String(200))
+    question_en: Mapped[str] = mapped_column(String(200), default="")
+    description_de: Mapped[str] = mapped_column(Text, default="")
+    description_en: Mapped[str] = mapped_column(Text, default="")
+    options: Mapped[str] = mapped_column(Text, default="[]")  # JSON list of {"de": "...", "en": "..."}
+    multiple: Mapped[bool] = mapped_column(Boolean, default=False)  # several answers allowed
+    results: Mapped[str] = mapped_column(String(12), default="after_vote")  # always | after_vote | after_close
+    closes_at: Mapped[datetime | None] = mapped_column(DateTime)
+    closed: Mapped[bool] = mapped_column(Boolean, default=False)  # closed early by hand
+    created_by: Mapped[int | None] = mapped_column(ForeignKey("users.id", ondelete="SET NULL"))
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.now, index=True)
+
+    def is_open(self) -> bool:
+        return not self.closed and (self.closes_at is None or self.closes_at > datetime.now())
+
+
+class PollVote(Base):
+    """One person's answer; only used for "one vote per person" and the totals."""
+
+    __tablename__ = "poll_votes"
+    poll_id: Mapped[int] = mapped_column(ForeignKey("polls.id", ondelete="CASCADE"), primary_key=True)
+    user_id: Mapped[int] = mapped_column(ForeignKey("users.id", ondelete="CASCADE"), primary_key=True)
+    choices: Mapped[str] = mapped_column(Text, default="[]")  # JSON list of option indexes
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.now)

@@ -17,12 +17,12 @@ ROLE_RANK = {"user": 0, "author": 0, "moderator": 0, "editor": 1, "admin": 2}
 
 # What a person may do. Admins can grant these per person on top of the role. Everything that touches the
 # system itself (general settings, LDAP, roles and permissions, LDAP sync) is NOT a permission: admins only.
-PERMISSIONS = ("content_own", "content_all", "trainings", "moderate", "quicklinks", "locations", "people")
+PERMISSIONS = ("content_own", "content_all", "trainings", "moderate", "quicklinks", "polls", "locations", "people")
 ROLE_PERMS = {
     "user": set(),
     "author": {"content_own"},
-    "moderator": {"content_own", "trainings", "moderate", "quicklinks"},
-    "editor": {"content_own", "content_all", "trainings", "moderate", "quicklinks"},
+    "moderator": {"content_own", "trainings", "moderate", "quicklinks", "polls"},
+    "editor": {"content_own", "content_all", "trainings", "moderate", "quicklinks", "polls"},
     "admin": set(PERMISSIONS),
 }
 

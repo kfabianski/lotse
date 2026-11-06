@@ -6,7 +6,7 @@ from fastapi.staticfiles import StaticFiles
 from app import migrate
 from app.config import settings
 from app.db import Base, engine
-from app.routers import (admin_settings, auth, calendar, content, departments, ideas, locations, quicklinks, revisions, search, me,
+from app.routers import (admin_settings, auth, calendar, content, departments, ideas, locations, quicklinks, revisions, search, me, polls,
                          trainings, users)
 from app.db import SessionLocal
 
@@ -21,7 +21,7 @@ app = FastAPI(title="Lotse Intranet API", version="1.0.0")
 app.add_middleware(CORSMiddleware, allow_origins=settings.cors_origins, allow_credentials=True,
                    allow_methods=["*"], allow_headers=["*"])
 
-for module in (auth, users, me, content, search, revisions, quicklinks, trainings, locations, ideas, calendar, admin_settings, departments):
+for module in (auth, users, me, content, search, revisions, quicklinks, trainings, locations, ideas, polls, calendar, admin_settings, departments):
     app.include_router(module.router)
 app.include_router(trainings.files_router)
 

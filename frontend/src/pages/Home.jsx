@@ -10,6 +10,7 @@ import { UpcomingCard } from './Events';
 import MiniCalendar from '../components/MiniCalendar';
 import QuickLinks from '../components/QuickLinks';
 import Greeting from '../components/Greeting';
+import { PollCard } from './Polls';
 
 function ShowAll({ to, label }) {
   const { t } = useI18n();
@@ -74,6 +75,21 @@ function PhotoWall({ photos }) {
           );
         })}
       </ul>
+    </section>
+  );
+}
+
+/** Newest open poll, if any. */
+function HomePoll() {
+  const { t } = useI18n();
+  const { data } = useFetch('/polls', { params: { state: 'open', limit: 1 } }, 'home-poll');
+  const [poll, setPoll] = useState(null);
+  const p = poll || data?.[0];
+  if (!p) return null;
+  return (
+    <section>
+      <SectionHeading action={<ShowAll to="/polls" label={t('polls_all')} />}>{t('home_poll')}</SectionHeading>
+      <PollCard key={`${p.id}-${p.my_choices?.join(',')}`} poll={p} onChange={setPoll} compact />
     </section>
   );
 }
@@ -159,6 +175,8 @@ export default function Home() {
           </ul>
         </section>
 
+        <div className="space-y-10">
+        <HomePoll />
         <section>
           <SectionHeading action={<ShowAll to="/board" />}>{t('board_latest')}</SectionHeading>
           <ul className="space-y-3">
@@ -171,6 +189,7 @@ export default function Home() {
             ))}
           </ul>
         </section>
+        </div>
       </div>
     </div>
   );

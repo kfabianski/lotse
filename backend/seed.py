@@ -17,7 +17,7 @@ from app.config import settings
 from app.db import Base, SessionLocal, engine
 from app.models import (DEFAULT_DEPARTMENTS, Article, Attachment, Classified, Department, EventRsvp, Idea, IdeaVote, Location,
                         QuickLink, Room, Seat, Training, TrainingCompletion, TrainingGroup, TrainingGroupMember,
-                        TrainingMaterial, TrainingTarget, User)
+                        TrainingMaterial, TrainingTarget, User, Poll, PollVote)
 from app.security import hash_password
 
 random.seed(7)
@@ -1102,14 +1102,53 @@ def seed(reset: bool):
     db.flush()
     add_demo_links(db)
     add_demo_trainings(db)
+    add_demo_polls(db)
     db.commit()
     print("Demo data created. Passwords are shown only now - note them down:")
     print(f"  admin            {admin_pw}   (administrator)")
     print(f"  all other users  {staff_pw}   (e.g. lea.hoffmann = editor, mehmet.yilmaz = user)")
 
 
+def add_demo_polls(db) -> int:
+    """Two running polls and a finished one with votes, so the page and the home card are not empty."""
+    import json
+    if db.query(Poll).count():
+        return 0
+    staff = db.query(User).filter(User.is_active.is_(True), User.username.notin_(["admin", "lea.hoffmann", "mehmet.yilmaz"])).order_by(User.id).all()
+    creator = db.query(User).filter(User.role == "editor").first()
+    now = datetime.now()
+    polls = [
+        ("Welcher Termin passt für das Sommerfest 2027?", "Which date suits you for the 2027 summer party?",
+         "Wir feiern wieder im Lager Nord. Bitte bis Ende des Monats abstimmen.", "",
+         [("Freitag, 25. Juni", "Friday, 25 June"), ("Freitag, 2. Juli", "Friday, 2 July"), ("Samstag, 3. Juli", "Saturday, 3 July")],
+         False, "after_vote", now + timedelta(days=21), [0, 0, 1, 0, 2, 1, 0, 0, 1]),
+        ("Was wünschen Sie sich für die Kantine?", "What would you like in the canteen?",
+         "Mehrere Antworten möglich.", "Several answers possible.",
+         [("Mehr vegetarische Gerichte", "More vegetarian dishes"), ("Salatbar", "Salad bar"),
+          ("Frühstück ab 7 Uhr", "Breakfast from 7 am"), ("Kaffee-Flatrate", "Coffee flat rate")],
+         True, "always", None, [[0, 1], [1], [0, 3], [3], [1, 2], [0]]),
+        ("Wie zufrieden sind Sie mit dem neuen Zeiterfassungs-Terminal?", "How happy are you with the new time clock?",
+         "", "", [("Sehr zufrieden", "Very happy"), ("Zufrieden", "Happy"), ("Geht so", "So-so"), ("Unzufrieden", "Unhappy")],
+         False, "after_close", now - timedelta(days=5), [1, 0, 1, 1, 2, 0, 1, 1, 3, 1, 0]),
+    ]
+    for q_de, q_en, d_de, d_en, options, multiple, results, closes, votes in polls:
+        p = Poll(question_de=q_de, question_en=q_en, description_de=d_de, description_en=d_en, multiple=multiple,
+                 results=results, closes_at=closes, created_by=creator.id if creator else None,
+                 options=json.dumps([{"de": a, "en": b} for a, b in options], ensure_ascii=False),
+                 created_at=now - timedelta(days=12 if closes and closes < now else 3))
+        db.add(p)
+        db.flush()
+        for person, choice in zip(staff, votes):  # the demo logins have not voted yet, so they can try it
+            db.add(PollVote(poll_id=p.id, user_id=person.id, choices=json.dumps(choice if isinstance(choice, list) else [choice])))
+    return len(polls)
+
+
 if __name__ == "__main__":
-    if "--trainings" in sys.argv:  # quick-access tiles + trainings for an existing database
+    if "--polls" in sys.argv:  # demo polls for an existing database
+        db = SessionLocal()
+        print(f"{add_demo_polls(db)} polls added.")
+        db.commit()
+    elif "--trainings" in sys.argv:  # quick-access tiles + trainings for an existing database
         db = SessionLocal()
         print(f"{add_demo_links(db)} tiles, {add_demo_trainings(db)} trainings added.")
         db.commit()

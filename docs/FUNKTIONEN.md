@@ -18,6 +18,7 @@ Diese Beschreibung erklärt, was Lotse kann und wer was darf. Installation und K
 11. [Verwaltung](#11-verwaltung)
 12. [LDAP / Active Directory](#12-ldap--active-directory)
 13. [Schulungen und Pflichtlektüre](#13-schulungen-und-pflichtlektüre)
+14. [Umfragen](#14-umfragen)
 
 ---
 
@@ -31,13 +32,13 @@ eine Rolle und – zusätzlich zur Rolle – einzelne Rechte.
 | **Besucher** (nicht angemeldet) | nur lesen – wenn *Lesen ohne Anmeldung* eingeschaltet ist; keine Schulungen |
 | **Mitarbeitende** | Anzeigen und Ideen (auch anonym), Sterne vergeben, bei Veranstaltungen zusagen, eigene Schulungen bestätigen, Profil |
 | **Autor:in** | zusätzlich **eigene** Artikel und Veranstaltungen schreiben, bearbeiten, löschen (eigene Entwürfe) |
-| **Moderator:in** | wie Autor:in, dazu **Schulungen verwalten**, **Ideen & Kleinanzeigen moderieren**, **Schnellzugriff** pflegen |
+| **Moderator:in** | wie Autor:in, dazu **Schulungen verwalten**, **Ideen & Kleinanzeigen moderieren**, **Schnellzugriff** pflegen, **Umfragen** erstellen |
 | **Redaktion** | wie Moderator:in, dazu **alle** Artikel bearbeiten, alle Entwürfe sehen, Slider, Versionen wiederherstellen |
 | **Administrator** | alles, auch die **Systemeinstellungen** |
 
 **Einzelne Rechte**, die der Administrator pro Person zusätzlich einschalten kann: *Eigene Artikel &
 Veranstaltungen*, *Alle Artikel & Veranstaltungen*, *Schulungen verwalten*, *Ideen & Kleinanzeigen moderieren*,
-*Schnellzugriff pflegen*, *Etagen, Räume & Plätze*, *Personen & Abteilungen* (nur Konten **ohne** besondere
+*Schnellzugriff pflegen*, *Umfragen erstellen*, *Etagen, Räume & Plätze*, *Personen & Abteilungen* (nur Konten **ohne** besondere
 Rechte; keine Rollen- oder Rechtevergabe).
 
 **Nie übertragbar** – nur Administratoren: allgemeine Einstellungen, **LDAP**, Windows-Anmeldung,
@@ -70,7 +71,7 @@ Die Verwaltung zeigt jeder Person nur die Bereiche, für die sie Rechte hat.
   - **Artikel und Veranstaltungen** (Titel, Kurztext, Text, Ort – mit Textauszug zur Fundstelle),
   - **Dokumente** (PDF-Name und Artikel; öffnen sich direkt im Betrachter),
   - **Räume** aus dem Lageplan (Name, Ausstattung, Buchungs-E-Mail, Abteilung) – Klick öffnet die Etage,
-  - **Kleinanzeigen** und **Ideen** (Klick springt zum Eintrag; anonyme Ideen bleiben anonym),
+  - **Kleinanzeigen** und **Ideen** (Klick springt zum Eintrag; anonyme Ideen bleiben anonym), **Umfragen**,
   - **Schnellzugriff**-Kacheln,
   - **Schulungen** nur für Angemeldete und nur die, die sie öffnen dürfen (zugewiesen oder für alle freiwillig).
   Groß-/Kleinschreibung und Akzente spielen keine Rolle: *yilmaz* findet *Yılmaz*, *schroeder* findet *Schröder*,
@@ -85,6 +86,7 @@ Die Verwaltung zeigt jeder Person nur die Bereiche, für die sie Rechte hat.
   - **offene Pflicht-Schulungen** – rot, wenn eine Frist überschritten ist,
   - **Neues zu den eigenen Ideen** (neuer Status oder Antwort der Redaktion); nach dem Besuch der Ideenseite gilt
     es als gelesen. Anonyme Ideen tauchen hier nicht auf – sie sind niemandem zugeordnet.
+  - **neue Umfragen**, bei denen die Person noch nicht abgestimmt hat.
   Steht nichts an, erscheint *Heute steht für Sie nichts Besonderes an.*
 - **Slider** über die ganze Breite mit den Beiträgen, die die Redaktion als *Im Slider zeigen* markiert hat
   (z. B. *Weihnachtsfeier 2026*). Wechselt automatisch, hält beim Überfahren mit der Maus an, lässt sich
@@ -323,3 +325,17 @@ allgemeine Anleitungen. Es gibt zwei Arten der Sichtbarkeit, frei kombinierbar:
   und werden nur über **zeitlich begrenzte, signierte Links** (2 Stunden) an zugewiesene Personen ausgeliefert.
   Wer eine Schulung nicht zugewiesen hat, sieht sie nicht – auch nicht über die Adresse.
 
+## 14. Umfragen
+
+- **Navigation → Umfragen**: laufende Umfragen oben, darunter die beendeten mit Ergebnis. Die neueste laufende
+  Umfrage steht zusätzlich auf der **Startseite**; die persönliche Begrüßung erinnert an Umfragen ohne eigene Stimme.
+- **Abstimmen** nur angemeldet, **eine Stimme pro Person**. Solange die Umfrage läuft, lässt sich die Antwort
+  ändern oder zurückziehen.
+- **Anonym**: Gespeichert wird nur, *dass* jemand abgestimmt hat (damit niemand doppelt abstimmt) – angezeigt
+  werden ausschließlich die Summen je Antwort. Auch Redaktion und Administratoren sehen keine Einzelstimmen.
+- **Anlegen** (Recht *Umfragen erstellen* – Moderator:in, Redaktion, Administrator): Frage (DE, optional EN),
+  Erläuterung, 2–12 Antworten (je DE/EN), **Mehrfachauswahl**, **Endet am** (optional) und wann das
+  **Ergebnis sichtbar** ist: *nach der eigenen Stimme*, *immer* oder *erst nach dem Ende*.
+- **Bearbeiten**: Sobald Stimmen da sind, lassen sich Antworten nur noch umbenennen (nicht hinzufügen oder
+  entfernen), damit keine Stimme einer anderen Antwort zugeordnet wird. *Umfrage jetzt beenden* schließt sie sofort.
+- Umfragen erscheinen auch in der **Suche**.

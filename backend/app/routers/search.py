@@ -12,7 +12,7 @@ from fastapi import APIRouter, Depends, Query
 from sqlalchemy.orm import Session, joinedload, selectinload
 
 from app.db import get_db
-from app.models import Article, Attachment, Classified, Idea, Location, QuickLink, Room, Training, User
+from app.models import Article, Attachment, Classified, Idea, Location, Poll, QuickLink, Room, Training, User
 from app.routers.content import _visible
 from app.schemas import ArticleCard
 from app.security import has_perm, reader
@@ -57,7 +57,7 @@ def _snippet(words: list[str], text: str, size: int = 170) -> str:
 def search(q: str = Query("", max_length=200), limit: int = Query(30, ge=1, le=100),
            viewer: User | None = Depends(reader), db: Session = Depends(get_db)):
     words = [w for w in fold(q).split() if w]
-    empty = {k: [] for k in ("people", "articles", "documents", "classifieds", "ideas", "rooms", "links", "trainings")}
+    empty = {k: [] for k in ("people", "articles", "documents", "classifieds", "ideas", "rooms", "links", "trainings", "polls")}
     if not words:
         return empty
     out = empty
@@ -110,6 +110,11 @@ def search(q: str = Query("", max_length=200), limit: int = Query(30, ge=1, le=1
                      "subtitle_en": x.subtitle_en, "url": x.url, "icon": x.icon, "color": x.color}
                     for x in db.query(QuickLink).filter(QuickLink.active.is_(True)).order_by(QuickLink.sort)
                     if _matches(words, x.title_de, x.title_en, x.subtitle_de, x.subtitle_en, x.url)][:limit]
+
+    for p in db.query(Poll).order_by(Poll.created_at.desc()):
+        if _matches(words, p.question_de, p.question_en, p.description_de, p.description_en, p.options):
+            out["polls"].append({"id": p.id, "question_de": p.question_de, "question_en": p.question_en, "open": p.is_open()})
+    out["polls"] = out["polls"][:limit]
 
     if viewer:  # trainings are never public: only the ones this person may open
         from app.routers.trainings import assigned_ids

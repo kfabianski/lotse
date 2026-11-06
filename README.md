@@ -24,6 +24,8 @@ API, Uploads und Oberfläche aus. Anmeldung lokal oder über **LDAP/Active Direc
 | **Schulung bearbeiten** – Texteditor, Zuweisung an Personen, Abteilungen, Gruppen, Unterlagen | **Schnellzugriff** – Kacheln für Programme, Sammel-Postfächer und Telefonnummern |
 | ![Ideen](docs/screenshots/07-ideen.png) | ![Kleinanzeigen](docs/screenshots/08-kleinanzeigen.png) |
 | **Ideenbox** – Vorschläge, Sternebewertung, Status und Antwort, auch anonym | **Kleinanzeigen** – Biete, Suche, Zu verschenken, Fahrgemeinschaften |
+| ![Umfragen](docs/screenshots/21-umfragen.png) | |
+| **Umfragen** – anonym abstimmen, Ergebnisbalken, Mehrfachauswahl, Enddatum | |
 | ![Dokumente](docs/screenshots/13-dokumente.png) | ![Dokument im Portal](docs/screenshots/09-dokument-viewer.png) |
 | **Dokumentenbibliothek** – ISO-Dokumente, Richtlinien, Suche | **Dokumente** – PDFs öffnen sich direkt im Portal |
 | ![Raum-Editor](docs/screenshots/14-raum-editor.png) | ![Fotogalerie](docs/screenshots/10-galerie.png) |
@@ -70,9 +72,12 @@ Alle Funktionen im Detail: **[docs/FUNKTIONEN.md](docs/FUNKTIONEN.md)** · Bildn
 - **Ideenbox**: Ideen einreichen (auf Wunsch **wirklich anonym** – der Name wird dann gar nicht gespeichert),
   mit **1–5 Sternen** bewerten, Sortierung *Beste Bewertung* oder *Neueste*, Status von *Neu* bis *Umgesetzt*
   mit Antwort der Redaktion.
+- **Umfragen**: kurze Abstimmungen (z. B. Termin der Firmenfeier, Zufriedenheit) – eine oder mehrere Antworten,
+  Enddatum, Ergebnis sofort / nach der eigenen Stimme / erst nach dem Ende; **anonym** (gezählt wird nur die
+  Anzahl je Antwort). Die neueste laufende Umfrage steht auf der Startseite.
 - **Profil**: Foto, Durchwahl, Sprache und Passwort (bei lokalen Konten).
 - **Suche über alles Öffentliche** (Strg + K), **Treffer erscheinen schon beim Tippen**: Personen, Artikel, Veranstaltungen, Dokumente, Räume, Kleinanzeigen,
-  Ideen, Schnellzugriff – angemeldet zusätzlich die eigenen Schulungen; Umlaute egal (*schroeder* findet *Schröder*), **Deutsch/Englisch** und **hell/dunkel** umschaltbar,
+  Ideen, Umfragen, Schnellzugriff – angemeldet zusätzlich die eigenen Schulungen; Umlaute egal (*schroeder* findet *Schröder*), **Deutsch/Englisch** und **hell/dunkel** umschaltbar,
   **Lesen ohne Anmeldung** (abschaltbar).
 
 ### Für die Redaktion
@@ -116,7 +121,7 @@ Rolle und bei Bedarf **zusätzliche Rechte** (z. B. *Etagen, Räume & Plätze* o
 | Besucher (nicht angemeldet) | lesen – nur wenn *Lesen ohne Anmeldung* eingeschaltet ist (keine Schulungen) |
 | Mitarbeitende | zusätzlich Anzeigen, Ideen, Sternebewertung, Zusagen, eigene Schulungen bestätigen, Profil |
 | Autor:in | zusätzlich **eigene** Artikel und Veranstaltungen |
-| Moderator:in | wie Autor:in, dazu Schulungen verwalten, Ideen & Kleinanzeigen moderieren, Schnellzugriff |
+| Moderator:in | wie Autor:in, dazu Schulungen verwalten, Ideen & Kleinanzeigen moderieren, Schnellzugriff, Umfragen |
 | Redaktion | wie Moderator:in, dazu **alle** Artikel, Entwürfe, Slider, Versionen wiederherstellen |
 | Administrator | alles – nur Administratoren ändern **Einstellungen, LDAP, Windows-Anmeldung, Rollen & Rechte** und starten den **LDAP-Abgleich** |
 

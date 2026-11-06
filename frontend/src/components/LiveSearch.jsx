@@ -1,6 +1,6 @@
 import { useEffect, useId, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ArrowRight, DoorOpen, FileText, GraduationCap, Lightbulb, Link2, Loader2, Newspaper, Search, StickyNote } from 'lucide-react';
+import { ArrowRight, BarChart3, DoorOpen, FileText, GraduationCap, Lightbulb, Link2, Loader2, Newspaper, Search, StickyNote } from 'lucide-react';
 import { api } from '../lib/api';
 import { useI18n } from '../lib/i18n';
 import { useViewer } from '../lib/viewer';
@@ -23,11 +23,12 @@ function flatten(data, t, pick, open) {
     ['search_rooms', data.rooms, (x) => ({ icon: DoorOpen, color: '#0f766e', label: pick(x, 'name'), sub: pick(x, 'location'), to: `/people?view=plan&loc=${x.location_id}` })],
     ['search_articles', data.articles, (x) => ({ icon: Newspaper, label: pick(x, 'title'), sub: x.snippet || pick(x, 'summary'), to: `/articles/${x.id}` })],
     ['nav_board', data.classifieds, (x) => ({ icon: StickyNote, color: '#d97706', label: x.title, sub: [x.price, x.author].filter(Boolean).join(' · '), to: `/board#notice-${x.id}` })],
+    ['nav_polls', data.polls, (x) => ({ icon: BarChart3, color: '#2563eb', label: pick(x, 'question'), sub: t(x.open ? 'poll_open' : 'poll_closed'), to: '/polls' })],
     ['nav_ideas', data.ideas, (x) => ({ icon: Lightbulb, color: '#7c3aed', label: x.title, sub: t(`idea_status_${x.status}`), to: `/ideas#idea-${x.id}` })],
   ];
   const out = [];
   for (const [title, list, make] of groups) {
-    list.slice(0, PER_GROUP).forEach((x, i) => out.push({ key: `${title}-${i}`, group: i === 0 ? t(title) : null, more: i === 0 ? list.length : 0, ...make(x, i) }));
+    (list || []).slice(0, PER_GROUP).forEach((x, i) => out.push({ key: `${title}-${i}`, group: i === 0 ? t(title) : null, more: i === 0 ? list.length : 0, ...make(x, i) }));
   }
   return out;
 }

@@ -19,6 +19,7 @@ import Ideas from './pages/Ideas';
 import Events from './pages/Events';
 import Documents from './pages/Documents';
 import Trainings, { TrainingView } from './pages/Trainings';
+import Polls from './pages/Polls';
 
 function Guard({ role, perm, children }) {
   const { user, can, has } = useAuth();
@@ -73,6 +74,7 @@ export default function App() {
           <Route path="/articles/:id/edit" element={<Guard perm="content_own,content_all"><ArticleEdit /></Guard>} />
           <Route path="/board" element={<Board />} />
           <Route path="/ideas" element={<Ideas />} />
+          <Route path="/polls" element={<Polls />} />
           <Route path="/calendar" element={<Events />} />
           <Route path="/documents" element={<Documents />} />
           <Route path="/people" element={<People />} />

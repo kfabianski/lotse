@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { Link, NavLink, useLocation, useNavigate } from 'react-router-dom';
 import {
-  BookOpen, CalendarDays, FileText, GraduationCap, Home, Lightbulb, LogIn, LogOut, Menu, Moon, Newspaper, Settings,
+  BarChart3, BookOpen, CalendarDays, FileText, GraduationCap, Home, Lightbulb, LogIn, LogOut, Menu, Moon, Newspaper, Settings,
   StickyNote, Sun, UserRound, Users, X,
 } from 'lucide-react';
 import { useAuth } from '../lib/auth';
@@ -49,6 +49,7 @@ function useNavItems() {
     ...(user ? [{ to: '/trainings', label: t('nav_trainings'), icon: GraduationCap }] : []),
     { to: '/board', label: t('nav_board'), icon: StickyNote },
     { to: '/ideas', label: t('nav_ideas'), icon: Lightbulb },
+    { to: '/polls', label: t('nav_polls'), icon: BarChart3 },
     { to: '/people', label: t('nav_people'), icon: Users },
     ...(has('trainings', 'quicklinks', 'locations', 'people') ? [{ to: '/admin', label: t('nav_admin'), icon: Settings }] : []),
   ];

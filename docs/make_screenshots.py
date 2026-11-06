@@ -141,6 +141,8 @@ def main():
         b.shot("07-ideen.png")
         b.goto(base + "/board")
         b.shot("08-kleinanzeigen.png")
+        b.goto(base + "/polls")
+        b.shot("21-umfragen.png")
         b.goto(base + "/documents")
         b.shot("13-dokumente.png")
         b.js("[...document.querySelectorAll('main ul li button')].find(x => x.textContent.includes('KI Nutzung')).click()")

@@ -8,12 +8,12 @@ import { useAuth } from '../lib/auth';
 import { api } from '../lib/api';
 
 export const ROLES = ['user', 'author', 'moderator', 'editor', 'admin'];
-export const PERMISSIONS = ['content_own', 'content_all', 'trainings', 'moderate', 'quicklinks', 'locations', 'people'];
+export const PERMISSIONS = ['content_own', 'content_all', 'trainings', 'moderate', 'quicklinks', 'polls', 'locations', 'people'];
 export const ROLE_PERMS = {
   user: [],
   author: ['content_own'],
-  moderator: ['content_own', 'trainings', 'moderate', 'quicklinks'],
-  editor: ['content_own', 'content_all', 'trainings', 'moderate', 'quicklinks'],
+  moderator: ['content_own', 'trainings', 'moderate', 'quicklinks', 'polls'],
+  editor: ['content_own', 'content_all', 'trainings', 'moderate', 'quicklinks', 'polls'],
   admin: PERMISSIONS,
 };
 
