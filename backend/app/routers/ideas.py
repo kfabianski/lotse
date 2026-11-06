@@ -105,9 +105,13 @@ def set_status(idea_id: int, body: IdeaStatusIn, editor: User = Depends(require_
         raise HTTPException(404, "Idea not found")
     if idea.status != body.status or idea.response != body.response:  # "news for the author" on the home page
         idea.status_changed_at = datetime.utcnow()
+    changed = idea.status != body.status or idea.response != body.response
     idea.status = body.status
     idea.response = body.response
     db.commit()
+    if changed:
+        from app import notify
+        notify.in_background(notify.idea_changed, idea.id)
     return _one(db, idea_id, editor)
 
 

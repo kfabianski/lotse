@@ -19,6 +19,8 @@ Diese Beschreibung erklärt, was Lotse kann und wer was darf. Installation und K
 12. [LDAP / Active Directory](#12-ldap--active-directory)
 13. [Schulungen und Pflichtlektüre](#13-schulungen-und-pflichtlektüre)
 14. [Umfragen](#14-umfragen)
+15. [Organigramm](#15-organigramm)
+16. [Benachrichtigungen (E-Mail, Teams)](#16-benachrichtigungen-e-mail-teams)
 
 ---
 
@@ -339,3 +341,29 @@ allgemeine Anleitungen. Es gibt zwei Arten der Sichtbarkeit, frei kombinierbar:
 - **Bearbeiten**: Sobald Stimmen da sind, lassen sich Antworten nur noch umbenennen (nicht hinzufügen oder
   entfernen), damit keine Stimme einer anderen Antwort zugeordnet wird. *Umfrage jetzt beenden* schließt sie sofort.
 - Umfragen erscheinen auch in der **Suche**.
+
+## 15. Organigramm
+
+- **Mitarbeitende → Organigramm**: wer wem unterstellt ist. Oben die Leitung, darunter die direkt Unterstellten
+  nebeneinander, tiefere Ebenen als Liste darunter. Farbiger Streifen = Abteilungsfarbe.
+- **Äste ein- und ausklappen** („3 direkt unterstellt“), **an Breite anpassen** (Standard) oder mit **− / +** zoomen.
+- Klick auf eine Person zeigt ihren **Platz im Lageplan**. Suche und Abteilungsfilter heben passende Personen hervor.
+- **Woher die Daten kommen**: bei LDAP aus dem Attribut **`manager`** (in den LDAP-Einstellungen änderbar) – beim
+  Anmelden und beim LDAP-Abgleich; der Abgleich zeigt geänderte Vorgesetzte in der Vorschau. Ohne LDAP trägt die
+  Verwaltung bei der Person **Vorgesetzte:r** ein. Kreise (A über B über A) werden abgelehnt.
+- Personen ohne Vorgesetzte und ohne Team stehen unter *Ohne Zuordnung*.
+
+## 16. Benachrichtigungen (E-Mail, Teams)
+
+- **Einschalten** (nur Administratoren): *Verwaltung → Einstellungen → Benachrichtigungen* – Adresse des Intranets
+  (für Links), SMTP-Server, Port, Verschlüsselung (STARTTLS, SSL/TLS oder keine), Benutzer, Passwort, Absender.
+  **Test-Mail senden** prüft die Einstellungen sofort. Passwort und Teams-Adresse werden nie angezeigt.
+- **Neue Artikel und Termine**: sobald ein Beitrag sichtbar wird (auch geplante Beiträge zur geplanten Zeit) bekommen
+  alle eine E-Mail, die ihn sehen dürfen und die Benachrichtigung nicht abgeschaltet haben. Beiträge, die vor dem
+  Einschalten erschienen sind, werden nicht nachträglich verschickt.
+- **Ideen**: Ändert die Redaktion Status oder Antwort, bekommt die Einreicherin / der Einreicher eine E-Mail
+  (bei anonymen Ideen nicht – dort ist niemand gespeichert).
+- **Microsoft Teams**: Webhook-Adresse eines Kanals (in Teams: Kanal → *Workflows* → *Bei Empfang einer
+  Webhookanforderung in einem Kanal posten*). Neue Beiträge erscheinen dort als Karte mit Knopf *Im Intranet öffnen*.
+- **Abbestellen**: jede Person im **Profil → Benachrichtigungen** (*Neue Artikel und Termine*, *Neuigkeiten zu meinen
+  Ideen*). Standard: eingeschaltet.

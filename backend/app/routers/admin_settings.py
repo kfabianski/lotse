@@ -47,6 +47,16 @@ class SettingsIn(BaseModel):
     ldap_attr_phone: str = "telephoneNumber"
     ldap_attr_photo: str = "thumbnailPhoto"
     ldap_attr_manager: str = "manager"
+    portal_url: str = Field(default="", max_length=200, pattern=r"^(https?://[^\s]+)?$")
+    notify_email: bool = False
+    smtp_host: str = Field(default="", max_length=255, pattern=r"^[A-Za-z0-9.\-:\[\]]*$")
+    smtp_port: int = Field(default=587, ge=1, le=65535)
+    smtp_mode: Literal["starttls", "ssl", "none"] = "starttls"
+    smtp_user: str = Field(default="", max_length=200)
+    smtp_password: str | None = None  # None/empty = keep the stored one
+    smtp_from: str = Field(default="", max_length=200)
+    notify_teams: bool = False
+    teams_webhook_url: str | None = None  # None/empty = keep the stored one
 
 
 class TestIn(BaseModel):
@@ -71,6 +81,8 @@ def load_overrides_at_startup() -> None:
 def current_view() -> dict:
     data = {key: getattr(settings, key) for key in sorted(EDITABLE) if key not in SECRET}
     data["ldap_bind_password_set"] = bool(settings.ldap_bind_password)
+    data["smtp_password_set"] = bool(settings.smtp_password)
+    data["teams_webhook_url_set"] = bool(settings.teams_webhook_url)
     return data
 
 
@@ -99,9 +111,16 @@ def save_settings(body: SettingsIn, _: User = Depends(require("admin")), db: Ses
         raise HTTPException(422, "The CA certificate must be in PEM format (-----BEGIN CERTIFICATE-----)")
     if body.ldap_enabled and not (body.ldap_host and body.ldap_base_dn):
         raise HTTPException(422, "Enter the LDAP server and base DN before enabling LDAP")
+    if body.teams_webhook_url and not body.teams_webhook_url.startswith("https://"):
+        raise HTTPException(422, "The Teams webhook must be an https:// address")
+    if body.notify_email and not (body.smtp_host and "@" in body.smtp_from):
+        raise HTTPException(422, "E-mail notifications need an SMTP server and a sender address")
+    if body.notify_teams and not (body.teams_webhook_url or settings.teams_webhook_url):
+        raise HTTPException(422, "Teams notifications need the webhook address")
     values = body.model_dump()
-    if not values["ldap_bind_password"]:
-        values.pop("ldap_bind_password")  # keep the stored one
+    for secret in ("ldap_bind_password", "smtp_password", "teams_webhook_url"):
+        if not values[secret]:
+            values.pop(secret)  # keep the stored one
     for key, value in values.items():
         row = db.get(AppSetting, key)
         if row is None:
@@ -135,6 +154,39 @@ async def upload_login_image(file: UploadFile = File(...), _: User = Depends(req
 def reset_login_image(_: User = Depends(require("admin")), db: Session = Depends(get_db)):
     _store(db, "login_image_url", "")
     return current_view()
+
+
+class MailTestIn(BaseModel):
+    to: str = Field(min_length=3, max_length=200, pattern=r"^[^@\s]+@[^@\s]+$")
+
+
+@router.post("/mail-test")
+def mail_test(body: MailTestIn, _: User = Depends(require("admin"))):
+    """Send a test mail with the saved settings; returns the reason when it fails."""
+    import smtplib
+
+    from app import notify
+    if not (settings.smtp_host and settings.smtp_from):
+        return {"ok": False, "error": "SMTP-Server und Absender eintragen und speichern."}
+    msg = notify._message(body.to, "Test: Benachrichtigungen funktionieren",
+                          "Diese Test-Nachricht kommt aus dem Intranet. Alles bereit.",
+                          notify._html("Test erfolgreich", "Diese Test-Nachricht kommt aus dem Intranet. Alles bereit.",
+                                       notify.portal("/"), "Intranet öffnen", ""))
+    try:
+        with notify._smtp() as server:
+            server.send_message(msg)
+        return {"ok": True}
+    except (OSError, smtplib.SMTPException) as exc:
+        return {"ok": False, "error": str(exc)[:300]}
+
+
+@router.post("/teams-test")
+def teams_test(_: User = Depends(require("admin"))):
+    from app import notify
+    if not settings.teams_webhook_url:
+        return {"ok": False, "error": "Webhook-Adresse eintragen und speichern."}
+    ok = notify.post_teams("Test aus dem Intranet", "Die Verbindung zu Teams funktioniert.", notify.portal("/"))
+    return {"ok": ok, **({} if ok else {"error": "Teams hat die Nachricht nicht angenommen."})}
 
 
 @router.post("/ldap-test")

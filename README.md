@@ -70,6 +70,8 @@ Alle Funktionen im Detail: **[docs/FUNKTIONEN.md](docs/FUNKTIONEN.md)** · Bildn
   Durchwahl, weiches Zoomen zur Person, Suche über alle Etagen, Minikarte, Abteilungsfilter.
 - **Organigramm** (Mitarbeitende → Organigramm): wer wem unterstellt ist – aus LDAP (`manager`) oder in der
   Verwaltung eingetragen; Äste ein-/ausklappen, an Breite anpassen, Zoom, Suche und Abteilungsfilter heben Personen hervor.
+- **Benachrichtigungen** per **E-Mail** (neue Artikel und Termine, Antworten auf eigene Ideen) und als Karte in
+  einem **Teams-Kanal**; jede Person kann sie im Profil abschalten.
 - **Kleinanzeigen**: Biete, Suche, Zu verschenken, Fahrgemeinschaften – mit Foto, Preis und Kontakt.
 - **Ideenbox**: Ideen einreichen (auf Wunsch **wirklich anonym** – der Name wird dann gar nicht gespeichert),
   mit **1–5 Sternen** bewerten, Sortierung *Beste Bewertung* oder *Neueste*, Status von *Neu* bis *Umgesetzt*

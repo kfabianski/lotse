@@ -26,6 +26,12 @@ for module in (auth, users, me, content, search, revisions, quicklinks, training
 app.include_router(trainings.files_router)
 
 
+@app.on_event("startup")
+def _notifications() -> None:
+    from app import notify
+    notify.start_loop()  # announces newly published articles by e-mail / Teams (when enabled)
+
+
 
 @app.middleware("http")
 async def security_headers(request, call_next):

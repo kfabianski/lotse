@@ -22,4 +22,6 @@ def user_out(user: User, full: bool = False) -> dict:
         "show_in_directory": user.show_in_directory, "seat": seat_ref(user), "manager_id": user.manager_id,
         "permissions": extra_permissions(user) if full else [],
         "effective_permissions": sorted(permissions_of(user)) if full else [],
+        "notify_articles": bool(user.notify_articles) if full else None,
+        "notify_ideas": bool(user.notify_ideas) if full else None,
     }

@@ -48,6 +48,20 @@ export default function Profile() {
       </form>
 
       <section className="mt-10">
+        <h2 className="font-display text-xl font-semibold">{t('nt_profile_title')}</h2>
+        <p className="mt-1 text-sm text-muted">{t('nt_profile_hint')}</p>
+        <div className="mt-4 space-y-2">
+          {[['notify_articles', t('nt_profile_articles')], ['notify_ideas', t('nt_profile_ideas')]].map(([key, label]) => (
+            <label key={key} className="flex cursor-pointer items-center gap-3 rounded-xl border border-line bg-surface px-4 py-3">
+              <input type="checkbox" className="h-4 w-4 accent-[var(--brand)]" checked={Boolean(user[key])}
+                onChange={(e) => run(() => api('/auth/me', { method: 'PATCH', body: { [key]: e.target.checked } }))} />
+              <span>{label}</span>
+            </label>
+          ))}
+        </div>
+      </section>
+
+      <section className="mt-10">
         <h2 className="font-display text-xl font-semibold">{t('change_password')}</h2>
         {user.auth_source === 'ldap' ? <p className="mt-2 text-muted">{t('ldap_account')}</p> : (
           <form className="mt-4 space-y-4" onSubmit={(e) => {

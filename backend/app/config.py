@@ -32,6 +32,18 @@ class Settings(BaseSettings):
     sso_header: str = "X-Remote-User"
     trusted_proxies: list[str] = ["127.0.0.1", "::1"]
 
+    # Notifications (e-mail via SMTP, Microsoft Teams channel webhook)
+    portal_url: str = ""  # address of the intranet for links in mails, e.g. https://intranet.firma.local
+    notify_email: bool = False
+    smtp_host: str = ""
+    smtp_port: int = 587
+    smtp_mode: str = "starttls"  # starttls | ssl | none
+    smtp_user: str = ""
+    smtp_password: str = ""
+    smtp_from: str = ""  # e.g. intranet@firma.de
+    notify_teams: bool = False
+    teams_webhook_url: str = ""
+
     # LDAP / Active Directory. With ldaps:// (or start_tls) the server certificate is verified.
     ldap_enabled: bool = False
     ldap_host: str = ""  # IP address or host name of the domain controller, e.g. 10.0.0.5 or dc01.firma.local
@@ -66,9 +78,10 @@ EDITABLE = {
     "ldap_verify_cert", "ldap_bind_dn", "ldap_bind_password", "ldap_base_dn", "ldap_user_filter",
     "ldap_sync_filter", "ldap_admin_group", "ldap_departments_auto", "ldap_editor_group", "ldap_attr_username", "ldap_attr_first_name",
     "ldap_attr_last_name", "ldap_attr_email", "ldap_attr_department", "ldap_attr_title", "ldap_attr_phone",
-    "ldap_attr_photo", "ldap_attr_manager",
+    "ldap_attr_photo", "ldap_attr_manager", "portal_url", "notify_email", "smtp_host", "smtp_port", "smtp_mode",
+    "smtp_user", "smtp_password", "smtp_from", "notify_teams", "teams_webhook_url",
 }
-SECRET = {"ldap_bind_password"}  # never sent back to the browser
+SECRET = {"ldap_bind_password", "smtp_password", "teams_webhook_url"}  # never sent back to the browser
 
 settings = Settings()
 settings.upload_dir.mkdir(parents=True, exist_ok=True)

@@ -24,6 +24,12 @@ def _visible(query, user: User | None):
     return query.filter(Article.live())
 
 
+def visible_to(user: User | None, article: Article) -> bool:
+    """Python twin of ``_visible`` for one article (used for notifications)."""
+    live = article.published and article.published_at <= datetime.now()
+    return live or has_perm(user, "content_all") or (has_perm(user, "content_own") and article.author_id == getattr(user, "id", None))
+
+
 def _may_edit(user: User, article: Article) -> bool:
     return has_perm(user, "content_all") or (has_perm(user, "content_own") and article.author_id == user.id)
 

@@ -35,6 +35,8 @@ class User(Base):
     is_active: Mapped[bool] = mapped_column(Boolean, default=True)
     show_in_directory: Mapped[bool] = mapped_column(Boolean, default=True)
     ideas_seen_at: Mapped[datetime | None] = mapped_column(DateTime)
+    notify_articles: Mapped[bool] = mapped_column(Boolean, default=True)  # e-mail for new articles and events
+    notify_ideas: Mapped[bool] = mapped_column(Boolean, default=True)  # e-mail when my idea gets an answer
     # Org chart: who the person reports to (from LDAP "manager" or set by an admin)
     manager_id: Mapped[int | None] = mapped_column(ForeignKey("users.id", ondelete="SET NULL"), index=True)
     ldap_dn: Mapped[str | None] = mapped_column(String(400))  # directory DN, to resolve other people's "manager"  # last visit of the ideas page (for "new answers")
@@ -121,6 +123,7 @@ class Article(Base):
     event_date: Mapped[datetime | None] = mapped_column(DateTime)
     event_location: Mapped[str] = mapped_column(String(120), default="")
     featured: Mapped[bool] = mapped_column(Boolean, default=False)  # shown in the home slider
+    notified_at: Mapped[datetime | None] = mapped_column(DateTime)  # e-mail/Teams announcement sent
     published: Mapped[bool] = mapped_column(Boolean, default=True)  # False = draft
     # Publication date (server local time). In the future = scheduled: invisible to readers until then.
     published_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.now, index=True)

@@ -43,6 +43,8 @@ class UserOut(ORM):
     manager_id: int | None = None
     permissions: list[str] = []  # extra permissions (only shown to admins and to the person)
     effective_permissions: list[str] = []  # role + extras (only for the person and admins)
+    notify_articles: bool | None = None
+    notify_ideas: bool | None = None
 
 
 class UserCreate(BaseModel):
@@ -78,6 +80,8 @@ class UserUpdate(BaseModel):
 
 class MeUpdate(BaseModel):
     language: Literal["de", "en"] | None = None
+    notify_articles: bool | None = None
+    notify_ideas: bool | None = None
     phone_ext: str | None = None
     current_password: str | None = None
     new_password: str | None = Field(default=None, min_length=8, max_length=72)

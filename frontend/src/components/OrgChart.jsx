@@ -32,10 +32,10 @@ function buildTree(people) {
 function PersonCard({ p, color, dim, hit, open, onToggle, reports, big }) {
   const { t } = useI18n();
   return (
-    <div className={`relative w-[13.5rem] rounded-2xl border bg-surface text-left shadow-sm transition ${hit ? 'border-brand ring-2 ring-brand/30' : 'border-line'} ${dim ? 'opacity-35' : ''} ${big ? 'w-[15rem]' : ''}`}>
+    <div className={`relative ${big ? 'w-[15rem]' : 'w-[11.75rem]'} rounded-2xl border bg-surface text-left shadow-sm transition ${hit ? 'border-brand ring-2 ring-brand/30' : 'border-line'} ${dim ? 'opacity-35' : ''}`}>
       <span className="absolute inset-x-0 top-0 h-1 rounded-t-2xl" style={{ background: color || 'var(--line)' }} />
-      <Link to={`/people?view=plan&focus=${p.id}`} title={t('org_show_plan')} className="flex items-center gap-3 px-3 pb-2.5 pt-3.5 hover:text-brand">
-        <Avatar person={p} size={big ? 48 : 40} />
+      <Link to={`/people?view=plan&focus=${p.id}`} title={t('org_show_plan')} className="flex items-center gap-2.5 px-2.5 pb-2.5 pt-3.5 hover:text-brand">
+        <Avatar person={p} size={big ? 48 : 36} />
         <span className="min-w-0">
           <span className="block truncate font-semibold leading-tight">{p.full_name}</span>
           <span className="block truncate text-xs text-muted">{p.position}</span>
@@ -72,7 +72,7 @@ function Branch({ p, tree, depth, state }) {
             <span className="h-6 w-px bg-line" />
             <ul className="org-row flex items-start justify-center">
               {kids.map((k) => (
-                <li key={k.id} className="org-col relative flex flex-col items-center px-2 pt-6">
+                <li key={k.id} className="org-col relative flex flex-col items-center px-1.5 pt-6">
                   <Branch p={k} tree={tree} depth={1} state={state} />
                 </li>
               ))}

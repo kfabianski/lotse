@@ -91,6 +91,10 @@ def update_me(body: MeUpdate, user: User = Depends(current_user), db: Session = 
         user.language = body.language
     if body.phone_ext is not None:
         user.phone_ext = body.phone_ext.strip()
+    if body.notify_articles is not None:
+        user.notify_articles = body.notify_articles
+    if body.notify_ideas is not None:
+        user.notify_ideas = body.notify_ideas
     if body.new_password:
         if user.auth_source != "local":
             raise HTTPException(400, "Directory accounts change their password in Windows/LDAP")

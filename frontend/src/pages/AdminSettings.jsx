@@ -63,6 +63,10 @@ export default function AdminSettings() {
   const { t } = useI18n();
   const [form, setForm] = useState(null);
   const [password, setPassword] = useState('');
+  const [smtpPassword, setSmtpPassword] = useState('');
+  const [webhook, setWebhook] = useState('');
+  const [mailTo, setMailTo] = useState('');
+  const [notifyTest, setNotifyTest] = useState(null);
   const [status, setStatus] = useState(null); // { kind: 'ok'|'error', text }
   const [test, setTest] = useState(null);
   const [testUser, setTestUser] = useState('');
@@ -84,10 +88,15 @@ export default function AdminSettings() {
     setBusy(true);
     setStatus(null);
     try {
-      const { ldap_bind_password_set, ...rest } = form;
-      const saved = await api('/admin/settings', { method: 'PUT', body: { ...rest, ldap_port: Number(form.ldap_port), ldap_bind_password: password || null } });
+      const { ldap_bind_password_set, smtp_password_set, teams_webhook_url_set, ...rest } = form;
+      const saved = await api('/admin/settings', { method: 'PUT', body: {
+        ...rest, ldap_port: Number(form.ldap_port), smtp_port: Number(form.smtp_port), ldap_bind_password: password || null,
+        smtp_password: smtpPassword || null, teams_webhook_url: webhook || null,
+      } });
       setForm(saved);
       setPassword('');
+      setSmtpPassword('');
+      setWebhook('');
       setStatus({ kind: 'ok', text: t('settings_saved') });
       return true;
     } catch (err) {
@@ -149,6 +158,53 @@ export default function AdminSettings() {
       </Section>
 
       <HolidaySettings value={form.holiday_regions || []} onChange={set('holiday_regions')} />
+
+      <Section title={t('nt_title')} description={t('nt_hint')}>
+        <Field label={t('nt_portal_url')} hint={t('nt_portal_url_hint')}>
+          <input className={inputClass} placeholder="https://intranet.firma.local" value={form.portal_url || ''} onChange={set('portal_url')} />
+        </Field>
+        <Toggle checked={form.notify_email} onChange={set('notify_email')} label={t('nt_email')} hint={t('nt_email_hint')} />
+        <div className="grid gap-4 sm:grid-cols-[minmax(0,1fr)_120px_160px]">
+          <Field label={t('nt_smtp_host')}><input className={inputClass} placeholder="smtp.office365.com" value={form.smtp_host || ''} onChange={set('smtp_host')} /></Field>
+          <Field label={t('settings_ldap_port')}><input type="number" min={1} max={65535} className={inputClass} value={form.smtp_port} onChange={set('smtp_port')} /></Field>
+          <Field label={t('nt_smtp_mode')}>
+            <select className={inputClass} value={form.smtp_mode} onChange={set('smtp_mode')}>
+              <option value="starttls">STARTTLS</option><option value="ssl">SSL/TLS</option><option value="none">{t('nt_smtp_none')}</option>
+            </select>
+          </Field>
+        </div>
+        <div className="grid gap-4 sm:grid-cols-3">
+          <Field label={t('nt_smtp_user')} hint={t('optional')}><input className={inputClass} autoComplete="off" value={form.smtp_user || ''} onChange={set('smtp_user')} /></Field>
+          <Field label={t('nt_smtp_password')} hint={form.smtp_password_set ? t('settings_password_kept') : ''}>
+            <input type="password" autoComplete="new-password" className={inputClass} placeholder={form.smtp_password_set ? '••••••••' : ''} value={smtpPassword} onChange={(e) => setSmtpPassword(e.target.value)} />
+          </Field>
+          <Field label={t('nt_smtp_from')}><input type="email" className={inputClass} placeholder="intranet@firma.de" value={form.smtp_from || ''} onChange={set('smtp_from')} /></Field>
+        </div>
+        <div className="flex flex-wrap items-end gap-2">
+          <Field label={t('nt_test_to')} className="min-w-[16rem] flex-1"><input type="email" className={inputClass} value={mailTo} onChange={(e) => setMailTo(e.target.value)} /></Field>
+          <Button variant="outline" disabled={busy || !mailTo} onClick={async () => {
+            setNotifyTest(null);
+            if (!(await save())) return;
+            setNotifyTest(await api('/admin/settings/mail-test', { method: 'POST', body: { to: mailTo } }));
+          }}>{t('nt_test_mail')}</Button>
+        </div>
+        <Toggle checked={form.notify_teams} onChange={set('notify_teams')} label={t('nt_teams')} hint={t('nt_teams_hint')} />
+        <div className="flex flex-wrap items-end gap-2">
+          <Field label={t('nt_webhook')} hint={form.teams_webhook_url_set ? t('settings_password_kept') : t('nt_webhook_hint')} className="min-w-[16rem] flex-1">
+            <input type="password" autoComplete="off" className={inputClass} placeholder={form.teams_webhook_url_set ? '••••••••' : 'https://…'} value={webhook} onChange={(e) => setWebhook(e.target.value)} />
+          </Field>
+          <Button variant="outline" disabled={busy} onClick={async () => {
+            setNotifyTest(null);
+            if (!(await save())) return;
+            setNotifyTest(await api('/admin/settings/teams-test', { method: 'POST' }));
+          }}>{t('nt_test_teams')}</Button>
+        </div>
+        {notifyTest && (
+          <p role="status" className={`rounded-xl px-3 py-2 text-sm ${notifyTest.ok ? 'bg-safe/10 text-safe' : 'bg-alert/10 text-alert'}`}>
+            {notifyTest.ok ? t('nt_test_ok') : `${t('nt_test_failed')}: ${notifyTest.error}`}
+          </p>
+        )}
+      </Section>
 
       <Section title={t('sso_title')} description={t('sso_hint')}>
         <Toggle checked={form.sso_enabled} onChange={set('sso_enabled')} label={t('sso_enabled')} hint={t('sso_enabled_hint')} />
