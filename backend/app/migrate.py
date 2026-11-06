@@ -13,6 +13,7 @@ COLUMNS = [
     ("users", "permissions", "TEXT NOT NULL DEFAULT '[]'", None),
     ("users", "role_local", "VARCHAR(10)", None),
     ("trainings", "open_to_all", "BOOLEAN NOT NULL DEFAULT 0", None),
+    ("users", "ideas_seen_at", "DATETIME", None),
 ]
 
 

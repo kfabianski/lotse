@@ -79,8 +79,13 @@ Die Verwaltung zeigt jeder Person nur die Bereiche, für die sie Rechte hat.
 
 ## 3. Startseite
 
-- **Offene Schulungen** (nur angemeldet, nur wenn etwas offen ist): Hinweis ganz oben mit Anzahl und Titeln,
-  rot markiert, wenn eine Schulung überfällig ist.
+- **Persönliche Begrüßung** (nur angemeldet): Datum und *Guten Morgen / Guten Tag / Guten Abend, Mehmet*,
+  darunter nur das, was für die Person ansteht:
+  - **heutige Termine**, für die sie zugesagt hat (Uhrzeit, Titel, Ort),
+  - **offene Pflicht-Schulungen** – rot, wenn eine Frist überschritten ist,
+  - **Neues zu den eigenen Ideen** (neuer Status oder Antwort der Redaktion); nach dem Besuch der Ideenseite gilt
+    es als gelesen. Anonyme Ideen tauchen hier nicht auf – sie sind niemandem zugeordnet.
+  Steht nichts an, erscheint *Heute steht für Sie nichts Besonderes an.*
 - **Slider** über die ganze Breite mit den Beiträgen, die die Redaktion als *Im Slider zeigen* markiert hat
   (z. B. *Weihnachtsfeier 2026*). Wechselt automatisch, hält beim Überfahren mit der Maus an, lässt sich
   pausieren und mit Pfeilen steuern. Bei „Bewegung reduzieren“ im Betriebssystem läuft er nicht von selbst.

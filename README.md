@@ -41,7 +41,8 @@ Alle Funktionen im Detail: **[docs/FUNKTIONEN.md](docs/FUNKTIONEN.md)** · Bildn
 
 ### Für alle Mitarbeitenden
 
-- **Startseite**: Hinweis auf **offene Schulungen** (rot bei Überfälligkeit), großer **Slider** mit den
+- **Startseite**: **persönliche Begrüßung** („Guten Morgen, Mehmet“) mit heutigen Terminen, offenen Schulungen
+  (rot bei Überfälligkeit) und Neuem zu den eigenen Ideen, großer **Slider** mit den
   wichtigsten Beiträgen, **Schnellzugriff**-Kacheln, nächste **Termine** mit Monatskalender, **Fotos** aus dem
   Firmenleben, **Neuigkeiten**, **Neu im Team**, zuletzt veröffentlichte Artikel und neue Anzeigen.
 - **Schnellzugriff**: Kacheln zu Zeiterfassung, ERP, Outlook, Helpdesk usw., zu Sammel-Postfächern

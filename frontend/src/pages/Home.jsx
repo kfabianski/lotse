@@ -9,7 +9,7 @@ import { useViewer } from '../lib/viewer';
 import { UpcomingCard } from './Events';
 import MiniCalendar from '../components/MiniCalendar';
 import QuickLinks from '../components/QuickLinks';
-import { OpenTrainingsBanner } from './Trainings';
+import Greeting from '../components/Greeting';
 
 function ShowAll({ to, label }) {
   const { t } = useI18n();
@@ -91,7 +91,7 @@ export default function Home() {
   return (
     <div className="space-y-14">
       <div className="space-y-5">
-        <OpenTrainingsBanner />
+        <Greeting />
         <HeroSlider slides={data.slides} />
         <QuickLinks />
       </div>

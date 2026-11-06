@@ -103,7 +103,7 @@ def set_status(idea_id: int, body: IdeaStatusIn, editor: User = Depends(require_
     idea = db.get(Idea, idea_id)
     if not idea:
         raise HTTPException(404, "Idea not found")
-    if idea.status != body.status:
+    if idea.status != body.status or idea.response != body.response:  # "news for the author" on the home page
         idea.status_changed_at = datetime.utcnow()
     idea.status = body.status
     idea.response = body.response

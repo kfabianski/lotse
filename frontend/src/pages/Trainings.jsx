@@ -34,25 +34,6 @@ function Status({ tr }) {
 }
 
 /** Banner for the home page: how many trainings are still open. */
-export function OpenTrainingsBanner() {
-  const { user } = useAuth();
-  const { t } = useI18n();
-  const { data } = useFetch(user ? '/trainings/mine' : null, undefined, `mine-${user?.id}`);
-  const open = (data || []).filter((x) => !x.completed_at && !x.optional);
-  if (!user || !open.length) return null;
-  const overdue = open.some((x) => x.overdue);
-  return (
-    <Link to="/trainings" className={`card flex items-center gap-4 border-l-4 px-5 py-4 hover:bg-surface-2 ${overdue ? 'border-l-alert' : 'border-l-signal'}`}>
-      <span className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-xl ${overdue ? 'bg-alert/10 text-alert' : 'bg-signal/20 text-ink'}`}><GraduationCap size={22} /></span>
-      <span className="min-w-0 flex-1">
-        <span className="block font-semibold">{t('tr_home_banner', { n: open.length })}</span>
-        <span className="block truncate text-sm text-muted">{open.slice(0, 3).map((x) => x.title_de).join(' · ')}</span>
-      </span>
-      <span className="hidden items-center gap-1 text-sm font-medium text-brand sm:inline-flex">{t('tr_home_go')}<ChevronRight size={16} /></span>
-    </Link>
-  );
-}
-
 export default function Trainings() {
   const { t, lang } = useI18n();
   const { has } = useAuth();

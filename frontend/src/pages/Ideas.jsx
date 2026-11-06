@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Lightbulb, MessageSquareReply, Star, Trash2 } from 'lucide-react';
 import { Avatar, Button, Empty, Field, Modal, inputClass, relativeDay } from '../components/ui';
@@ -170,6 +170,8 @@ export default function Ideas() {
   const [patched, setPatched] = useState({});
   const ideas = (data || []).map((i) => patched[i.id] || i);
   useHashFocus(Boolean(data));
+  // visiting the page marks answers to my ideas as seen (the start page stops showing them as new)
+  useEffect(() => { if (user) api('/me/ideas-seen', { method: 'POST' }).catch(() => {}); }, [user]);
   const update = (idea) => idea && setPatched((p) => ({ ...p, [idea.id]: idea }));
 
   const start = () => (user ? setOpen(true) : navigate('/login?next=/ideas'));
