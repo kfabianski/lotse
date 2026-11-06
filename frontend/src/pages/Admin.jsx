@@ -5,6 +5,8 @@ import FloorPlan from '../components/FloorPlan';
 import RoomEditor from '../components/RoomEditor';
 import AdminSettings from './AdminSettings';
 import AdminDepartments from './AdminDepartments';
+import AdminBranches from './AdminBranches';
+import AdminHomeLayout from './AdminHomeLayout';
 import AdminTrainings from './AdminTrainings';
 import AdminQuickLinks from './AdminQuickLinks';
 import AdminPermissions, { ROLES } from './AdminPermissions';
@@ -29,23 +31,24 @@ function UserForm({ user, locations, onDone }) {
     first_name: user?.first_name || '', last_name: user?.last_name || '', department: user?.department || '',
     position: user?.position || '', phone_ext: user?.phone_ext || '', start_date: user?.start_date || '',
     is_active: user?.is_active ?? true, show_in_directory: user?.show_in_directory ?? true, seat_id: user?.seat?.id || 0,
-    manager_id: user?.manager_id || 0,
+    manager_id: user?.manager_id || 0, branch_id: user?.branch_id || 0,
   }));
+  const branches = useFetch('/branches', undefined, 'branches');
   const everyone = useFetch('/users', { params: { include_hidden: true } }, 'all-users-for-manager');
   const [error, setError] = useState('');
   const set = (k) => (e) => setForm({ ...form, [k]: e.target.type === 'checkbox' ? e.target.checked : e.target.value });
 
   const submit = async (e) => {
     e.preventDefault();
-    const body = { ...form, email: form.email || null, start_date: form.start_date || null, seat_id: Number(form.seat_id), manager_id: Number(form.manager_id) };
+    const body = { ...form, email: form.email || null, start_date: form.start_date || null, seat_id: Number(form.seat_id), manager_id: Number(form.manager_id), branch_id: Number(form.branch_id) };
     if (fromLdap) delete body.manager_id;
     if (!body.password) delete body.password;
     if (!can('admin')) delete body.role;  // roles and permissions: admins only
     try {
       if (isNew) {
-        const { seat_id, is_active, show_in_directory, manager_id, ...create } = body;
+        const { seat_id, is_active, show_in_directory, manager_id, branch_id, ...create } = body;
         const created = await api('/users', { method: 'POST', body: create });
-        if (seat_id || manager_id) await api(`/users/${created.id}`, { method: 'PATCH', body: { seat_id, manager_id } });
+        if (seat_id || manager_id || branch_id) await api(`/users/${created.id}`, { method: 'PATCH', body: { seat_id, manager_id, branch_id } });
       } else {
         await api(`/users/${user.id}`, { method: 'PATCH', body });
       }
@@ -72,6 +75,14 @@ function UserForm({ user, locations, onDone }) {
         </select>
       </Field>
       <Field label={t('position')} hint={fromLdap ? t('from_ldap') : undefined}><input disabled={fromLdap} className={inputClass} value={form.position} onChange={set('position')} /></Field>
+      {(branches.data || []).length > 0 && (
+        <Field label={t('branch')} hint={fromLdap && config.data?.ldap_branch_attr ? t('from_ldap') : t('branch_hint')}>
+          <select disabled={fromLdap && Boolean(config.data?.ldap_branch_attr)} className={inputClass} value={form.branch_id} onChange={set('branch_id')}>
+            <option value={0}>{t('branch_none')}</option>
+            {branches.data.map((b) => <option key={b.id} value={b.id}>{b.name}</option>)}
+          </select>
+        </Field>
+      )}
       <Field label={t('manager')} hint={fromLdap ? t('from_ldap') : t('manager_hint')}>
         <select disabled={fromLdap} className={inputClass} value={form.manager_id} onChange={set('manager_id')}>
           <option value={0}>{t('manager_none')}</option>
@@ -321,9 +332,9 @@ export default function Admin() {
   const { t } = useI18n();
   const [params] = useSearchParams();
   const { can, has } = useAuth();
-  const tabs = [['users', t('admin_users'), has('people')], ['departments', t('admin_departments'), has('people')],
+  const tabs = [['users', t('admin_users'), has('people')], ['departments', t('admin_departments'), has('people')], ['branches', t('admin_branches'), has('people')],
     ['locations', t('admin_locations'), has('locations')], ['trainings', t('admin_trainings'), has('trainings')],
-    ['quicklinks', t('admin_quicklinks'), has('quicklinks')], ['permissions', t('admin_permissions'), can('admin')],
+    ['home', t('admin_home'), has('content_all')], ['quicklinks', t('admin_quicklinks'), has('quicklinks')], ['permissions', t('admin_permissions'), can('admin')],
     ['settings', t('admin_settings'), can('admin')]].filter((x) => x[2]);
   const [wanted, setTab] = useState(() => params.get('tab') || 'users');
   const tab = tabs.some((x) => x[0] === wanted) ? wanted : tabs[0]?.[0];
@@ -345,6 +356,8 @@ export default function Admin() {
         {locations.data && tab === 'locations' && <LocationsTab locations={locations.data} reload={locations.reload} />}
         {tab === 'settings' && <AdminSettings />}
         {tab === 'departments' && <AdminDepartments />}
+        {tab === 'branches' && <AdminBranches />}
+        {tab === 'home' && <AdminHomeLayout />}
         {tab === 'trainings' && <AdminTrainings />}
         {tab === 'quicklinks' && <AdminQuickLinks />}
         {tab === 'permissions' && <AdminPermissions />}

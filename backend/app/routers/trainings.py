@@ -38,7 +38,7 @@ CHUNK = 1024 * 1024
 
 
 class TargetIn(BaseModel):
-    kind: Literal["all", "department", "group", "position", "user"]
+    kind: Literal["all", "department", "group", "position", "branch", "user"]
     value: str = Field(default="", max_length=80)
 
 
@@ -78,6 +78,8 @@ def assigned_ids(db: Session, training: Training) -> set[int]:
             ids |= {u.id for u in _staff_query(db)}
         elif t.kind == "department":
             ids |= {u.id for u in _staff_query(db).filter(User.department == t.value)}
+        elif t.kind == "branch" and t.value.isdigit():
+            ids |= {u.id for u in _staff_query(db).filter(User.branch_id == int(t.value))}
         elif t.kind == "position" and t.value.strip():  # job title, e.g. from LDAP "title"
             ids |= {u.id for u in _staff_query(db).filter(User.position.ilike(t.value.strip()))}
         elif t.kind == "group" and t.value.isdigit():

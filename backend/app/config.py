@@ -66,6 +66,7 @@ class Settings(BaseSettings):
     ldap_attr_phone: str = "telephoneNumber"
     ldap_attr_photo: str = "thumbnailPhoto"
     ldap_attr_manager: str = "manager"
+    ldap_attr_branch: str = "physicalDeliveryOfficeName"  # Niederlassung; empty = set by hand
     ldap_departments_auto: bool = True  # create departments from the LDAP "department" attribute
     ldap_admin_group: str = ""  # full DN; members become admins
     ldap_editor_group: str = ""  # full DN; members become editors
@@ -78,7 +79,7 @@ EDITABLE = {
     "ldap_verify_cert", "ldap_bind_dn", "ldap_bind_password", "ldap_base_dn", "ldap_user_filter",
     "ldap_sync_filter", "ldap_admin_group", "ldap_departments_auto", "ldap_editor_group", "ldap_attr_username", "ldap_attr_first_name",
     "ldap_attr_last_name", "ldap_attr_email", "ldap_attr_department", "ldap_attr_title", "ldap_attr_phone",
-    "ldap_attr_photo", "ldap_attr_manager", "portal_url", "notify_email", "smtp_host", "smtp_port", "smtp_mode",
+    "ldap_attr_photo", "ldap_attr_manager", "ldap_attr_branch", "portal_url", "notify_email", "smtp_host", "smtp_port", "smtp_mode",
     "smtp_user", "smtp_password", "smtp_from", "notify_teams", "teams_webhook_url",
 }
 SECRET = {"ldap_bind_password", "smtp_password", "teams_webhook_url"}  # never sent back to the browser

@@ -15,9 +15,10 @@ from app.security import current_user, reader
 router = APIRouter(prefix="/api/events", tags=["calendar"])
 
 
-def _events(db: Session, start: datetime, end: datetime):
+def _events(db: Session, start: datetime, end: datetime, viewer: User | None = None):
+    from app.routers.content import live_for
     return (db.query(Article)
-            .filter(Article.live(), Article.category == "events",
+            .filter(live_for(viewer), Article.category == "events",
                     Article.event_date >= start, Article.event_date < end)
             .order_by(Article.event_date).all())
 
@@ -59,7 +60,7 @@ def list_events(
     db: Session = Depends(get_db),
 ):
     end = min(end, start + timedelta(days=800))  # bounded range
-    events = _events(db, datetime.combine(start, datetime.min.time()), datetime.combine(end, datetime.min.time()))
+    events = _events(db, datetime.combine(start, datetime.min.time()), datetime.combine(end, datetime.min.time()), viewer)
     if order == "desc":
         events.reverse()
     return with_rsvps(db, events, viewer)
@@ -107,8 +108,9 @@ def holiday_regions(_: User | None = Depends(reader)):
 
 @router.get("/{article_id}", response_model=EventOut)
 def get_event(article_id: int, viewer: User | None = Depends(reader), db: Session = Depends(get_db)):
+    from app.routers.content import visible_to
     event = db.get(Article, article_id)
-    if not event or event.category != "events" or not event.published or event.scheduled:
+    if not event or event.category != "events" or not event.published or event.scheduled or not visible_to(viewer, event):
         raise HTTPException(404, "Event not found")
     return with_rsvps(db, [event], viewer)[0]
 
@@ -116,8 +118,10 @@ def get_event(article_id: int, viewer: User | None = Depends(reader), db: Sessio
 @router.post("/{article_id}/rsvp", response_model=EventOut)
 def toggle_rsvp(article_id: int, user: User = Depends(current_user), db: Session = Depends(get_db)):
     """Sign up for an event, or cancel the sign-up. Past events can't be joined."""
+    from app.routers.content import visible_to
     event = db.get(Article, article_id)
-    if not event or event.category != "events" or not event.published or event.scheduled or not event.event_date:
+    if (not event or event.category != "events" or not event.published or event.scheduled or not event.event_date
+            or not visible_to(user, event)):
         raise HTTPException(404, "Event not found")
     rsvp = db.get(EventRsvp, (article_id, user.id))
     if rsvp:

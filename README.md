@@ -24,8 +24,10 @@ API, Uploads und Oberfläche aus. Anmeldung lokal oder über **LDAP/Active Direc
 | **Schulung bearbeiten** – Texteditor, Zuweisung an Personen, Abteilungen, Gruppen, Unterlagen | **Schnellzugriff** – Kacheln für Programme, Sammel-Postfächer und Telefonnummern |
 | ![Ideen](docs/screenshots/07-ideen.png) | ![Kleinanzeigen](docs/screenshots/08-kleinanzeigen.png) |
 | **Ideenbox** – Vorschläge, Sternebewertung, Status und Antwort, auch anonym | **Kleinanzeigen** – Biete, Suche, Zu verschenken, Fahrgemeinschaften |
-| ![Umfragen](docs/screenshots/21-umfragen.png) | |
-| **Umfragen** – anonym abstimmen, Ergebnisbalken, Mehrfachauswahl, Enddatum | |
+| ![Umfragen](docs/screenshots/21-umfragen.png) | ![Organigramm](docs/screenshots/22-organigramm.png) |
+| **Umfragen** – anonym abstimmen, Ergebnisbalken, Mehrfachauswahl, Enddatum | **Organigramm** – aus LDAP oder von Hand, mit Zoom |
+| ![Startseite gestalten](docs/screenshots/23-startseite-gestalten.png) | |
+| **Startseite gestalten** – Blöcke ziehen, ein-/ausblenden, Vorlagen | |
 | ![Dokumente](docs/screenshots/13-dokumente.png) | ![Dokument im Portal](docs/screenshots/09-dokument-viewer.png) |
 | **Dokumentenbibliothek** – ISO-Dokumente, Richtlinien, Suche | **Dokumente** – PDFs öffnen sich direkt im Portal |
 | ![Raum-Editor](docs/screenshots/14-raum-editor.png) | ![Fotogalerie](docs/screenshots/10-galerie.png) |
@@ -70,6 +72,11 @@ Alle Funktionen im Detail: **[docs/FUNKTIONEN.md](docs/FUNKTIONEN.md)** · Bildn
   Durchwahl, weiches Zoomen zur Person, Suche über alle Etagen, Minikarte, Abteilungsfilter.
 - **Organigramm** (Mitarbeitende → Organigramm): wer wem unterstellt ist – aus LDAP (`manager`) oder in der
   Verwaltung eingetragen; Äste ein-/ausklappen, an Breite anpassen, Zoom, Suche und Abteilungsfilter heben Personen hervor.
+- **Startseite gestalten** (Redaktion/Admin): Blöcke per Ziehen anordnen, ein-/ausblenden, *breit* oder *halb*;
+  fertige Vorlagen (*Standard*, *Nachrichten zuerst*, *Bilder & Termine*, *Kompakt*) mit Live-Vorschau.
+- **Bitte vormerken**: Beiträge **oben anheften** (optional bis zu einem Datum) – z. B. Jahresplanung, Inventur.
+- **Niederlassungen**: Artikel und Termine nur für bestimmte Standorte; Personen gehören zu einer Niederlassung
+  (von Hand oder aus LDAP), Schulungen lassen sich einer Niederlassung zuweisen.
 - **Benachrichtigungen** per **E-Mail** (neue Artikel und Termine, Antworten auf eigene Ideen) und als Karte in
   einem **Teams-Kanal**; jede Person kann sie im Profil abschalten.
 - **Kleinanzeigen**: Biete, Suche, Zu verschenken, Fahrgemeinschaften – mit Foto, Preis und Kontakt.

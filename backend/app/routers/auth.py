@@ -19,6 +19,7 @@ def public_config():
     return {"company_name": settings.company_name, "ldap_enabled": settings.ldap_enabled,
             "public_read": settings.public_read, "login_image_url": settings.login_image_url or None,
             "ldap_departments_auto": settings.ldap_enabled and settings.ldap_departments_auto,
+            "ldap_branch_attr": bool(settings.ldap_enabled and settings.ldap_attr_branch),
             "sso_enabled": settings.sso_enabled and settings.ldap_enabled}
 
 

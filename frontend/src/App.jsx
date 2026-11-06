@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Navigate, Route, Routes, useLocation } from 'react-router-dom';
+import { Navigate, Route, Routes, useLocation, useNavigationType } from 'react-router-dom';
 import Header, { Sidebar } from './components/Header';
 import { Empty } from './components/ui';
 import { useAuth } from './lib/auth';
@@ -29,6 +29,40 @@ function Guard({ role, perm, children }) {
   return ok ? children : <Navigate to="/" replace />;
 }
 
+/** New page: start at the top. Browser back/forward: return to the remembered position - retried for a moment,
+ * because the page content is loaded asynchronously and is not tall enough right away. */
+function useScrollMemory() {
+  const location = useLocation();
+  const navType = useNavigationType();
+  useEffect(() => {
+    if ('scrollRestoration' in window.history) window.history.scrollRestoration = 'manual';
+  }, []);
+  useEffect(() => {
+    const key = `lotse-scroll:${location.key}`;
+    let saved = null;
+    try { saved = Number(sessionStorage.getItem(key)); } catch { /* ignore */ }
+    let frame = 0;
+    let tries = 0;
+    if (navType === 'POP' && saved) {
+      const restore = () => {
+        window.scrollTo(0, saved);
+        tries += 1;
+        if (Math.abs(window.scrollY - saved) > 2 && tries < 120) frame = requestAnimationFrame(restore);
+      };
+      restore();
+    } else if (!location.hash) {
+      window.scrollTo(0, 0);
+    }
+    let timer = 0;
+    const remember = () => {
+      clearTimeout(timer);
+      timer = setTimeout(() => { try { sessionStorage.setItem(key, String(Math.round(window.scrollY))); } catch { /* ignore */ } }, 80);
+    };
+    window.addEventListener('scroll', remember, { passive: true });
+    return () => { cancelAnimationFrame(frame); clearTimeout(timer); window.removeEventListener('scroll', remember); };
+  }, [location.key]); // eslint-disable-line react-hooks/exhaustive-deps
+}
+
 export default function App() {
   const { user, ready } = useAuth();
   const { t } = useI18n();
@@ -50,7 +84,7 @@ export default function App() {
   useEffect(() => {
     api('/auth/config').then(setConfig).catch(() => setConfig({ public_read: false }));
   }, []);
-  useEffect(() => { window.scrollTo(0, 0); }, [pathname]);
+  useScrollMemory();
 
   if (!ready || !config || ssoPending) return null;
   // Everyone may read when public_read is on; signing in is only needed to post or edit.
@@ -82,7 +116,7 @@ export default function App() {
           <Route path="/profile" element={<Guard role="user"><Profile /></Guard>} />
           <Route path="/trainings" element={<Guard role="user"><Trainings /></Guard>} />
           <Route path="/trainings/:id" element={<Guard role="user"><TrainingView /></Guard>} />
-          <Route path="/admin" element={<Guard perm="trainings,quicklinks,locations,people"><Admin /></Guard>} />
+          <Route path="/admin" element={<Guard perm="trainings,quicklinks,locations,people,content_all"><Admin /></Guard>} />
           <Route path="*" element={<Empty>{t('not_found')}</Empty>} />
         </Routes>
       </main>

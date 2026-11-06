@@ -47,6 +47,7 @@ class SettingsIn(BaseModel):
     ldap_attr_phone: str = "telephoneNumber"
     ldap_attr_photo: str = "thumbnailPhoto"
     ldap_attr_manager: str = "manager"
+    ldap_attr_branch: str = "physicalDeliveryOfficeName"
     portal_url: str = Field(default="", max_length=200, pattern=r"^(https?://[^\s]+)?$")
     notify_email: bool = False
     smtp_host: str = Field(default="", max_length=255, pattern=r"^[A-Za-z0-9.\-:\[\]]*$")

@@ -137,6 +137,8 @@ def main():
         mehmet = find("'/api/users?q=Mehmet'")[0]["id"]
         b.goto(f"{base}/people?view=plan&focus={mehmet}", wait=2.5)
         b.shot("06-lageplan.png")
+        b.goto(f"{base}/people?view=org", wait=2)
+        b.shot("22-organigramm.png")
         b.goto(base + "/ideas")
         b.shot("07-ideen.png")
         b.goto(base + "/board")
@@ -189,6 +191,8 @@ def main():
         b.shot("17-schulung-bearbeiten.png")
         b.goto(base + "/admin?tab=quicklinks", wait=1.5)
         b.shot("18-schnellzugriff-verwaltung.png")
+        b.goto(base + "/admin?tab=home", wait=1.5)
+        b.shot("23-startseite-gestalten.png")
 
         if args.staff_password:  # employee view: only the person's own trainings
             session("light", login=True, user="ahmed.haddad", password=args.staff_password)

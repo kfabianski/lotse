@@ -41,6 +41,8 @@ class UserOut(ORM):
     show_in_directory: bool
     seat: SeatRef | None = None
     manager_id: int | None = None
+    branch_id: int | None = None
+    branch: str = ""
     permissions: list[str] = []  # extra permissions (only shown to admins and to the person)
     effective_permissions: list[str] = []  # role + extras (only for the person and admins)
     notify_articles: bool | None = None
@@ -75,6 +77,7 @@ class UserUpdate(BaseModel):
     password: str | None = Field(default=None, min_length=8, max_length=72)
     seat_id: int | None = Field(default=None, description="0 clears the seat")
     manager_id: int | None = Field(default=None, description="0 clears the manager")
+    branch_id: int | None = Field(default=None, description="0 clears the branch")
     permissions: list[Permission] | None = None
 
 
@@ -106,6 +109,7 @@ class PersonBrief(ORM):
     avatar_url: str | None
     email: str | None
     phone_ext: str
+    start_date: date | None = None
 
 
 class AttachmentIn(BaseModel):
@@ -117,6 +121,11 @@ class AttachmentIn(BaseModel):
 
 class AttachmentOut(AttachmentIn, ORM):
     id: int
+
+
+class BranchRef(ORM):
+    id: int
+    name: str
 
 
 class ArticleBase(BaseModel):
@@ -134,6 +143,9 @@ class ArticleBase(BaseModel):
     published: bool = True
     published_at: datetime | None = None  # None = now (new) / unchanged (edit)
     attachments: list[AttachmentIn] = []
+    branch_ids: list[int] = []  # empty = all branches
+    pinned: bool = False
+    pinned_until: date | None = None
 
 
 class ArticleIn(ArticleBase):
@@ -149,6 +161,8 @@ class ArticleOut(ArticleBase, ORM):
     updated_at: datetime
     author: PersonBrief | None = None
     attachments: list[AttachmentOut] = []
+    branches: list[BranchRef] = []
+    pinned_now: bool = False
 
 
 class DocumentOut(BaseModel):
@@ -180,6 +194,9 @@ class ArticleCard(ORM):
     scheduled: bool = False
     created_at: datetime
     photo_count: int = 0
+    branches: list[BranchRef] = []
+    pinned: bool = False
+    pinned_now: bool = False
 
 
 class ClassifiedIn(BaseModel):
@@ -269,6 +286,8 @@ class HomeOut(BaseModel):
     new_people: list[PersonBrief]
     classifieds: list[ClassifiedOut]
     photos: list[PhotoOut] = []
+    pinned: list[ArticleCard] = []
+    layout: list[dict] = []
     counts: dict[str, int]
 
 

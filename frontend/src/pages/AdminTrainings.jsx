@@ -27,6 +27,7 @@ function Chip({ active, onClick, children, color }) {
 /** Who must do the training: everyone, departments, groups, job titles, single people. */
 function TargetPicker({ value, onChange, departments, groups, people, positions = [] }) {
   const { t } = useI18n();
+  const branchList = useFetch('/branches', undefined, 'branches');
   const [q, setQ] = useState('');
   const [pq, setPq] = useState('');
   const has = (kind, v = '') => value.some((x) => x.kind === kind && x.value === String(v));
@@ -40,6 +41,12 @@ function TargetPicker({ value, onChange, departments, groups, people, positions 
         <p className="mb-1.5 text-sm text-muted">{t('tr_assign_depts')}</p>
         <div className="flex flex-wrap gap-1.5">{departments.map((d) => <Chip key={d.id} color={d.color} active={has('department', d.name)} onClick={() => toggle('department', d.name)}>{d.name}</Chip>)}</div>
       </div>
+      {(branchList.data || []).length > 0 && (
+        <div>
+          <p className="mb-1.5 text-sm text-muted">{t('tr_assign_branches')}</p>
+          <div className="flex flex-wrap gap-1.5">{branchList.data.map((b) => <Chip key={b.id} active={has('branch', b.id)} onClick={() => toggle('branch', b.id)}>{b.name}</Chip>)}</div>
+        </div>
+      )}
       <div>
         <p className="mb-1.5 text-sm text-muted">{t('tr_assign_groups')}</p>
         <div className="flex flex-wrap gap-1.5">{groups.map((g) => <Chip key={g.id} active={has('group', g.id)} onClick={() => toggle('group', g.id)}><Users size={13} />{g.name}</Chip>)}</div>
@@ -379,11 +386,13 @@ export default function AdminTrainings() {
   }, [params, setParams]);
   const trainings = list.data || [];
 
+  const branchNames = useFetch('/branches', undefined, 'branches');
   const names = (targets) => targets.map((x) => {
     if (x.kind === 'all') return t('tr_assign_all');
     if (x.kind === 'department') return x.value;
     if (x.kind === 'group') return (groups.data || []).find((g) => String(g.id) === x.value)?.name || '?';
     if (x.kind === 'position') return `${t('tr_position_short')}: ${x.value}`;
+    if (x.kind === 'branch') return `${t('branch')}: ${(branchNames.data || []).find((b) => String(b.id) === x.value)?.name || '?'}`;
     return people.find((p) => String(p.id) === x.value)?.full_name || '?';
   }).join(', ');
 

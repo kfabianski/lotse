@@ -102,6 +102,7 @@ def entry_data(entry) -> dict:
         "photo": _first(entry, settings.ldap_attr_photo),
         "dn": str(getattr(entry, "entry_dn", "") or ""),
         "manager_dn": str(_first(entry, settings.ldap_attr_manager) or "").strip(),
+        "branch": str(_first(entry, settings.ldap_attr_branch) or "").strip() if settings.ldap_attr_branch else "",
     }
 
 
@@ -153,6 +154,12 @@ def apply_data(db: Session, user: User, data: dict) -> None:
         user.avatar_url = photo
     if data.get("dn"):
         user.ldap_dn = data["dn"]
+    if settings.ldap_attr_branch:
+        if data.get("branch"):
+            from app.routers.branches import ensure_branch  # local import avoids a cycle
+            user.branch_id = ensure_branch(db, data["branch"]).id
+        else:
+            user.branch_id = None
 
 
 def resolve_manager(db: Session, user: User, manager_dn: str) -> bool:

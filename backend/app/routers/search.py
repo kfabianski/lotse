@@ -13,7 +13,7 @@ from sqlalchemy.orm import Session, joinedload, selectinload
 
 from app.db import get_db
 from app.models import Article, Attachment, Classified, Idea, Location, Poll, QuickLink, Room, Training, User
-from app.routers.content import _visible
+from app.routers.content import _visible, live_for
 from app.schemas import ArticleCard
 from app.security import has_perm, reader
 from app.serialize import user_out
@@ -79,7 +79,7 @@ def search(q: str = Query("", max_length=200), limit: int = Query(30, ge=1, le=1
     out["articles"] = out["articles"][:limit]
 
     docs = (db.query(Attachment, Article).join(Article, Article.id == Attachment.article_id)
-            .filter(Attachment.kind == "pdf", Article.live()).order_by(Attachment.name))
+            .filter(Attachment.kind == "pdf", live_for(viewer)).order_by(Attachment.name))
     out["documents"] = [{"id": d.id, "name": d.name, "url": d.url, "size": d.size, "article_id": art.id,
                          "article_title_de": art.title_de, "article_title_en": art.title_en, "category": art.category}
                         for d, art in docs.all() if _matches(words, d.name, art.title_de, art.title_en)][:limit]

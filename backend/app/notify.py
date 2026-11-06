@@ -149,7 +149,7 @@ def announce(db, article: Article) -> dict:
 
 def article_is_public_to_all(article: Article) -> bool:
     """Teams channels reach everybody: only announce articles that are not limited to some branches."""
-    return not getattr(article, "branch_ids", None)
+    return not article.branches
 
 
 def check_new_articles() -> int:

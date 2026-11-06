@@ -6,7 +6,7 @@ from sqlalchemy.orm import Session
 from app import ldap_auth
 from app.config import settings
 from app.db import get_db
-from app.models import Seat, User
+from app.models import Branch, Seat, User
 from app.schemas import UserCreate, UserOut, UserUpdate
 import json
 
@@ -146,6 +146,12 @@ def update_user(user_id: int, body: UserUpdate, admin: User = Depends(require_pe
             if user.auth_source != "local":
                 raise HTTPException(400, "Directory accounts have no local password")
             user.password_hash = hash_password(password)
+    if "branch_id" in data:
+        bid = data.pop("branch_id") or None
+        if bid is not None and db.get(Branch, bid) is None:
+            raise HTTPException(404, "Branch not found")
+        if not (user.auth_source == "ldap" and settings.ldap_enabled and settings.ldap_attr_branch):
+            user.branch_id = bid
     if "manager_id" in data:
         user.manager_id = check_manager(db, user, data.pop("manager_id") or None)
     if "seat_id" in data:

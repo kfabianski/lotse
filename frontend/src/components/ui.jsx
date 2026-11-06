@@ -1,7 +1,7 @@
 import { useEffect, useRef } from 'react';
 import { marked } from 'marked';
 import DOMPurify from 'dompurify';
-import { X } from 'lucide-react';
+import { MapPin, Pin, X } from 'lucide-react';
 import { useI18n } from '../lib/i18n';
 import { isImage, isPdf, useViewer } from '../lib/viewer';
 
@@ -125,15 +125,27 @@ export function SectionHeading({ children, action }) {
 /** "Draft" or "Scheduled for …" marker for editors. */
 export function StatusBadge({ article }) {
   const { t, fmtDate } = useI18n();
-  if (!article.published) return <span className="rounded-md bg-signal px-1.5 text-sm font-medium text-[#15171c]">{t('draft')}</span>;
-  if (article.scheduled) {
-    return (
+  let state = null;
+  if (!article.published) state = <span className="rounded-md bg-signal px-1.5 text-sm font-medium text-[#15171c]">{t('draft')}</span>;
+  else if (article.scheduled) {
+    state = (
       <span className="rounded-md bg-brand-soft px-1.5 text-sm font-medium text-brand">
         {t('scheduled_for', { date: fmtDate(article.published_at, { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' }) })}
       </span>
     );
   }
-  return null;
+  const branches = article.branches || [];
+  return (
+    <>
+      {state}
+      {article.pinned_now && <span className="inline-flex items-center gap-1 rounded-md bg-signal/25 px-1.5 text-sm font-medium"><Pin size={12} />{t('pinned_badge')}</span>}
+      {branches.length > 0 && (
+        <span className="inline-flex items-center gap-1 rounded-md bg-surface-2 px-1.5 text-sm font-medium text-muted">
+          <MapPin size={12} />{t('br_only', { names: branches.map((b) => b.name).join(', ') })}
+        </span>
+      )}
+    </>
+  );
 }
 
 export function relativeDay(t, value) {

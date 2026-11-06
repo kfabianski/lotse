@@ -21,6 +21,9 @@ Diese Beschreibung erklärt, was Lotse kann und wer was darf. Installation und K
 14. [Umfragen](#14-umfragen)
 15. [Organigramm](#15-organigramm)
 16. [Benachrichtigungen (E-Mail, Teams)](#16-benachrichtigungen-e-mail-teams)
+17. [Startseite gestalten](#17-startseite-gestalten)
+18. [Niederlassungen](#18-niederlassungen)
+19. [Beiträge oben anheften](#19-beiträge-oben-anheften)
 
 ---
 
@@ -367,3 +370,36 @@ allgemeine Anleitungen. Es gibt zwei Arten der Sichtbarkeit, frei kombinierbar:
   Webhookanforderung in einem Kanal posten*). Neue Beiträge erscheinen dort als Karte mit Knopf *Im Intranet öffnen*.
 - **Abbestellen**: jede Person im **Profil → Benachrichtigungen** (*Neue Artikel und Termine*, *Neuigkeiten zu meinen
   Ideen*). Standard: eingeschaltet.
+
+## 17. Startseite gestalten
+
+- **Verwaltung → Startseite** (Redaktion und Administratoren). Die Startseite besteht aus Blöcken: *Begrüßung*,
+  *Bitte vormerken*, *Slider*, *Schnellzugriff*, *Was kommt*, *Was gibt’s Neues*, *Neu im Team*, *So war’s*,
+  *Frisch erschienen*, *Umfrage*, *Kleinanzeigen*.
+- Blöcke **ziehen** (oder mit den Pfeilen verschieben), mit dem Auge **ein-/ausblenden**, Breite **Breit** oder
+  **Halb** wählen. Zwei halbe Blöcke stehen nebeneinander; ein einzelner halber Block wird automatisch breit – so
+  bleibt die Seite ohne Lücken. Rechts zeigt die **Vorschau** die Anordnung.
+- **Vorlagen** mit einem Klick: *Standard*, *Nachrichten zuerst*, *Bilder & Termine*, *Kompakt (Werk/Lager)* –
+  danach nach Belieben anpassen und speichern. *Standard wiederherstellen* setzt alles zurück.
+- Leere Blöcke (keine Umfrage, keine angehefteten Beiträge, Begrüßung für nicht Angemeldete) werden übersprungen.
+- **Zurück im Browser** führt wieder an die Stelle, an der man auf der Seite war.
+
+## 18. Niederlassungen
+
+- **Verwaltung → Niederlassungen**: Standorte anlegen, umbenennen, löschen (Recht *Personen & Abteilungen*).
+- **Personen** bekommen in der Verwaltung eine Niederlassung – oder aus LDAP (Attribut
+  `physicalDeliveryOfficeName`, in den LDAP-Einstellungen änderbar; unbekannte Standorte werden angelegt).
+- **Artikel und Termine**: im Editor unter *Sichtbar für* „Alle Niederlassungen“ oder einzelne wählen. Begrenzte
+  Beiträge tragen das Zeichen *Nur München* o. ä.
+- **Wer sieht was?** Beiträge für alle: alle. Begrenzte Beiträge: Personen dieser Niederlassung, Personen **ohne**
+  Niederlassung (z. B. Zentrale) und die Redaktion. Nicht angemeldete Besucher sehen nur Beiträge für alle. Das gilt
+  überall – Startseite, Listen, Kalender, Dokumente, Fotos, Suche, direkte Links, Zusagen und E-Mail-Benachrichtigungen;
+  in den Teams-Kanal gehen nur Beiträge für alle.
+- **Schulungen** lassen sich zusätzlich einer ganzen Niederlassung zuweisen.
+
+## 19. Beiträge oben anheften
+
+- Im Editor (Redaktion): **Oben anheften**, optional **bis** zu einem Datum. Angeheftete Beiträge stehen auf der
+  Startseite im Block **Bitte vormerken** und in ihrer Liste ganz oben (Zeichen *angepinnt*).
+- Gedacht für Dinge, die lange sichtbar sein sollen: Jahresplanung, Inventur, Audits, Betriebsferien – damit alle
+  ihren Urlaub danach planen können. Nach dem Datum verschwindet der Beitrag automatisch aus dem Block.

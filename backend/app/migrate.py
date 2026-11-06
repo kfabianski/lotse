@@ -17,6 +17,9 @@ COLUMNS = [
     ("users", "manager_id", "INTEGER REFERENCES users(id) ON DELETE SET NULL", None),
     ("users", "ldap_dn", "VARCHAR(400)", None),
     ("users", "notify_articles", "BOOLEAN NOT NULL DEFAULT 1", None),
+    ("users", "branch_id", "INTEGER REFERENCES branches(id) ON DELETE SET NULL", None),
+    ("articles", "pinned", "BOOLEAN NOT NULL DEFAULT 0", None),
+    ("articles", "pinned_until", "DATE", None),
     ("users", "notify_ideas", "BOOLEAN NOT NULL DEFAULT 1", None),
     # existing articles count as announced - switching notifications on must not mail old news
     ("articles", "notified_at", "DATETIME", "UPDATE articles SET notified_at = CURRENT_TIMESTAMP"),

@@ -17,7 +17,7 @@ from app.config import settings
 from app.db import Base, SessionLocal, engine
 from app.models import (DEFAULT_DEPARTMENTS, Article, Attachment, Classified, Department, EventRsvp, Idea, IdeaVote, Location,
                         QuickLink, Room, Seat, Training, TrainingCompletion, TrainingGroup, TrainingGroupMember,
-                        TrainingMaterial, TrainingTarget, User, Poll, PollVote)
+                        TrainingMaterial, TrainingTarget, User, Poll, PollVote, Branch)
 from app.security import hash_password
 
 random.seed(7)
@@ -1105,6 +1105,8 @@ def seed(reset: bool):
     add_demo_polls(db)
     db.flush()
     add_demo_org(db)
+    add_demo_branches(db)
+    add_demo_pinned(db)
     db.commit()
     print("Demo data created. Passwords are shown only now - note them down:")
     print(f"  admin            {admin_pw}   (administrator)")
@@ -1119,6 +1121,68 @@ ORG = {  # person -> manager (demo org chart)
     "paul.schroeder": "lukas.fischer", "ahmed.haddad": "lukas.fischer", "felix.zimmermann": "lukas.fischer",
     "marta.kowalska": "felix.zimmermann", "jana.peters": "felix.zimmermann",
 }
+
+
+BRANCH_PEOPLE = {"München": ["felix.zimmermann", "marta.kowalska", "jana.peters"]}
+
+
+def add_demo_branches(db) -> int:
+    """Two sites: Hamburg (head office, most people) and München (fulfillment), plus one event and one
+    news item only for München - so the branch limit can be seen."""
+    if db.query(Branch).count():
+        return 0
+    hh, mu = Branch(name="Hamburg", sort=0), Branch(name="München", sort=1)
+    db.add_all([hh, mu])
+    db.flush()
+    for u in db.query(User).filter(User.username != "admin"):
+        u.branch_id = mu.id if u.username in BRANCH_PEOPLE["München"] else hh.id
+    editor = db.query(User).filter(User.role == "editor").first()
+    now = datetime.now()
+    nxt = (now + timedelta(days=12)).replace(hour=14, minute=0, second=0, microsecond=0)
+    db.add_all([
+        Article(category="events", title_de="Betriebsversammlung Standort München", title_en="Staff meeting Munich site",
+                summary_de="Neuer Schichtplan, Umbau der Packstraße und Fragen an die Leitung.",
+                summary_en="New shift plan, packing line rebuild and questions to management.",
+                body_de="Alle Kolleg:innen am Standort München sind eingeladen. Treffpunkt: Pausenraum Halle 1.",
+                event_date=nxt, event_location="München, Pausenraum Halle 1", author_id=editor.id if editor else None,
+                published_at=now - timedelta(hours=2), notified_at=now, branches=[mu]),
+        Article(category="news", title_de="München: Parkplatz ab Montag gesperrt", title_en="Munich: car park closed from Monday",
+                summary_de="Wegen Asphaltarbeiten bitte eine Woche lang auf der Gewerbestraße parken.",
+                summary_en="Due to resurfacing please park on Gewerbestraße for one week.",
+                body_de="Die Arbeiten dauern voraussichtlich bis Freitag.", author_id=editor.id if editor else None,
+                published_at=now - timedelta(hours=5), notified_at=now, branches=[mu]),
+    ])
+    return 2
+
+
+PLAN_2027 = """## Jahresplanung 2027 – bitte bei der Urlaubsplanung beachten
+
+| Wann | Was | Wer |
+|---|---|---|
+| 4.–8. Januar | **Inventur** Lager Nord und Süd – kein Urlaub im Lager | Versand, Fulfillment |
+| 31. März | Jahresabschluss | Finanzen |
+| 12.–16. April | ISO-9001-Audit | alle Abteilungen |
+| 25. Juni | Sommerfest (Termin per Umfrage) | alle |
+| 1.–30. September | Hauptsaison: Urlaubssperre Versand | Versand, Fulfillment |
+| 24. Dezember – 1. Januar | **Betriebsferien** | alle |
+
+Fragen zur Urlaubsplanung: Personalabteilung, Durchwahl 140.
+"""
+
+
+def add_demo_pinned(db) -> int:
+    """A pinned annual plan - the kind of article that should stay on top for a long time."""
+    if db.query(Article).filter(Article.pinned.is_(True)).count():
+        return 0
+    editor = db.query(User).filter(User.role == "editor").first()
+    now = datetime.now()
+    db.add(Article(category="rules", title_de="Jahresplanung 2027: Inventur, Audit, Betriebsferien",
+                   title_en="Annual plan 2027: stocktaking, audit, company holidays",
+                   summary_de="Die wichtigsten Termine des Jahres – bitte vor dem Urlaubsantrag reinschauen.",
+                   summary_en="The key dates of the year – please check before requesting leave.",
+                   body_de=PLAN_2027, author_id=editor.id if editor else None, published_at=now - timedelta(days=1),
+                   notified_at=now, pinned=True, pinned_until=date(2027, 12, 31)))
+    return 1
 
 
 def add_demo_org(db) -> int:
@@ -1169,7 +1233,15 @@ def add_demo_polls(db) -> int:
 
 
 if __name__ == "__main__":
-    if "--org" in sys.argv:  # demo org chart for an existing database
+    if "--pinned" in sys.argv:
+        db = SessionLocal()
+        print(f"{add_demo_pinned(db)} pinned article added.")
+        db.commit()
+    elif "--branches" in sys.argv:  # demo branches for an existing database
+        db = SessionLocal()
+        print(f"{add_demo_branches(db)} branches added.")
+        db.commit()
+    elif "--org" in sys.argv:  # demo org chart for an existing database
         db = SessionLocal()
         print(f"{add_demo_org(db)} reporting lines added.")
         db.commit()

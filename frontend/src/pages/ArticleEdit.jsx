@@ -3,12 +3,13 @@ import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import { ArrowDown, ArrowUp, FileText, ImagePlus, Paperclip, X } from 'lucide-react';
 import { Button, Field, Markdown, inputClass } from '../components/ui';
 import { CATEGORIES, useI18n } from '../lib/i18n';
+import { useFetch } from '../lib/useFetch';
 import { api, uploadImage } from '../lib/api';
 import { useAuth } from '../lib/auth';
 
 const EMPTY = {
   category: 'news', title_de: '', title_en: '', summary_de: '', summary_en: '', body_de: '', body_en: '',
-  image_url: null, event_date: null, event_location: '', featured: false, published: true, attachments: [], change_note: '',
+  image_url: null, event_date: null, event_location: '', featured: false, published: true, attachments: [], change_note: '', branch_ids: [], pinned: false, pinned_until: '',
 };
 
 function Attachments({ value, onChange }) {
@@ -100,10 +101,11 @@ export default function ArticleEdit() {
   const [tab, setTab] = useState('de');
   const [preview, setPreview] = useState(false);
   const [error, setError] = useState('');
+  const branches = useFetch('/branches', undefined, 'branches');
 
   useEffect(() => {
     if (id) {
-      api(`/articles/${id}`).then((a) => setForm({ ...EMPTY, ...a, attachments: (a.attachments || []).map(({ url, name, kind, size }) => ({ url, name, kind, size })) }))
+      api(`/articles/${id}`).then((a) => setForm({ ...EMPTY, ...a, branch_ids: (a.branches || []).map((b) => b.id), pinned_until: a.pinned_until || '', attachments: (a.attachments || []).map(({ url, name, kind, size }) => ({ url, name, kind, size })) }))
         .catch((e) => setError(e.message));
     }
   }, [id]);
@@ -115,6 +117,7 @@ export default function ArticleEdit() {
     const body = {
       ...form,
       event_date: form.category === 'events' && form.event_date ? form.event_date : null,
+      pinned_until: form.pinned && form.pinned_until ? form.pinned_until : null,
       // Cleared date on an existing article means "now"; on a new one the server uses now.
       published_at: form.published_at || (id ? new Date(Date.now() - new Date().getTimezoneOffset() * 60000).toISOString().slice(0, 19) : null),
     };
@@ -127,6 +130,7 @@ export default function ArticleEdit() {
   };
 
   const localDate = form.event_date ? form.event_date.slice(0, 16) : '';
+  const toggleBranch = (bid) => setForm((f) => ({ ...f, branch_ids: f.branch_ids.includes(bid) ? f.branch_ids.filter((x) => x !== bid) : [...f.branch_ids, bid] }));
   const publishAt = form.published_at ? form.published_at.slice(0, 16) : '';
   const isScheduled = form.published && publishAt && new Date(publishAt) > new Date();
 
@@ -144,6 +148,31 @@ export default function ArticleEdit() {
           {has('content_all') && <label className="flex items-center gap-2"><input type="checkbox" checked={form.featured} onChange={set('featured')} className="h-4 w-4 accent-[var(--brand)]" />{t('featured')}</label>}
           <label className="flex items-center gap-2"><input type="checkbox" checked={form.published} onChange={set('published')} className="h-4 w-4 accent-[var(--brand)]" />{t('published')}</label>
         </div>
+        {(branches.data || []).length > 0 && (
+          <div className="sm:col-span-2">
+            <p className="mb-1.5 text-sm font-medium">{t('br_visible_for')}</p>
+            <div className="flex flex-wrap gap-2">
+              <button type="button" onClick={() => setForm((f) => ({ ...f, branch_ids: [] }))} aria-pressed={!form.branch_ids.length}
+                className={`rounded-full border px-3.5 py-1.5 text-sm font-medium ${!form.branch_ids.length ? 'border-ink bg-ink text-surface' : 'border-line hover:border-muted'}`}>{t('br_all')}</button>
+              {branches.data.map((b) => (
+                <button key={b.id} type="button" onClick={() => toggleBranch(b.id)} aria-pressed={form.branch_ids.includes(b.id)}
+                  className={`rounded-full border px-3.5 py-1.5 text-sm font-medium ${form.branch_ids.includes(b.id) ? 'border-brand bg-brand-soft text-brand' : 'border-line hover:border-muted'}`}>{b.name}</button>
+              ))}
+            </div>
+            <p className="mt-1 text-xs text-muted">{form.branch_ids.length ? t('br_visible_some') : t('br_visible_all')}</p>
+          </div>
+        )}
+        {has('content_all') && (
+          <div className="sm:col-span-2 flex flex-wrap items-center gap-3 rounded-xl border border-line bg-bg p-3">
+            <label className="flex items-center gap-2 font-medium"><input type="checkbox" checked={form.pinned} onChange={set('pinned')} className="h-4 w-4 accent-[var(--brand)]" />{t('pin_label')}</label>
+            {form.pinned && (
+              <label className="flex items-center gap-2 text-sm text-muted">{t('pin_until')}
+                <input type="date" className={`${inputClass} w-auto py-1.5`} value={form.pinned_until || ''} onChange={set('pinned_until')} />
+              </label>
+            )}
+            <span className="w-full text-xs text-muted">{t('pin_hint')}</span>
+          </div>
+        )}
         <Field label={t('publish_at')} hint={isScheduled ? t('publish_at_scheduled') : t('publish_at_hint')}>
           <div className="flex gap-2">
             <input type="datetime-local" className={inputClass} value={publishAt}

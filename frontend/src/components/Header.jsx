@@ -51,7 +51,7 @@ function useNavItems() {
     { to: '/ideas', label: t('nav_ideas'), icon: Lightbulb },
     { to: '/polls', label: t('nav_polls'), icon: BarChart3 },
     { to: '/people', label: t('nav_people'), icon: Users },
-    ...(has('trainings', 'quicklinks', 'locations', 'people') ? [{ to: '/admin', label: t('nav_admin'), icon: Settings }] : []),
+    ...(has('trainings', 'quicklinks', 'locations', 'people', 'content_all') ? [{ to: '/admin', label: t('nav_admin'), icon: Settings }] : []),
   ];
 }
 

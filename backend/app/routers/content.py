@@ -1,11 +1,13 @@
 from datetime import date, datetime, timedelta
 
 from fastapi import APIRouter, Depends, File, HTTPException, Query, UploadFile
-from sqlalchemy import func, or_
+from sqlalchemy import and_, case, false, func, or_, true
+from pydantic import BaseModel
+from typing import Literal
 from sqlalchemy.orm import Session, joinedload
 
 from app.db import get_db
-from app.models import Article, Attachment, Classified, User
+from app.models import AppSetting, Article, Attachment, Branch, Classified, User
 from app.schemas import (ArticleCard, ArticleIn, ArticleOut, ClassifiedIn, ClassifiedOut, DocumentOut, HomeOut,
                          PersonBrief, PhotoOut)
 from app.security import current_user, has_perm, reader, require_perm
@@ -15,52 +17,145 @@ router = APIRouter(prefix="/api", tags=["content"])
 NEW_PEOPLE_DAYS = 90
 
 
+def branch_ok(user: User | None):
+    """SQL condition for the branch limit. Articles without branches are for everybody. Signed-in people see
+    those of their own branch; people without a branch (e.g. head office) and the editors see all;
+    visitors who are not signed in see only the ones for everybody."""
+    if has_perm(user, "content_all") or (user is not None and not user.branch_id):
+        return true()
+    everybody = ~Article.branches.any()
+    if user is None:
+        return everybody
+    return or_(everybody, Article.branches.any(Branch.id == user.branch_id), Article.author_id == user.id)
+
+
+def live_for(user: User | None):
+    """Published, date reached, and meant for this person's branch."""
+    return and_(Article.live(), branch_ok(user))
+
+
+def pinned_first():
+    """Order expression: pinned articles (still within their pin date) first."""
+    active = and_(Article.pinned.is_(True), or_(Article.pinned_until.is_(None), Article.pinned_until >= date.today()))
+    return case((active, 0), else_=1)
+
+
 def _visible(query, user: User | None):
-    """Editors see all drafts, authors their own; everyone else (incl. anonymous visitors) only published articles."""
+    """Editors see all drafts, authors their own; everyone else (incl. anonymous visitors) only published articles
+    of their branch."""
     if has_perm(user, "content_all"):
         return query
     if has_perm(user, "content_own"):
-        return query.filter(or_(Article.live(), Article.author_id == user.id))
-    return query.filter(Article.live())
+        return query.filter(or_(live_for(user), Article.author_id == user.id))
+    return query.filter(live_for(user))
 
 
 def visible_to(user: User | None, article: Article) -> bool:
     """Python twin of ``_visible`` for one article (used for notifications)."""
+    if has_perm(user, "content_all"):
+        return True
+    own = user is not None and article.author_id == user.id
     live = article.published and article.published_at <= datetime.now()
-    return live or has_perm(user, "content_all") or (has_perm(user, "content_own") and article.author_id == getattr(user, "id", None))
+    if not (live or (own and has_perm(user, "content_own"))):
+        return False
+    if not article.branches or own or (user is not None and not user.branch_id):
+        return True
+    return user is not None and user.branch_id in {b.id for b in article.branches}
+
+
+def _branches(db: Session, ids: list[int]) -> list[Branch]:
+    found = db.query(Branch).filter(Branch.id.in_(set(ids))).all() if ids else []
+    if len(found) != len(set(ids)):
+        raise HTTPException(422, "Unknown branch")
+    return found
 
 
 def _may_edit(user: User, article: Article) -> bool:
     return has_perm(user, "content_all") or (has_perm(user, "content_own") and article.author_id == user.id)
 
 
+HOME_BLOCKS = ("greeting", "pinned", "slider", "quicklinks", "upcoming", "news", "people", "photos", "recent", "poll", "board")
+DEFAULT_LAYOUT = [
+    {"id": "greeting", "show": True, "width": "full"}, {"id": "pinned", "show": True, "width": "full"},
+    {"id": "slider", "show": True, "width": "full"}, {"id": "quicklinks", "show": True, "width": "full"},
+    {"id": "upcoming", "show": True, "width": "full"}, {"id": "news", "show": True, "width": "full"},
+    {"id": "people", "show": True, "width": "full"}, {"id": "photos", "show": True, "width": "full"},
+    {"id": "poll", "show": True, "width": "half"}, {"id": "board", "show": True, "width": "half"},
+    {"id": "recent", "show": False, "width": "full"},
+]
+
+
+class LayoutBlock(BaseModel):
+    id: Literal[HOME_BLOCKS]  # type: ignore[valid-type]
+    show: bool = True
+    width: Literal["full", "half"] = "full"
+
+
+def home_layout(db: Session) -> list[dict]:
+    """Saved layout; blocks added in later versions are appended (hidden) so the order stays as chosen."""
+    import json
+    row = db.get(AppSetting, "home_layout")
+    try:
+        saved = json.loads(row.value) if row else DEFAULT_LAYOUT
+    except ValueError:
+        saved = DEFAULT_LAYOUT
+    ids = [b["id"] for b in saved if b.get("id") in HOME_BLOCKS]
+    out = [b for b in saved if b.get("id") in HOME_BLOCKS]
+    out += [{"id": b, "show": False, "width": "full"} for b in HOME_BLOCKS if b not in ids]
+    return out
+
+
+@router.get("/home-layout")
+def get_home_layout(_: User | None = Depends(reader), db: Session = Depends(get_db)):
+    return {"layout": home_layout(db), "default": DEFAULT_LAYOUT}
+
+
+@router.put("/home-layout")
+def save_home_layout(body: list[LayoutBlock], _: User = Depends(require_perm("content_all")), db: Session = Depends(get_db)):
+    import json
+    ids = [b.id for b in body]
+    if len(set(ids)) != len(ids):
+        raise HTTPException(422, "Each block only once")
+    value = json.dumps([b.model_dump() for b in body])
+    row = db.get(AppSetting, "home_layout")
+    if row:
+        row.value = value
+    else:
+        db.add(AppSetting(key="home_layout", value=value))
+    db.commit()
+    return {"layout": home_layout(db), "default": DEFAULT_LAYOUT}
+
+
 @router.get("/home", response_model=HomeOut)
 def home(viewer: User | None = Depends(reader), db: Session = Depends(get_db)):
     from app.routers.calendar import with_rsvps
-    published = db.query(Article).filter(Article.live())
+    published = db.query(Article).filter(live_for(viewer))
     newest = published.order_by(Article.published_at.desc())
     since = date.today() - timedelta(days=NEW_PEOPLE_DAYS)
     counts = dict(published.with_entities(Article.category, func.count()).group_by(Article.category).all())
     return {
         "slides": newest.filter(Article.featured.is_(True)).limit(6).all(),
-        "news": newest.filter(Article.category.in_(["news", "products"])).limit(4).all(),
+        "news": newest.filter(Article.category.in_(["news", "products"])).limit(5).all(),
+        "layout": home_layout(db),
         "events": with_rsvps(db, published.filter(Article.category == "events", Article.event_date >= datetime.now()
                                    - timedelta(hours=12)).order_by(Article.event_date).limit(3).all(), viewer),
         "recent": newest.limit(6).all(),
         "new_people": db.query(User).filter(User.is_active.is_(True), User.show_in_directory.is_(True),
                                             User.start_date >= since)
-                        .order_by(User.start_date.desc()).limit(8).all(),
+                        .order_by(User.start_date.desc()).limit(12).all(),
         "classifieds": db.query(Classified).options(joinedload(Classified.author))
                          .order_by(Classified.created_at.desc()).limit(4).all(),
-        "photos": latest_photos(db, 9),
+        "photos": latest_photos(db, 9, viewer),
+        "pinned": published.filter(Article.pinned.is_(True), or_(Article.pinned_until.is_(None), Article.pinned_until >= date.today()))
+                           .order_by(Article.published_at.desc()).limit(6).all(),
         "counts": counts,
     }
 
 
-def latest_photos(db: Session, limit: int) -> list[dict]:
+def latest_photos(db: Session, limit: int, viewer: User | None = None) -> list[dict]:
     """Newest gallery photos of published articles – a few per article so one event doesn't fill the wall."""
     rows = (db.query(Attachment, Article).join(Article, Article.id == Attachment.article_id)
-            .filter(Attachment.kind == "image", Article.live())
+            .filter(Attachment.kind == "image", live_for(viewer))
             .order_by(func.coalesce(Article.event_date, Article.published_at).desc(), Attachment.sort).all())
     per_article: dict[int, int] = {}
     out = []
@@ -76,8 +171,8 @@ def latest_photos(db: Session, limit: int) -> list[dict]:
 
 
 @router.get("/photos", response_model=list[PhotoOut])
-def list_photos(limit: int = Query(24, ge=1, le=100), _: User | None = Depends(reader), db: Session = Depends(get_db)):
-    return latest_photos(db, limit)
+def list_photos(limit: int = Query(24, ge=1, le=100), viewer: User | None = Depends(reader), db: Session = Depends(get_db)):
+    return latest_photos(db, limit, viewer)
 
 
 @router.get("/articles", response_model=list[ArticleCard])
@@ -97,7 +192,7 @@ def list_articles(
         query = query.filter(or_(Article.title_de.ilike(like), Article.title_en.ilike(like),
                                  Article.summary_de.ilike(like), Article.summary_en.ilike(like),
                                  Article.body_de.ilike(like), Article.body_en.ilike(like)))
-    return query.order_by(Article.published_at.desc()).offset(offset).limit(limit).all()
+    return query.order_by(pinned_first(), Article.published_at.desc()).offset(offset).limit(limit).all()
 
 
 def _get_article(db: Session, article_id: int, user: User | None) -> Article:
@@ -128,11 +223,13 @@ def _set_attachments(article: Article, items) -> None:
 def create_article(body: ArticleIn, editor: User = Depends(require_perm("content_own", "content_all")),
                    db: Session = Depends(get_db)):
     from app.routers.revisions import record_revision
-    data = body.model_dump(exclude={"attachments", "change_note"})
+    data = body.model_dump(exclude={"attachments", "change_note", "branch_ids"})
     data["published_at"] = data["published_at"] or datetime.now()
     if not has_perm(editor, "content_all"):
         data["featured"] = False  # the home slider is chosen by the editors
+        data["pinned"], data["pinned_until"] = False, None
     article = Article(**data, author_id=editor.id)
+    article.branches = _branches(db, body.branch_ids)
     _set_attachments(article, body.attachments)
     db.add(article)
     db.flush()
@@ -149,12 +246,13 @@ def update_article(article_id: int, body: ArticleIn, editor: User = Depends(requ
     article = _get_article(db, article_id, editor)
     if not _may_edit(editor, article):
         raise HTTPException(403, "Authors can only edit their own articles")
-    for key, value in body.model_dump(exclude={"attachments", "change_note"}).items():
+    for key, value in body.model_dump(exclude={"attachments", "change_note", "branch_ids"}).items():
         if key == "published_at" and value is None:
             continue  # keep the existing date
-        if key == "featured" and not has_perm(editor, "content_all"):
-            continue  # slider stays as the editors set it
+        if key in ("featured", "pinned", "pinned_until") and not has_perm(editor, "content_all"):
+            continue  # slider and pins stay as the editors set them
         setattr(article, key, value)
+    article.branches = _branches(db, body.branch_ids)
     _set_attachments(article, body.attachments)
     db.flush()
     record_revision(db, article, editor, body.change_note)
@@ -180,10 +278,10 @@ async def upload_file(file: UploadFile = File(...), _: User = Depends(require_pe
 
 
 @router.get("/documents", response_model=list[DocumentOut])
-def list_documents(q: str = "", _: User | None = Depends(reader), db: Session = Depends(get_db)):
+def list_documents(q: str = "", viewer: User | None = Depends(reader), db: Session = Depends(get_db)):
     """All PDFs attached to published articles – the company document library."""
     query = (db.query(Attachment, Article).join(Article, Article.id == Attachment.article_id)
-             .filter(Attachment.kind == "pdf", Article.live()))
+             .filter(Attachment.kind == "pdf", live_for(viewer)))
     if q.strip():
         like = f"%{q.strip()}%"
         query = query.filter(or_(Attachment.name.ilike(like), Article.title_de.ilike(like), Article.title_en.ilike(like)))

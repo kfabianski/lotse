@@ -1,6 +1,6 @@
 from datetime import date, datetime
 
-from sqlalchemy import Boolean, Date, DateTime, Float, ForeignKey, Integer, String, Text
+from sqlalchemy import Boolean, Column, Date, DateTime, Float, ForeignKey, Integer, String, Table, Text
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.db import Base
@@ -39,7 +39,8 @@ class User(Base):
     notify_ideas: Mapped[bool] = mapped_column(Boolean, default=True)  # e-mail when my idea gets an answer
     # Org chart: who the person reports to (from LDAP "manager" or set by an admin)
     manager_id: Mapped[int | None] = mapped_column(ForeignKey("users.id", ondelete="SET NULL"), index=True)
-    ldap_dn: Mapped[str | None] = mapped_column(String(400))  # directory DN, to resolve other people's "manager"  # last visit of the ideas page (for "new answers")
+    ldap_dn: Mapped[str | None] = mapped_column(String(400))
+    branch_id: Mapped[int | None] = mapped_column(ForeignKey("branches.id", ondelete="SET NULL"), index=True)  # directory DN, to resolve other people's "manager"  # last visit of the ideas page (for "new answers")
     seat_id: Mapped[int | None] = mapped_column(ForeignKey("seats.id", ondelete="SET NULL"), unique=True)
     created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
 
@@ -108,6 +109,23 @@ class Seat(Base):
     occupant: Mapped[User | None] = relationship(back_populates="seat", uselist=False)
 
 
+class Branch(Base):
+    """Niederlassung / site. Articles and events can be limited to some branches."""
+
+    __tablename__ = "branches"
+    id: Mapped[int] = mapped_column(primary_key=True)
+    name: Mapped[str] = mapped_column(String(80), unique=True)
+    sort: Mapped[int] = mapped_column(Integer, default=0)
+    source: Mapped[str] = mapped_column(String(8), default="manual")  # manual | ldap
+
+
+article_branches = Table(
+    "article_branches", Base.metadata,
+    Column("article_id", ForeignKey("articles.id", ondelete="CASCADE"), primary_key=True),
+    Column("branch_id", ForeignKey("branches.id", ondelete="CASCADE"), primary_key=True),
+)
+
+
 class Article(Base):
     __tablename__ = "articles"
 
@@ -124,6 +142,8 @@ class Article(Base):
     event_location: Mapped[str] = mapped_column(String(120), default="")
     featured: Mapped[bool] = mapped_column(Boolean, default=False)  # shown in the home slider
     notified_at: Mapped[datetime | None] = mapped_column(DateTime)  # e-mail/Teams announcement sent
+    pinned: Mapped[bool] = mapped_column(Boolean, default=False)  # stays on top (e.g. annual plan)
+    pinned_until: Mapped[date | None] = mapped_column(Date)  # None = until unpinned
     published: Mapped[bool] = mapped_column(Boolean, default=True)  # False = draft
     # Publication date (server local time). In the future = scheduled: invisible to readers until then.
     published_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.now, index=True)
@@ -133,6 +153,8 @@ class Article(Base):
 
     author: Mapped[User | None] = relationship()
     attachments: Mapped[list["Attachment"]] = relationship(cascade="all, delete-orphan", order_by="Attachment.sort")
+    # empty = for everybody; otherwise only for people of these branches (and the editors)
+    branches: Mapped[list[Branch]] = relationship(secondary=article_branches, order_by="Branch.sort")
 
     @property
     def scheduled(self) -> bool:
@@ -142,6 +164,10 @@ class Article(Base):
     def live(cls):
         """SQL condition: visible to readers right now (published and publication date reached)."""
         return (cls.published.is_(True)) & (cls.published_at <= datetime.now())
+
+    @property
+    def pinned_now(self) -> bool:
+        return bool(self.pinned and (self.pinned_until is None or self.pinned_until >= date.today()))
 
     @property
     def photo_count(self) -> int:
@@ -357,7 +383,7 @@ class TrainingTarget(Base):
 
     id: Mapped[int] = mapped_column(primary_key=True)
     training_id: Mapped[int] = mapped_column(ForeignKey("trainings.id", ondelete="CASCADE"), index=True)
-    kind: Mapped[str] = mapped_column(String(12))  # all | department | group | position | user
+    kind: Mapped[str] = mapped_column(String(12))  # all | department | group | position | branch | user
     value: Mapped[str] = mapped_column(String(80), default="")
 
 

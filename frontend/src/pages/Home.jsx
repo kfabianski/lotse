@@ -1,16 +1,18 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { ArrowUpRight, Camera, Images } from 'lucide-react';
+import { ArrowUpRight, Camera, Images, Pin } from 'lucide-react';
 import HeroSlider from '../components/HeroSlider';
 import { Avatar, CategoryTag, Empty, SectionHeading, relativeDay } from '../components/ui';
 import { useI18n } from '../lib/i18n';
 import { useFetch } from '../lib/useFetch';
+import { useAuth } from '../lib/auth';
 import { useViewer } from '../lib/viewer';
 import { UpcomingCard } from './Events';
 import MiniCalendar from '../components/MiniCalendar';
 import QuickLinks from '../components/QuickLinks';
 import Greeting from '../components/Greeting';
 import { PollCard } from './Polls';
+import { ArticleCover } from './Articles';
 
 function ShowAll({ to, label }) {
   const { t } = useI18n();
@@ -33,6 +35,21 @@ function NewsItem({ a, large }) {
         {loc(a, 'title')}
       </h3>
       <p className="mt-1 line-clamp-2 text-muted">{loc(a, 'summary')}</p>
+    </Link>
+  );
+}
+
+/** Teaser with a small picture, for the right-hand column of the news block. */
+function NewsTeaser({ a }) {
+  const { t, loc, fmtDate } = useI18n();
+  return (
+    <Link to={`/articles/${a.id}`} className="group flex gap-4">
+      <span className="block h-20 w-28 shrink-0 overflow-hidden rounded-xl [&_span]:hidden"><ArticleCover article={a} className="h-full" /></span>
+      <span className="min-w-0">
+        <CategoryTag category={a.category} />
+        <span className="mt-0.5 line-clamp-2 block font-semibold leading-snug group-hover:text-brand">{loc(a, 'title')}</span>
+        <span className="mt-0.5 block text-sm text-muted" title={fmtDate(a.published_at)}>{relativeDay(t, a.published_at)}</span>
+      </span>
     </Link>
   );
 }
@@ -79,118 +96,198 @@ function PhotoWall({ photos }) {
   );
 }
 
-/** Newest open poll, if any. */
-function HomePoll() {
-  const { t } = useI18n();
-  const { data } = useFetch('/polls', { params: { state: 'open', limit: 1 } }, 'home-poll');
-  const [poll, setPoll] = useState(null);
-  const p = poll || data?.[0];
-  if (!p) return null;
+
+/** Pinned articles: long-lived info such as the annual plan or stocktaking dates. */
+function PinnedBlock({ items }) {
+  const { t, loc, fmtDate } = useI18n();
   return (
-    <section>
-      <SectionHeading action={<ShowAll to="/polls" label={t('polls_all')} />}>{t('home_poll')}</SectionHeading>
-      <PollCard key={`${p.id}-${p.my_choices?.join(',')}`} poll={p} onChange={setPoll} compact />
+    <section aria-label={t('pinned_title')}>
+      <SectionHeading><span className="inline-flex items-center gap-2"><Pin size={20} className="text-brand" />{t('pinned_title')}</span></SectionHeading>
+      <ul className={`grid gap-4 ${items.length > 1 ? 'md:grid-cols-2' : ''} ${items.length > 2 ? 'xl:grid-cols-3' : ''}`}>
+        {items.map((a) => (
+          <li key={a.id}>
+            <Link to={`/articles/${a.id}`} className="group flex h-full items-start gap-4 rounded-2xl border border-signal/60 bg-signal/10 p-4 hover:border-brand">
+              {a.image_url && <img src={a.image_url} alt="" className="h-16 w-16 shrink-0 rounded-xl object-cover" />}
+              <span className="min-w-0">
+                <span className="block font-semibold leading-snug group-hover:text-brand">{loc(a, 'title')}</span>
+                <span className="mt-0.5 line-clamp-2 block text-sm text-muted">{loc(a, 'summary')}</span>
+                {a.event_date && <span className="mt-1 block text-sm font-medium">{fmtDate(a.event_date)}</span>}
+              </span>
+            </Link>
+          </li>
+        ))}
+      </ul>
     </section>
   );
 }
 
-export default function Home() {
+function NewsBlock({ news, half }) {
+  const { t } = useI18n();
+  const [lead, ...rest] = news;
+  return (
+    <section>
+      <SectionHeading action={<ShowAll to="/news" />}>{t('latest_news')}</SectionHeading>
+      <div className={`grid gap-8 ${half ? '' : 'md:grid-cols-[minmax(0,1.3fr)_minmax(0,1fr)]'}`}>
+        <NewsItem a={lead} large />
+        {rest.length > 0 && (
+          <div className={`space-y-5 ${half ? 'border-t border-line pt-5' : 'md:border-l md:border-line md:pl-8'}`}>
+            {rest.slice(0, half ? 2 : 4).map((a) => <NewsTeaser key={a.id} a={a} />)}
+          </div>
+        )}
+      </div>
+    </section>
+  );
+}
+
+/** New colleagues as photo cards instead of a list. */
+function PeopleBlock({ people, half }) {
+  const { t, fmtDate } = useI18n();
+  const shown = people.slice(0, 6); // one tidy row (two rows of three when half)
+  return (
+    <section>
+      <SectionHeading action={<ShowAll to="/people" />}>{t('new_colleagues')}</SectionHeading>
+      <ul className={`grid grid-cols-2 gap-3 sm:grid-cols-3 ${half ? '' : 'lg:grid-cols-6'}`}>
+        {shown.map((p) => (
+          <li key={p.id}>
+            <Link to={`/people?focus=${p.id}`} className="group flex h-full flex-col items-center rounded-2xl border border-line bg-surface px-3 pb-4 pt-5 text-center hover:border-brand">
+              <Avatar person={p} size={72} />
+              <span className="mt-3 block font-semibold leading-tight group-hover:text-brand">{p.full_name}</span>
+              <span className="mt-0.5 line-clamp-2 block text-sm text-muted">{p.position}</span>
+              {p.start_date && <span className="mt-auto pt-2 text-xs text-muted">{t('since_date', { d: fmtDate(p.start_date, { day: 'numeric', month: 'short' }) })}</span>}
+            </Link>
+          </li>
+        ))}
+      </ul>
+    </section>
+  );
+}
+
+function UpcomingBlock({ events, half, onChange }) {
+  const { t } = useI18n();
+  return (
+    <section>
+      <SectionHeading action={<ShowAll to="/calendar" label={t('events_all')} />}>{t('events_home')}</SectionHeading>
+      <div className={`grid gap-5 ${half ? '' : 'md:grid-cols-2 xl:grid-cols-3'}`}>
+        {events.length
+          ? events.slice(0, half ? 1 : 2).map((e) => <ul key={e.id} className="contents"><UpcomingCard event={e} onChange={onChange} /></ul>)
+          : <div className={half ? '' : 'md:col-span-1 xl:col-span-2'}><Empty>{t('no_events')}</Empty></div>}
+        {!half && <div className="md:col-span-2 xl:col-span-1"><MiniCalendar /></div>}
+      </div>
+    </section>
+  );
+}
+
+function RecentBlock({ items }) {
   const { t, loc, fmtDate } = useI18n();
+  return (
+    <section>
+      <SectionHeading>{t('recent_articles')}</SectionHeading>
+      <ul className="card divide-y divide-line">
+        {items.map((a) => (
+          <li key={a.id}>
+            <Link to={`/articles/${a.id}`} className="group flex items-center gap-4 px-5 py-3.5">
+              <span className="min-w-0 flex-1">
+                <span className="block truncate font-medium group-hover:text-brand">{loc(a, 'title')}</span>
+                <CategoryTag category={a.category} className="mt-0.5" />
+              </span>
+              <span className="shrink-0 text-sm text-muted" title={fmtDate(a.published_at)}>{relativeDay(t, a.published_at)}</span>
+            </Link>
+          </li>
+        ))}
+      </ul>
+    </section>
+  );
+}
+
+function BoardBlock({ items, half }) {
+  const { t } = useI18n();
+  return (
+    <section>
+      <SectionHeading action={<ShowAll to="/board" />}>{t('board_latest')}</SectionHeading>
+      <ul className={`grid gap-3 ${half ? 'sm:grid-cols-2' : 'sm:grid-cols-2 xl:grid-cols-4'}`}>
+        {items.map((c) => (
+          <li key={c.id}>
+            <Link to={`/board#notice-${c.id}`} className="flex h-full flex-col card px-4 py-3 hover:border-brand">
+              <span className="text-sm text-muted">{t(`kind_${c.kind}`)}{c.price && ` · ${c.price}`}</span>
+              <span className="font-medium leading-snug">{c.title}</span>
+              <span className="mt-auto pt-1 text-sm text-muted">{c.author.full_name}</span>
+            </Link>
+          </li>
+        ))}
+      </ul>
+    </section>
+  );
+}
+
+function PollBlock({ poll, onChange }) {
+  const { t } = useI18n();
+  return (
+    <section>
+      <SectionHeading action={<ShowAll to="/polls" label={t('polls_all')} />}>{t('home_poll')}</SectionHeading>
+      <PollCard key={`${poll.id}-${poll.my_choices?.join(',')}`} poll={poll} onChange={onChange} compact />
+    </section>
+  );
+}
+
+/** Puts the visible blocks in rows: two "half" blocks next to each other share a row, a single half block
+ * gets the full width - so the page never ends in one narrow column. */
+export function layoutRows(blocks) {
+  const rows = [];
+  for (let i = 0; i < blocks.length; i += 1) {
+    const b = blocks[i];
+    const next = blocks[i + 1];
+    if (b.width === 'half' && next?.width === 'half') {
+      rows.push([b, next]);
+      i += 1;
+    } else rows.push([b]);
+  }
+  return rows;
+}
+
+export default function Home() {
+  const { t } = useI18n();
+  const { user } = useAuth();
   const { data, error, loading } = useFetch('/home');
+  const polls = useFetch('/polls', { params: { state: 'open', limit: 1 } }, 'home-poll');
   const [rsvps, setRsvps] = useState({});
+  const [poll, setPoll] = useState(null);
 
   if (loading && !data) return <p className="py-20 text-center text-muted">{t('loading')}</p>;
   if (error) return <Empty>{t('error_generic', { msg: error.message })}</Empty>;
-  const [lead, ...moreNews] = data.news;
   const events = data.events.map((e) => rsvps[e.id] || e);
+  const currentPoll = poll || polls.data?.[0];
+
+  const has = {
+    greeting: Boolean(user), pinned: data.pinned?.length > 0, slider: data.slides.length > 0, quicklinks: true,
+    upcoming: true, news: data.news.length > 0, people: data.new_people.length > 0, photos: (data.photos || []).length > 0,
+    recent: data.recent.length > 0, poll: Boolean(currentPoll), board: data.classifieds.length > 0,
+  };
+  const blocks = (data.layout || []).filter((b) => b.show && has[b.id]);
+
+  const render = (b, half) => {
+    switch (b.id) {
+      case 'greeting': return <Greeting />;
+      case 'pinned': return <PinnedBlock items={data.pinned} />;
+      case 'slider': return <HeroSlider slides={data.slides} />;
+      case 'quicklinks': return <QuickLinks />;
+      case 'upcoming': return <UpcomingBlock events={events} half={half} onChange={(ev) => setRsvps((r) => ({ ...r, [ev.id]: ev }))} />;
+      case 'news': return <NewsBlock news={data.news} half={half} />;
+      case 'people': return <PeopleBlock people={data.new_people} half={half} />;
+      case 'photos': return <PhotoWall photos={data.photos} />;
+      case 'recent': return <RecentBlock items={data.recent} />;
+      case 'poll': return <PollBlock poll={currentPoll} onChange={setPoll} />;
+      case 'board': return <BoardBlock items={data.classifieds} half={half} />;
+      default: return null;
+    }
+  };
 
   return (
-    <div className="space-y-14">
-      <div className="space-y-5">
-        <Greeting />
-        <HeroSlider slides={data.slides} />
-        <QuickLinks />
-      </div>
-
-      {/* Coming up: the most visible block after the slider. */}
-      <section>
-        <SectionHeading action={<ShowAll to="/calendar" label={t('events_all')} />}>{t('events_home')}</SectionHeading>
-        {/* Two event cards and the month calendar share one row with equal heights. */}
-        <div className="grid gap-5 md:grid-cols-2 xl:grid-cols-3">
-          {events.length
-            ? events.slice(0, 2).map((e) => <ul key={e.id} className="contents"><UpcomingCard event={e} onChange={(ev) => setRsvps((r) => ({ ...r, [ev.id]: ev }))} /></ul>)
-            : <div className="md:col-span-1 xl:col-span-2"><Empty>{t('no_events')}</Empty></div>}
-          <div className="md:col-span-2 xl:col-span-1"><MiniCalendar /></div>
-        </div>
-      </section>
-
-      <PhotoWall photos={data.photos || []} />
-
-      <div className="grid gap-10 lg:grid-cols-[minmax(0,2fr)_minmax(0,1fr)]">
-        <section>
-          <SectionHeading action={<ShowAll to="/news" />}>{t('latest_news')}</SectionHeading>
-          {lead ? (
-            <div className="grid gap-8 md:grid-cols-[minmax(0,1.35fr)_minmax(0,1fr)]">
-              <NewsItem a={lead} large />
-              <div className="space-y-6 md:border-l md:border-line md:pl-8">
-                {moreNews.map((a) => <NewsItem key={a.id} a={a} />)}
-              </div>
-            </div>
-          ) : <Empty>{t('no_articles')}</Empty>}
-        </section>
-
-        <section>
-          <SectionHeading action={<ShowAll to="/people" />}>{t('new_colleagues')}</SectionHeading>
-          <ul className="card divide-y divide-line">
-            {data.new_people.map((p) => (
-              <li key={p.id}>
-                <Link to={`/people?focus=${p.id}`} className="group flex items-center gap-3 px-4 py-3">
-                  <Avatar person={p} size={44} />
-                  <span className="min-w-0">
-                    <span className="block font-medium leading-tight group-hover:text-brand">{p.full_name}</span>
-                    <span className="block truncate text-sm text-muted">{p.position}, {p.department}</span>
-                  </span>
-                </Link>
-              </li>
-            ))}
-          </ul>
-        </section>
-      </div>
-
-      <div className="grid gap-10 lg:grid-cols-[minmax(0,2fr)_minmax(0,1fr)]">
-        <section>
-          <SectionHeading>{t('recent_articles')}</SectionHeading>
-          <ul className="card divide-y divide-line">
-            {data.recent.map((a) => (
-              <li key={a.id}>
-                <Link to={`/articles/${a.id}`} className="group flex items-center gap-4 px-5 py-3.5">
-                  <span className="min-w-0 flex-1">
-                    <span className="block truncate font-medium group-hover:text-brand">{loc(a, 'title')}</span>
-                    <CategoryTag category={a.category} className="mt-0.5" />
-                  </span>
-                  <span className="shrink-0 text-sm text-muted" title={fmtDate(a.published_at)}>{relativeDay(t, a.published_at)}</span>
-                </Link>
-              </li>
-            ))}
-          </ul>
-        </section>
-
-        <div className="space-y-10">
-        <HomePoll />
-        <section>
-          <SectionHeading action={<ShowAll to="/board" />}>{t('board_latest')}</SectionHeading>
-          <ul className="space-y-3">
-            {data.classifieds.map((c) => (
-              <li key={c.id} className="card px-4 py-3">
-                <p className="text-sm text-muted">{t(`kind_${c.kind}`)}{c.price && `, ${c.price}`}</p>
-                <p className="font-medium">{c.title}</p>
-                <p className="text-sm text-muted">{c.author.full_name}</p>
-              </li>
-            ))}
-          </ul>
-        </section>
-        </div>
-      </div>
+    <div className="space-y-12">
+      {layoutRows(blocks).map((row) => (
+        row.length === 2
+          ? <div key={row[0].id} className="grid gap-12 lg:grid-cols-2 lg:gap-10">{row.map((b) => <div key={b.id} className="min-w-0">{render(b, true)}</div>)}</div>
+          : <div key={row[0].id}>{render(row[0], false)}</div>
+      ))}
     </div>
   );
 }
