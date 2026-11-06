@@ -1,0 +1,25 @@
+__pycache__/
+*.pyc
+.venv/
+backend/.env
+backend/data/
+frontend/node_modules/
+frontend/dist/
+
+# never commit local data, secrets or certificates
+*.db
+*.db-shm
+*.db-wal
+*.sqlite*
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+*.pfx
+*.crt
+.secret_key
+uploads/
+*.log
+.DS_Store
+Thumbs.db
