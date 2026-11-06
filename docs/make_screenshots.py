@@ -153,6 +153,11 @@ def main():
         b.shot("10-galerie.png")
         b.goto(base + "/search?q=Lager", wait=2)
         b.shot("19-suche.png", full=True)
+        b.goto(base + "/", wait=1.5)  # results while typing
+        b.js("document.querySelector('header input[role=combobox]').focus()")
+        b.send("Input.insertText", text="Besprechung")
+        time.sleep(1.5)
+        b.shot("20-suche-live.png")
         b.goto(base + "/login")
         b.shot("12-anmeldung.png")
 

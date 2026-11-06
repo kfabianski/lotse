@@ -30,7 +30,9 @@ API, Uploads und Oberfläche aus. Anmeldung lokal oder über **LDAP/Active Direc
 | **Raum-Editor** – Räume aufziehen, verschieben, Größe ändern | **Fotos** von Veranstaltungen als Galerie |
 | ![Dunkles Design](docs/screenshots/02-startseite-dunkel.png) | ![LDAP-Einstellungen](docs/screenshots/11-verwaltung-ldap.png) |
 | **Dunkles Design** – umschaltbar oben rechts | **Verwaltung** – LDAP-Server, Abteilungen, Benutzer, Etagen |
-| ![Anmeldung](docs/screenshots/12-anmeldung.png) | ![Suche](docs/screenshots/19-suche.png) |
+| ![Suche beim Tippen](docs/screenshots/20-suche-live.png) | ![Suche](docs/screenshots/19-suche.png) |
+| **Suche beim Tippen** – Treffer erscheinen sofort, Pfeiltasten + Enter | **Alle Treffer** – gruppiert nach Bereichen |
+| ![Anmeldung](docs/screenshots/12-anmeldung.png) | |
 | **Anmeldung** – Lesen ohne Login, Anmelden nur zum Schreiben | |
 
 Alle Funktionen im Detail: **[docs/FUNKTIONEN.md](docs/FUNKTIONEN.md)** · Bildnachweise: [docs/CREDITS.md](docs/CREDITS.md)
@@ -68,7 +70,7 @@ Alle Funktionen im Detail: **[docs/FUNKTIONEN.md](docs/FUNKTIONEN.md)** · Bildn
   mit **1–5 Sternen** bewerten, Sortierung *Beste Bewertung* oder *Neueste*, Status von *Neu* bis *Umgesetzt*
   mit Antwort der Redaktion.
 - **Profil**: Foto, Durchwahl, Sprache und Passwort (bei lokalen Konten).
-- **Suche über alles Öffentliche** (Strg + K): Personen, Artikel, Veranstaltungen, Dokumente, Räume, Kleinanzeigen,
+- **Suche über alles Öffentliche** (Strg + K), **Treffer erscheinen schon beim Tippen**: Personen, Artikel, Veranstaltungen, Dokumente, Räume, Kleinanzeigen,
   Ideen, Schnellzugriff – angemeldet zusätzlich die eigenen Schulungen; Umlaute egal (*schroeder* findet *Schröder*), **Deutsch/Englisch** und **hell/dunkel** umschaltbar,
   **Lesen ohne Anmeldung** (abschaltbar).
 

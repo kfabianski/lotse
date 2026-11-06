@@ -62,6 +62,9 @@ Die Verwaltung zeigt jeder Person nur die Bereiche, für die sie Rechte hat.
   Avatar mit Profil und Abmelden.
 - **Zweisprachig**: Alle Bedienelemente auf Deutsch und Englisch; Artikel haben einen deutschen und einen
   englischen Text. Fehlt die englische Fassung, wird die deutsche gezeigt.
+- **Suche beim Tippen**: ab 2 Zeichen öffnet sich unter dem Suchfeld eine Trefferliste (je Bereich die
+  ersten 4). **Pfeiltasten** wählen aus, **Enter** öffnet den Treffer, **Esc** schließt die Liste; Enter ohne
+  Auswahl oder *Alle Treffer anzeigen* führt zur vollständigen Ergebnisseite.
 - **Suche** über alles, was die Person sehen darf, gruppiert nach Bereichen:
   - **Personen** (Vor- und Nachname auch zusammen, Abteilung, Position, E-Mail, Durchwahl, Platz z. B. „1OG-01“),
   - **Artikel und Veranstaltungen** (Titel, Kurztext, Text, Ort – mit Textauszug zur Fundstelle),

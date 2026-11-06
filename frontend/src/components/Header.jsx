@@ -1,13 +1,14 @@
 import { useEffect, useRef, useState } from 'react';
 import { Link, NavLink, useLocation, useNavigate } from 'react-router-dom';
 import {
-  BookOpen, CalendarDays, FileText, GraduationCap, Home, Lightbulb, LogIn, LogOut, Menu, Moon, Newspaper, Search, Settings,
+  BookOpen, CalendarDays, FileText, GraduationCap, Home, Lightbulb, LogIn, LogOut, Menu, Moon, Newspaper, Settings,
   StickyNote, Sun, UserRound, Users, X,
 } from 'lucide-react';
 import { useAuth } from '../lib/auth';
 import { useI18n } from '../lib/i18n';
 import { api } from '../lib/api';
 import { Avatar } from './ui';
+import LiveSearch from './LiveSearch';
 
 function useTheme() {
   const [dark, setDark] = useState(() => document.documentElement.classList.contains('dark'));
@@ -101,7 +102,6 @@ export default function Header({ onMenu }) {
   const { t, lang, setLang } = useI18n();
   const [dark, toggleTheme] = useTheme();
   const [menuOpen, setMenuOpen] = useState(false);
-  const [q, setQ] = useState('');
   const navigate = useNavigate();
   const { pathname, search } = useLocation();
   const menuRef = useRef(null);
@@ -122,11 +122,6 @@ export default function Header({ onMenu }) {
     if (user) api('/auth/me', { method: 'PATCH', body: { language: next } }).then(setUser).catch(() => {});
   };
 
-  const submitSearch = (e) => {
-    e.preventDefault();
-    if (q.trim()) navigate(`/search?q=${encodeURIComponent(q.trim())}`);
-  };
-
   const iconBtn = 'rounded-xl p-2.5 text-muted transition-colors hover:bg-surface-2 hover:text-ink';
 
   return (
@@ -134,15 +129,8 @@ export default function Header({ onMenu }) {
       <div className="mx-auto flex h-16 max-w-[1240px] items-center gap-3 px-4 sm:px-8">
         <button type="button" className={`${iconBtn} lg:hidden`} aria-label={t('open_menu')} onClick={onMenu}><Menu size={20} /></button>
 
-        <form onSubmit={submitSearch} role="search" className="min-w-0 flex-1">
-          <label className="relative block max-w-md">
-            <span className="sr-only">{t('search')}</span>
-            <Search size={17} className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-muted" />
-            <input ref={searchRef} value={q} onChange={(e) => setQ(e.target.value)} placeholder={t('search_placeholder')}
-              className="h-10 w-full rounded-xl border border-line bg-surface pl-10 pr-14 text-sm text-ink placeholder:text-muted focus:border-brand focus:outline-none" />
-            <kbd className="pointer-events-none absolute right-2.5 top-1/2 hidden -translate-y-1/2 rounded-md border border-line px-1.5 py-0.5 text-[11px] text-muted sm:block">Ctrl K</kbd>
-          </label>
-        </form>
+        <LiveSearch inputRef={searchRef} />
+        <div className="flex-1" />
 
         <div className="flex items-center gap-1">
           <div role="group" aria-label={t('language')} className="hidden rounded-xl border border-line bg-surface p-0.5 text-sm sm:flex">
