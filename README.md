@@ -74,6 +74,7 @@ Alle Funktionen im Detail: **[docs/FUNKTIONEN.md](docs/FUNKTIONEN.md)** · Bildn
   Verwaltung eingetragen; Äste ein-/ausklappen, an Breite anpassen, Zoom, Suche und Abteilungsfilter heben Personen hervor.
 - **Startseite gestalten** (Redaktion/Admin): Blöcke per Ziehen anordnen, ein-/ausblenden, *breit* oder *halb*;
   fertige Vorlagen (*Standard*, *Nachrichten zuerst*, *Bilder & Termine*, *Kompakt*) mit Live-Vorschau.
+- **Farbschema** (Admin): acht Farbwelten zur Wahl (*Hafen*, *Signal*, *Meer*, *Indigo*, *Nordsee*, *Fjord*, *Azur*, *Marine*), je mit hellem und dunklem Modus; Vorschau sofort, gilt nach dem Speichern für alle. Jede Person kann im **Profil → Meine Farben** ein eigenes Schema wählen.
 - **Oben anheften**: wichtige Beiträge (optional bis zu einem Datum) stehen ganz oben in *Aktuelles* und in *Was gibt’s Neues* – z. B. Jahresplanung, Inventur.
 - **Niederlassungen**: Artikel und Termine nur für bestimmte Standorte; Personen gehören zu einer Niederlassung
   (von Hand oder aus LDAP), Schulungen lassen sich einer Niederlassung zuweisen.
@@ -86,8 +87,11 @@ Alle Funktionen im Detail: **[docs/FUNKTIONEN.md](docs/FUNKTIONEN.md)** · Bildn
   mit Antwort der Redaktion.
 - **Umfragen**: kurze Abstimmungen (z. B. Termin der Firmenfeier, Zufriedenheit) – eine oder mehrere Antworten,
   Enddatum, Ergebnis sofort / nach der eigenen Stimme / erst nach dem Ende; **anonym** (gezählt wird nur die
-  Anzahl je Antwort). Die neueste laufende Umfrage steht auf der Startseite.
+  Anzahl je Antwort). Für alle oder nur für gewählte Abteilungen und Niederlassungen. Die neueste laufende Umfrage steht auf der Startseite.
 - **Profil**: Foto, Durchwahl, Sprache und Passwort (bei lokalen Konten).
+- **Glocke** oben rechts: offene Schulungen, neue Umfragen, Antworten auf eigene Ideen, Termine von heute. **Suche** als kleines Fenster (Lupe oder Strg + K); Menü links einklappbar; Fußzeile mit eigenem Text.
+- **Rolle Personal (HR)**: Mitarbeitenden-Karten und Schulungen; Schulungen lassen sich **neuen Kolleg:innen** (erste 90 Tage) zuweisen. LDAP-Konten werden über die objectGUID zugeordnet, nie über den Namen.
+- **Sprache**: die Umschaltung übersetzt die Oberfläche; Inhalte bleiben in der Sprache, in der sie geschrieben wurden (Übersetzung optional).
 - **Suche über alles Öffentliche** (Strg + K), **Treffer erscheinen schon beim Tippen**: Personen, Artikel, Veranstaltungen, Dokumente, Räume, Kleinanzeigen,
   Ideen, Umfragen, Schnellzugriff – angemeldet zusätzlich die eigenen Schulungen; Umlaute egal (*schroeder* findet *Schröder*), **Deutsch/Englisch** und **hell/dunkel** umschaltbar,
   **Lesen ohne Anmeldung** (abschaltbar).

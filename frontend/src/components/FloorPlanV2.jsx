@@ -67,20 +67,20 @@ function PersonCard({ seat, room, color, onBack, s }) {
     <div className="space-y-4">
       <button type="button" onClick={onBack} className="inline-flex items-center gap-1.5 text-sm text-muted hover:text-ink"><ArrowLeft size={15} />{s.back}</button>
       <div className="flex items-center gap-4">
-        <span className="rounded-full p-[3px]" style={{ boxShadow: `0 0 0 3px ${color}` }}><Avatar person={p} size={64} /></span>
+        <span className="rounded-sm p-[3px]" style={{ boxShadow: `0 0 0 3px ${color}` }}><Avatar person={p} size={64} /></span>
         <div className="min-w-0">
           <p className="font-display text-lg font-semibold leading-tight">{p.full_name}</p>
           <p className="text-sm text-muted">{p.position}</p>
-          <p className="mt-1 inline-flex items-center gap-1.5 text-sm"><span className="h-2.5 w-2.5 rounded-full" style={{ background: color }} />{p.department}</p>
+          <p className="mt-1 inline-flex items-center gap-1.5 text-sm"><span className="h-2.5 w-2.5 rounded-sm" style={{ background: color }} />{p.department}</p>
         </div>
       </div>
       <dl className="grid grid-cols-[auto_1fr] gap-x-4 gap-y-2 text-sm">
-        {p.phone_ext && <><dt className="text-muted">Tel.</dt><dd><a href={`tel:${p.phone_ext}`} className="inline-flex items-center gap-1.5 font-medium hover:text-brand"><Phone size={14} />{p.phone_ext}</a></dd></>}
-        {p.email && <><dt className="text-muted">E-Mail</dt><dd className="min-w-0"><a href={`mailto:${p.email}`} className="inline-flex max-w-full items-center gap-1.5 hover:text-brand"><Mail size={14} className="shrink-0" /><span className="truncate">{p.email}</span></a></dd></>}
+        {p.phone_ext && <><dt className="text-muted">Tel.</dt><dd><a href={`tel:${p.phone_ext}`} className="inline-flex items-center gap-1.5 font-medium hover:text-brand-text"><Phone size={14} />{p.phone_ext}</a></dd></>}
+        {p.email && <><dt className="text-muted">E-Mail</dt><dd className="min-w-0"><a href={`mailto:${p.email}`} className="inline-flex max-w-full items-center gap-1.5 hover:text-brand-text"><Mail size={14} className="shrink-0" /><span className="truncate">{p.email}</span></a></dd></>}
         <dt className="text-muted">{s.desk}</dt><dd>{seat.label}</dd>
         {room && <><dt className="text-muted">{s.room}</dt><dd>{room}</dd></>}
       </dl>
-      <Link to={`/people?focus=${p.id}`} className="inline-flex text-sm font-medium text-brand hover:underline">{s.directory}</Link>
+      <Link to={`/people?focus=${p.id}`} className="inline-flex text-sm font-medium text-brand-text hover:underline">{s.directory}</Link>
     </div>
   );
 }
@@ -93,7 +93,7 @@ function RoomCard({ room, seats, colors, lang, s, onBack, onPerson }) {
     <div className="space-y-4">
       <button type="button" onClick={onBack} className="inline-flex items-center gap-1.5 text-sm text-muted hover:text-ink"><ArrowLeft size={15} />{s.back}</button>
       <div className="flex items-start gap-3">
-        <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-brand-soft text-brand"><Icon size={20} /></span>
+        <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-brand-soft text-brand-text"><Icon size={20} /></span>
         <div>
           <p className="font-display text-lg font-semibold leading-tight">{room.label[lang]}</p>
           <p className="text-sm text-muted">{typeLabel(room.type, lang)}</p>
@@ -105,7 +105,7 @@ function RoomCard({ room, seats, colors, lang, s, onBack, onPerson }) {
           <p className="flex items-center gap-2"><Monitor size={15} className="text-muted" />{room.info.equipment[lang]}</p>
           <p className="flex items-center gap-2"><Mail size={15} className="text-muted" /><span className="text-muted">{s.bookMail}</span>
             <code className="rounded bg-surface-2 px-1.5 py-0.5 text-xs">{room.info.mail}</code></p>
-          <Link to="/search?q=Besprechungsraum" className="inline-flex items-center gap-1.5 font-medium text-brand hover:underline"><CalendarCheck size={15} />{s.book}</Link>
+          <Link to="/search?q=Besprechungsraum" className="inline-flex items-center gap-1.5 font-medium text-brand-text hover:underline"><CalendarCheck size={15} />{s.book}</Link>
         </div>
       )}
       {(people.length > 0 || free > 0) && (
@@ -116,7 +116,7 @@ function RoomCard({ room, seats, colors, lang, s, onBack, onPerson }) {
             {people.map((x) => (
               <li key={x.id}>
                 <button type="button" onClick={() => onPerson(x)} className="flex w-full items-center gap-3 rounded-lg px-2 py-1.5 text-left hover:bg-surface-2">
-                  <span className="rounded-full p-[2px]" style={{ boxShadow: `0 0 0 2px ${colors[x.occupant.department] || 'var(--muted)'}` }}><Avatar person={x.occupant} size={30} /></span>
+                  <span className="rounded-sm p-[2px]" style={{ boxShadow: `0 0 0 2px ${colors[x.occupant.department] || 'var(--muted)'}` }}><Avatar person={x.occupant} size={30} /></span>
                   <span className="min-w-0"><span className="block truncate text-sm font-medium">{x.occupant.full_name}</span>
                     <span className="block truncate text-xs text-muted">{x.occupant.position}</span></span>
                 </button>
@@ -484,7 +484,7 @@ export default function FloorPlanV2({ locations, deptColors = {}, focusPersonId 
                     className="flex w-full items-center gap-3 px-4 py-2.5 text-left hover:bg-surface-2">
                     {res.kind === 'person'
                       ? <Avatar person={res.p} size={30} />
-                      : <span className="flex h-[30px] w-[30px] items-center justify-center rounded-lg bg-brand-soft text-brand"><Users size={15} /></span>}
+                      : <span className="flex h-[30px] w-[30px] items-center justify-center rounded-lg bg-brand-soft text-brand-text"><Users size={15} /></span>}
                     <span className="min-w-0 flex-1">
                       <span className="block truncate text-sm font-medium">{res.kind === 'person' ? res.p.full_name : res.room.label[lang]}</span>
                       <span className="block truncate text-xs text-muted">{res.kind === 'person' ? `${res.p.department} · ${res.seat.label}` : typeLabel(res.room.type, lang)}</span>
@@ -501,11 +501,11 @@ export default function FloorPlanV2({ locations, deptColors = {}, focusPersonId 
         {floorDepts.length > 0 && (
           <div className="flex flex-wrap gap-1.5">
             <button type="button" onClick={() => setDept(null)} aria-pressed={!dept}
-              className={`rounded-full border px-3 py-1 text-sm ${!dept ? 'border-ink bg-ink text-surface' : 'border-line hover:border-muted'}`}>{s.allDepts}</button>
+              className={`rounded-sm border px-3 py-1 text-sm ${!dept ? 'border-ink bg-ink text-surface' : 'border-line hover:border-muted'}`}>{s.allDepts}</button>
             {floorDepts.map((d) => (
               <button key={d} type="button" onClick={() => setDept(dept === d ? null : d)} aria-pressed={dept === d}
-                className={`inline-flex items-center gap-2 rounded-full border px-3 py-1 text-sm transition-colors ${dept === d ? 'border-ink bg-ink text-surface' : 'border-line bg-surface hover:border-muted'}`}>
-                <span className="h-2 w-2 rounded-full" style={{ background: deptColors[d] || 'var(--muted)' }} />{d}
+                className={`inline-flex items-center gap-2 rounded-sm border px-3 py-1 text-sm transition-colors ${dept === d ? 'border-ink bg-ink text-surface' : 'border-line bg-surface hover:border-muted'}`}>
+                <span className="h-2 w-2 rounded-sm" style={{ background: deptColors[d] || 'var(--muted)' }} />{d}
               </button>
             ))}
           </div>
@@ -517,7 +517,7 @@ export default function FloorPlanV2({ locations, deptColors = {}, focusPersonId 
             <p className="text-lg font-semibold tracking-tight">{lang === 'en' ? active.name_en : active.name_de}</p>
             <p className="text-sm text-muted">{seats.filter((x) => x.occupant).length} {s.people} · {seats.filter((x) => !x.occupant).length} {s.free}</p>
           </div>
-          <div className="absolute right-3 top-3 z-20 flex items-center gap-0.5 rounded-xl border border-line bg-surface/90 p-1 shadow-sm backdrop-blur">
+          <div className="absolute right-3 top-3 z-20 flex items-center gap-0.5 rounded-xl border border-line bg-surface/90 p-1 shadow-sm ">
             <button type="button" className={ctrl} title={s.zoomIn} aria-label={s.zoomIn} onClick={() => zoomBy(1 / 1.4)}><Plus size={17} /></button>
             <button type="button" className={ctrl} title={s.zoomOut} aria-label={s.zoomOut} onClick={() => zoomBy(1.4)}><Minus size={17} /></button>
             <button type="button" className={ctrl} title={s.fit} aria-label={s.fit} onClick={() => { animateTo(full); }}><Maximize2 size={16} /></button>
@@ -546,8 +546,8 @@ export default function FloorPlanV2({ locations, deptColors = {}, focusPersonId 
                       <p className="truncate font-semibold leading-tight">{hoverSeat.seat.occupant.full_name}</p>
                       <p className="truncate text-xs text-muted">{hoverSeat.seat.occupant.position}</p>
                       <p className="mt-0.5 flex items-center gap-1.5 text-xs">
-                        <span className="h-2 w-2 rounded-full" style={{ background: colorOf(hoverSeat.seat.occupant) }} />{hoverSeat.seat.occupant.department}
-                        {hoverSeat.seat.occupant.phone_ext && <span className="text-muted">· ☎ {hoverSeat.seat.occupant.phone_ext}</span>}
+                        <span className="h-2 w-2 rounded-sm" style={{ background: colorOf(hoverSeat.seat.occupant) }} />{hoverSeat.seat.occupant.department}
+                        {hoverSeat.seat.occupant.phone_ext && <span className="inline-flex items-center gap-1 text-muted"><Phone size={12} aria-hidden />{hoverSeat.seat.occupant.phone_ext}</span>}
                       </p>
                     </div>
                   </div>
@@ -597,7 +597,7 @@ export default function FloorPlanV2({ locations, deptColors = {}, focusPersonId 
                   <button type="button" onMouseEnter={() => setHoverRoom(r.id)} onMouseLeave={() => setHoverRoom(null)}
                     onClick={() => { setSelected({ kind: 'room', id: r.id }); flyToRect(r); }}
                     className="flex w-full items-center gap-3 rounded-lg px-2 py-1.5 text-left hover:bg-surface-2">
-                    <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-brand-soft text-brand"><Users size={15} /></span>
+                    <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-brand-soft text-brand-text"><Users size={15} /></span>
                     <span className="min-w-0"><span className="block truncate text-sm font-medium">{r.label[lang]}</span>
                       <span className="block text-xs text-muted">{s.capacity.replace('{n}', r.info.seats)} · {r.info.equipment[lang]}</span></span>
                   </button>

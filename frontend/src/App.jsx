@@ -1,6 +1,8 @@
 import { useEffect, useState } from 'react';
 import { Navigate, Route, Routes, useLocation, useNavigationType } from 'react-router-dom';
 import Header, { Sidebar } from './components/Header';
+import Footer from './components/Footer';
+import { applyScheme } from './lib/scheme';
 import { Empty } from './components/ui';
 import { useAuth } from './lib/auth';
 import { KNOWLEDGE_GROUP, NEWS_GROUP, useI18n } from './lib/i18n';
@@ -65,6 +67,8 @@ function useScrollMemory() {
 
 export default function App() {
   const { user, ready } = useAuth();
+  const [collapsed, setCollapsed] = useState(() => { try { return localStorage.getItem('lotse-menu') === 'small'; } catch { return false; } });
+  const toggleCollapsed = () => setCollapsed((c) => { try { localStorage.setItem('lotse-menu', c ? 'wide' : 'small'); } catch { /* ignore */ } return !c; });
   const { t } = useI18n();
   const [config, setConfig] = useState(null);
   const [ssoPending, setSsoPending] = useState(false);
@@ -84,6 +88,7 @@ export default function App() {
   useEffect(() => {
     api('/auth/config').then(setConfig).catch(() => setConfig({ public_read: false }));
   }, []);
+  useEffect(() => { if (config) applyScheme(user?.color_scheme || config.color_scheme); }, [config, user?.color_scheme]);
   useScrollMemory();
 
   if (!ready || !config || ssoPending) return null;
@@ -95,9 +100,9 @@ export default function App() {
       <a href="#main" className="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-50 focus:rounded focus:bg-surface focus:px-4 focus:py-2">
         {t('skip')}
       </a>
-      <Sidebar company={config?.company_name} open={drawer} onClose={() => setDrawer(false)} />
-      <div className="lg:pl-60">
-      <Header onMenu={() => setDrawer(true)} />
+      <Sidebar company={config?.company_name} open={drawer} onClose={() => setDrawer(false)} collapsed={collapsed} onToggle={toggleCollapsed} />
+      <div className={collapsed ? 'lg:pl-[4.5rem]' : 'lg:pl-60'}>
+      <Header onMenu={() => setDrawer(true)} company={config?.company_name} />
       <main id="main" className="mx-auto max-w-[1240px] px-4 pb-24 pt-8 sm:px-8">
         <Routes>
           <Route path="/" element={<Home />} />
@@ -120,6 +125,7 @@ export default function App() {
           <Route path="*" element={<Empty>{t('not_found')}</Empty>} />
         </Routes>
       </main>
+      <Footer company={config?.company_name} text={config?.footer_text} />
       </div>
     </>
   );

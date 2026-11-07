@@ -18,8 +18,8 @@ const EMPTY = { title_de: '', title_en: '', description_de: '', description_en: 
 function Chip({ active, onClick, children, color }) {
   return (
     <button type="button" onClick={onClick} aria-pressed={active}
-      className={`inline-flex items-center gap-2 rounded-full border px-3 py-1 text-sm ${active ? 'border-ink bg-ink text-surface' : 'border-line bg-surface hover:border-muted'}`}>
-      {color && <span className="h-2 w-2 rounded-full" style={{ background: color }} />}{children}
+      className={`inline-flex items-center gap-2 rounded-sm border px-3 py-1 text-sm ${active ? 'border-ink bg-ink text-surface' : 'border-line bg-surface hover:border-muted'}`}>
+      {color && <span className="h-2 w-2 rounded-sm" style={{ background: color }} />}{children}
     </button>
   );
 }
@@ -37,6 +37,8 @@ function TargetPicker({ value, onChange, departments, groups, people, positions 
   return (
     <div className="space-y-3 rounded-xl border border-line p-4">
       <label className="flex items-center gap-2 font-medium"><input type="checkbox" checked={has('all')} onChange={() => toggle('all')} className="h-4 w-4 accent-[var(--brand)]" />{t('tr_assign_all')}</label>
+      <label className="flex items-start gap-2"><input type="checkbox" checked={has('newcomers')} onChange={() => toggle('newcomers')} className="mt-1 h-4 w-4 accent-[var(--brand)]" />
+        <span><span className="block font-medium">{t('tr_assign_newcomers')}</span><span className="block text-sm text-muted">{t('tr_assign_newcomers_hint')}</span></span></label>
       <div>
         <p className="mb-1.5 text-sm text-muted">{t('tr_assign_depts')}</p>
         <div className="flex flex-wrap gap-1.5">{departments.map((d) => <Chip key={d.id} color={d.color} active={has('department', d.name)} onClick={() => toggle('department', d.name)}>{d.name}</Chip>)}</div>
@@ -55,7 +57,7 @@ function TargetPicker({ value, onChange, departments, groups, people, positions 
         <p className="mb-1.5 text-sm text-muted">{t('tr_assign_positions')}</p>
         <div className="mb-1.5 flex flex-wrap gap-1.5">
           {value.filter((x) => x.kind === 'position').map((x) => (
-            <span key={x.value} className="inline-flex items-center gap-1.5 rounded-full bg-brand-soft px-2.5 py-0.5 text-sm text-brand">
+            <span key={x.value} className="inline-flex items-center gap-1.5 rounded-sm bg-brand-soft px-2.5 py-0.5 text-sm text-brand-text">
               {x.value}<button type="button" onClick={() => toggle('position', x.value)} aria-label={t('delete')}><X size={13} /></button>
             </span>
           ))}
@@ -70,7 +72,7 @@ function TargetPicker({ value, onChange, departments, groups, people, positions 
         <p className="mb-1.5 text-sm text-muted">{t('tr_assign_people')}</p>
         <div className="mb-2 flex flex-wrap gap-1.5">
           {chosen.map((p) => (
-            <span key={p.id} className="inline-flex items-center gap-1.5 rounded-full bg-brand-soft py-0.5 pl-1 pr-2 text-sm text-brand">
+            <span key={p.id} className="inline-flex items-center gap-1.5 rounded-sm bg-brand-soft py-0.5 pl-1 pr-2 text-sm text-brand-text">
               <Avatar person={p} size={20} />{p.full_name}
               <button type="button" onClick={() => toggle('user', p.id)} aria-label={t('delete')}><X size={13} /></button>
             </span>
@@ -147,9 +149,9 @@ function Materials({ training, pending, setPending, onChanged }) {
       )}
       <label onDragOver={(e) => { e.preventDefault(); setDrag(true); }} onDragLeave={() => setDrag(false)}
         onDrop={(e) => { e.preventDefault(); setDrag(false); addFiles([...e.dataTransfer.files]); }}
-        className={`flex cursor-pointer flex-col items-center justify-center gap-1 rounded-xl border-2 border-dashed px-3 py-5 text-center text-sm hover:border-brand hover:text-brand ${drag ? 'border-brand bg-brand-soft text-brand' : 'border-line text-muted'} ${busy ? 'opacity-60' : ''}`}>
+        className={`flex cursor-pointer flex-col items-center justify-center gap-1 rounded-xl border-2 border-dashed px-3 py-5 text-center text-sm hover:border-brand hover:text-brand-text ${drag ? 'border-brand bg-brand-soft text-brand-text' : 'border-line text-muted'} ${busy ? 'opacity-60' : ''}`}>
         <Upload size={20} /><span className="font-medium">{busy ? t('tr_uploading') : t('tr_drop')}</span>
-        <span className="text-xs">PDF · MP4/WebM · JPG/PNG</span>
+        <span className="text-sm">PDF, MP4/WebM, JPG/PNG</span>
         <input type="file" multiple disabled={busy} accept="application/pdf,video/mp4,video/webm,image/jpeg,image/png,image/webp" className="sr-only"
           onChange={(e) => { addFiles([...e.target.files]); e.target.value = ''; }} />
       </label>
@@ -252,7 +254,7 @@ function TrainingEditor({ initial, departments, groups, people, onClose, onSaved
         <div className="flex flex-wrap items-center justify-end gap-2 border-t border-line pt-4 lg:col-span-2">
           {error && <p className="mr-auto text-sm text-alert">{t('error_generic', { msg: error })}</p>}
           {flash && <p className="mr-auto text-sm text-safe">{flash}</p>}
-          {edit.id && <Link to={`/trainings/${edit.id}`} target="_blank" className="mr-auto inline-flex items-center gap-1.5 text-sm font-medium text-brand hover:underline"><Eye size={15} />{t('tr_preview')}</Link>}
+          {edit.id && <Link to={`/trainings/${edit.id}`} target="_blank" className="mr-auto inline-flex items-center gap-1.5 text-sm font-medium text-brand-text hover:underline"><Eye size={15} />{t('tr_preview')}</Link>}
           <Button variant="ghost" onClick={onClose}>{t('cancel')}</Button>
           <Button type="submit" disabled={busy}>{busy ? t('tr_uploading') : edit.id ? t('save') : t('tr_create')}</Button>
         </div>
@@ -283,7 +285,7 @@ function Report({ training, onClose, onRenewed }) {
                 <Button variant="outline" className="py-1 text-sm" onClick={renew}><RotateCcw size={15} />{t('tr_renew')}</Button>
               </span>
             </div>
-            <div className="mt-2 h-2 overflow-hidden rounded-full bg-surface-2"><div className="h-full rounded-full bg-safe" style={{ width: `${total ? (data.done.length / total) * 100 : 0}%` }} /></div>
+            <div className="mt-2 h-2 overflow-hidden rounded-sm bg-surface-2"><div className="h-full rounded-sm bg-safe" style={{ width: `${total ? (data.done.length / total) * 100 : 0}%` }} /></div>
           </div>
           {error && <p className="text-sm text-alert">{error}</p>}
           <div className="grid gap-5 sm:grid-cols-2">
@@ -389,6 +391,7 @@ export default function AdminTrainings() {
   const branchNames = useFetch('/branches', undefined, 'branches');
   const names = (targets) => targets.map((x) => {
     if (x.kind === 'all') return t('tr_assign_all');
+    if (x.kind === 'newcomers') return t('tr_assign_newcomers');
     if (x.kind === 'department') return x.value;
     if (x.kind === 'group') return (groups.data || []).find((g) => String(g.id) === x.value)?.name || '?';
     if (x.kind === 'position') return `${t('tr_position_short')}: ${x.value}`;
@@ -411,14 +414,14 @@ export default function AdminTrainings() {
       <ul className="space-y-3">
         {trainings.map((tr) => (
           <li key={tr.id} className={`card flex flex-wrap items-center gap-4 px-5 py-4 ${tr.active ? '' : 'opacity-60'}`}>
-            <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-brand-soft text-brand"><GraduationCap size={21} /></span>
+            <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-brand-soft text-brand-text"><GraduationCap size={21} /></span>
             <div className="min-w-0 flex-1">
               <p className="font-semibold leading-snug">{tr.title_de}{!tr.active && <span className="ml-2 text-xs font-normal text-muted">{t('tr_inactive')}</span>}</p>
               <p className="truncate text-sm text-muted">{names(tr.targets)}{tr.due_date ? ` · ${t('tr_due', { d: fmtDate(tr.due_date) })}` : ''} · {t('tr_round', { n: tr.version })}</p>
               <div className="mt-2 flex items-center gap-3">
-                <div className="h-1.5 w-40 overflow-hidden rounded-full bg-surface-2"><div className="h-full rounded-full bg-safe" style={{ width: `${tr.assigned ? (tr.done / tr.assigned) * 100 : 0}%` }} /></div>
+                <div className="h-1.5 w-40 overflow-hidden rounded-sm bg-surface-2"><div className="h-full rounded-sm bg-safe" style={{ width: `${tr.assigned ? (tr.done / tr.assigned) * 100 : 0}%` }} /></div>
                 <span className="text-xs text-muted">{t('tr_progress', { d: tr.done, n: tr.assigned })}{tr.voluntary ? ` · ${t('tr_voluntary_count', { n: tr.voluntary })}` : ''}</span>
-                {tr.open_to_all && <span className="rounded-full bg-safe/10 px-2 py-0.5 text-xs font-medium text-safe">{t('tr_open_badge')}</span>}
+                {tr.open_to_all && <span className="rounded-sm bg-safe/10 px-2 py-0.5 text-xs font-medium text-safe">{t('tr_open_badge')}</span>}
               </div>
             </div>
             <div className="flex gap-1">

@@ -5,8 +5,6 @@ import { useI18n } from '../lib/i18n';
 import { useFetch } from '../lib/useFetch';
 import { useAuth } from '../lib/auth';
 import { api } from '../lib/api';
-import { useState, useEffect } from 'react';
-import { Attendees, RsvpButton } from './Events';
 import { useViewer } from '../lib/viewer';
 import { fileSize } from './Documents';
 import { FileText, Images } from 'lucide-react';
@@ -18,12 +16,7 @@ export default function ArticleView() {
   const { has, user } = useAuth();
   const navigate = useNavigate();
   const { data: a, error, loading, reload } = useFetch(`/articles/${id}`);
-  const [event, setEvent] = useState(null);
   const { open } = useViewer();
-  useEffect(() => {
-    setEvent(null);
-    if (a?.category === 'events' && a.event_date && a.published) api(`/events/${a.id}`).then(setEvent).catch(() => {});
-  }, [a]);
 
   if (loading && !a) return <p className="text-muted">{t('loading')}</p>;
   if (error) return <Empty>{error.status === 404 ? t('not_found') : t('error_generic', { msg: error.message })}</Empty>;
@@ -67,7 +60,6 @@ export default function ArticleView() {
           <span className="inline-flex items-center gap-2"><CalendarDays size={18} />
             {fmtDate(a.event_date, { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit' })}</span>
           {a.event_location && <span className="inline-flex items-center gap-2"><MapPin size={18} />{a.event_location}</span>}
-          {event && <span className="flex w-full flex-wrap items-center justify-between gap-3 border-t border-line pt-3 font-normal"><Attendees event={event} /><RsvpButton event={event} onChange={setEvent} /></span>}
         </div>
       )}
 
@@ -87,7 +79,7 @@ export default function ArticleView() {
                 {photos.map((p, i) => (
                   <li key={p.id}>
                     <button type="button" onClick={() => open(photos, i)} className="group block w-full cursor-zoom-in overflow-hidden rounded-xl">
-                      <img src={p.url} alt={p.name} loading="lazy" className="aspect-[4/3] w-full object-cover transition-transform duration-300 group-hover:scale-105" />
+                      <img src={p.url} alt={p.name} loading="lazy" className="aspect-[4/3] w-full object-cover transition-transform duration-300 " />
                     </button>
                   </li>
                 ))}
@@ -102,9 +94,9 @@ export default function ArticleView() {
                   <li key={d.id}>
                     <button type="button" onClick={() => open(docs, i)} className="group flex w-full items-center gap-3 px-4 py-3 text-left">
                       <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-alert/10 text-alert"><FileText size={18} /></span>
-                      <span className="min-w-0 flex-1"><span className="block truncate font-medium group-hover:text-brand">{d.name}</span>
+                      <span className="min-w-0 flex-1"><span className="block truncate font-medium group-hover:text-brand-text">{d.name}</span>
                         <span className="block text-sm text-muted">PDF, {fileSize(d.size)}</span></span>
-                      <span className="text-sm font-medium text-brand">{t('open')}</span>
+                      <span className="text-sm font-medium text-brand-text">{t('open')}</span>
                     </button>
                   </li>
                 ))}

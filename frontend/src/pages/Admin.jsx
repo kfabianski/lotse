@@ -255,6 +255,7 @@ function LocationsTab({ locations, reload }) {
           ))}
         </div>
         {mode === 'seats' && <p className="text-muted">{t('add_seat_hint')}</p>}
+        {active && <p className="w-full text-sm text-muted order-last">{t('upload_plan_hint')}</p>}
         <div className="ml-auto flex gap-2">
           {active && (
             <label className="inline-flex cursor-pointer items-center gap-2 rounded-lg border border-line px-4 py-2 font-medium hover:bg-surface-2">
@@ -277,7 +278,7 @@ function LocationsTab({ locations, reload }) {
           <div className="mb-3 flex flex-wrap gap-2">
             {locations.map((l) => (
               <button key={l.id} type="button" onClick={() => setActiveId(l.id)} aria-pressed={l.id === active.id}
-                className={`rounded-full border px-3.5 py-1.5 text-sm font-medium ${l.id === active.id ? 'border-brand bg-brand text-white dark:text-[#0d0f13]' : 'border-line hover:border-muted'}`}>
+                className={`rounded-sm border px-3.5 py-1.5 text-sm font-medium ${l.id === active.id ? 'border-brand bg-brand text-brand-ink' : 'border-line hover:border-muted'}`}>
                 {l.code} <span className="opacity-70">· {(l.rooms || []).length}</span>
               </button>
             ))}
@@ -343,10 +344,10 @@ export default function Admin() {
   return (
     <div>
       <h1 className="font-display text-[2rem] font-semibold leading-tight">{t('nav_admin')}</h1>
-      <div role="tablist" className="thin-scroll mt-6 flex gap-6 overflow-x-auto border-b border-line">
+      <div role="tablist" className="mt-6 flex flex-wrap gap-x-6 gap-y-1 border-b border-line">
         {tabs.map(([key, label]) => (
           <button key={key} type="button" role="tab" aria-selected={tab === key} onClick={() => setTab(key)}
-            className={`-mb-px border-b-[3px] pb-2.5 font-medium ${tab === key ? 'border-signal text-ink' : 'border-transparent text-muted hover:text-ink'}`}>
+            className={`-mb-px whitespace-nowrap border-b-[3px] pb-2.5 font-medium ${tab === key ? 'border-brand text-ink' : 'border-transparent text-muted hover:text-ink'}`}>
             {label}
           </button>
         ))}

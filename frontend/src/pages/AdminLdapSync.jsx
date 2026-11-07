@@ -10,7 +10,7 @@ function Group({ icon: Icon, title, hint, children, count }) {
   return (
     <section className="rounded-xl border border-line">
       <div className="flex items-start gap-3 border-b border-line bg-bg px-4 py-3">
-        <Icon size={18} className="mt-0.5 shrink-0 text-brand" />
+        <Icon size={18} className="mt-0.5 shrink-0 text-brand-text" />
         <div><p className="font-semibold">{title} <span className="font-normal text-muted">{count}</span></p>{hint && <p className="text-sm text-muted">{hint}</p>}</div>
       </div>
       <ul className="thin-scroll max-h-64 divide-y divide-line overflow-y-auto">{children}</ul>

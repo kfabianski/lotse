@@ -158,7 +158,9 @@ def main():
         b.goto(base + "/search?q=Lager", wait=2)
         b.shot("19-suche.png", full=True)
         b.goto(base + "/", wait=1.5)  # results while typing
-        b.js("document.querySelector('header input[role=combobox]').focus()")
+        b.js("document.dispatchEvent(new KeyboardEvent('keydown', {key: 'k', ctrlKey: true}))")  # opens the search window
+        time.sleep(0.6)
+        b.js("document.querySelector('dialog input[role=combobox]').focus()")
         b.send("Input.insertText", text="Besprechung")
         time.sleep(1.5)
         b.shot("20-suche-live.png")

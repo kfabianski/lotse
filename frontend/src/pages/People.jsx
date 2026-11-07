@@ -11,18 +11,18 @@ function PersonTile({ p, color, onShowOnPlan }) {
   const { t, fmtDate } = useI18n();
   return (
     <li className="card flex gap-4 p-4">
-      <span className="h-fit rounded-full p-0.5" style={{ boxShadow: `0 0 0 2px ${color}` }}><Avatar person={p} size={56} /></span>
+      <span className="h-fit rounded-sm p-0.5" style={{ boxShadow: `0 0 0 2px ${color}` }}><Avatar person={p} size={56} /></span>
       <div className="min-w-0 flex-1">
-        <p className="font-semibold leading-tight">{p.full_name}</p>
+        <p className="font-display font-semibold leading-tight text-ink">{p.full_name}</p>
         <p className="text-sm text-muted">{p.position}</p>
         <div className="mt-3 space-y-1 text-sm">
-          {p.email && <a href={`mailto:${p.email}`} className="flex items-center gap-2 truncate text-brand hover:underline"><Mail size={15} className="shrink-0" />{p.email}</a>}
-          {p.phone_ext && <a href={`tel:${p.phone_ext}`} className="flex items-center gap-2 text-brand hover:underline"><Phone size={15} />{t('extension')} {p.phone_ext}</a>}
+          {p.email && <a href={`mailto:${p.email}`} className="flex items-center gap-2 truncate text-ink underline decoration-line underline-offset-[0.15em] hover:decoration-brand-text"><Mail size={15} aria-hidden className="shrink-0 text-muted" />{p.email}</a>}
+          {p.phone_ext && <a href={`tel:${p.phone_ext}`} className="flex items-center gap-2 text-ink underline decoration-line underline-offset-[0.15em] hover:decoration-brand-text"><Phone size={15} aria-hidden className="text-muted" />{t('extension')} <span className="font-mono">{p.phone_ext}</span></a>}
         </div>
         <div className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-1 text-sm">
           {p.seat
-            ? <button type="button" onClick={() => onShowOnPlan(p)} className="inline-flex items-center gap-1.5 font-medium hover:text-brand">
-                <span className="rounded-md bg-surface-2 px-1.5 text-xs font-semibold">{p.seat.location_code}</span>{t('show_on_plan')}
+            ? <button type="button" onClick={() => onShowOnPlan(p)} className="inline-flex items-center gap-1.5 font-medium hover:text-brand-text">
+                <span className="bg-well px-1.5 font-mono text-sm">{p.seat.location_code}</span>{t('show_on_plan')}
               </button>
             : <span className="text-muted">{t('no_seat')}</span>}
           {p.start_date && <span className="text-muted">{t('started')} {fmtDate(p.start_date, { month: 'short', year: 'numeric' })}</span>}
@@ -95,14 +95,14 @@ export default function People() {
 
       <div className="mt-3 flex flex-wrap gap-2" role="group" aria-label={t('department')}>
         <button type="button" onClick={() => update({ dept: '' })} aria-pressed={!dept}
-          className={`rounded-full border px-3.5 py-1.5 text-sm font-medium transition-colors ${!dept ? 'border-ink bg-ink text-surface' : 'border-line bg-surface text-muted hover:text-ink'}`}>
+          className={`rounded-sm border px-3.5 py-1.5 text-sm font-medium transition-colors ${!dept ? 'border-ink bg-ink text-surface' : 'border-line bg-surface text-muted hover:text-ink'}`}>
           {t('all_departments')}
         </button>
         {depts.map((d) => (
           <button key={d.id} type="button" onClick={() => update({ dept: dept === d.name ? '' : d.name })} aria-pressed={dept === d.name}
-            className={`inline-flex items-center gap-2 rounded-full border px-3.5 py-1.5 text-sm font-medium transition-colors ${
+            className={`inline-flex items-center gap-2 rounded-sm border px-3.5 py-1.5 text-sm font-medium transition-colors ${
               dept === d.name ? 'border-ink bg-ink text-surface' : 'border-line bg-surface hover:border-muted'}`}>
-            <span className="h-2.5 w-2.5 rounded-full" style={{ background: d.color }} />{d.name}
+            <span className="h-2.5 w-2.5 rounded-sm" style={{ background: d.color }} />{d.name}
             <span className={dept === d.name ? 'opacity-70' : 'text-muted'}>{counts[d.name] ?? 0}</span>
           </button>
         ))}
@@ -117,8 +117,8 @@ export default function People() {
           <div className="space-y-10">
             {groups.map((g) => (
               <section key={g.name || 'none'} aria-labelledby={`dept-${g.name}`}>
-                <h2 id={`dept-${g.name}`} className="mb-4 flex items-center gap-3 text-lg font-semibold tracking-tight">
-                  <span className="h-3 w-3 rounded-full" style={{ background: colors[g.name] || 'var(--muted)' }} />
+                <h2 id={`dept-${g.name}`} className="mb-4 flex items-center gap-3 border-b border-line pb-2 font-display text-[1.25rem] font-semibold text-ink">
+                  <span className="h-3 w-3 rounded-sm" style={{ background: colors[g.name] || 'var(--muted)' }} />
                   {g.name || t('no_department')}
                   <span className="text-sm font-normal text-muted">{t('people_count', { n: g.people.length })}</span>
                 </h2>

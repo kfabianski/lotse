@@ -5,7 +5,7 @@ from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session, selectinload
 
 from app.db import get_db
-from app.models import Article, EventRsvp, Idea, Poll, PollVote, Training, User
+from app.models import Article, Idea, Poll, PollVote, Training, User
 from app.security import current_user
 
 router = APIRouter(prefix="/api/me", tags=["me"])
@@ -17,9 +17,9 @@ def briefing(user: User = Depends(current_user), db: Session = Depends(get_db)):
     from app.routers.trainings import _done, assigned_ids
     now = datetime.now()
     start, end = now.replace(hour=0, minute=0, second=0, microsecond=0), now.replace(hour=23, minute=59, second=59)
-    events = (db.query(Article).join(EventRsvp, EventRsvp.article_id == Article.id)
-              .filter(EventRsvp.user_id == user.id, Article.category == "events", Article.live(),
-                      Article.event_date >= start, Article.event_date <= end)
+    from app.routers.content import live_for
+    events = (db.query(Article)
+              .filter(Article.category == "events", live_for(user), Article.event_date >= start, Article.event_date <= end)
               .order_by(Article.event_date).all())
     trainings = []
     for t in db.query(Training).filter(Training.active.is_(True)).options(selectinload(Training.targets)):
@@ -32,7 +32,8 @@ def briefing(user: User = Depends(current_user), db: Session = Depends(get_db)):
                                    Idea.status_changed_at > since)
              .order_by(Idea.status_changed_at.desc()).all())
     voted = {pid for (pid,) in db.query(PollVote.poll_id).filter(PollVote.user_id == user.id)}
-    polls = [p for p in db.query(Poll).order_by(Poll.created_at.desc()) if p.is_open() and p.id not in voted]
+    from app.routers.polls import may_see
+    polls = [p for p in db.query(Poll).order_by(Poll.created_at.desc()) if p.is_open() and p.id not in voted and may_see(p, user)]
     return {
         "polls_open": [{"id": p.id, "question_de": p.question_de, "question_en": p.question_en} for p in polls],
         "events_today": [{"id": a.id, "title_de": a.title_de, "title_en": a.title_en, "event_date": a.event_date,

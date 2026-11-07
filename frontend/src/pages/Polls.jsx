@@ -38,12 +38,13 @@ export function PollCard({ poll, onChange, onEdit, compact = false }) {
     <article className={`card flex flex-col ${compact ? 'p-5' : 'p-6'}`}>
       <div className="flex flex-wrap items-center gap-2 text-xs font-medium">
         {poll.open
-          ? <span className="rounded-full bg-safe/10 px-2 py-0.5 text-safe">{t('poll_open')}</span>
-          : <span className="inline-flex items-center gap-1 rounded-full bg-surface-2 px-2 py-0.5 text-muted"><Lock size={11} />{t('poll_closed')}</span>}
-        {poll.multiple && <span className="rounded-full bg-surface-2 px-2 py-0.5 text-muted">{t('poll_multiple')}</span>}
+          ? <span className="rounded-sm bg-safe/10 px-2 py-0.5 text-safe">{t('poll_open')}</span>
+          : <span className="inline-flex items-center gap-1 rounded-sm bg-surface-2 px-2 py-0.5 text-muted"><Lock size={11} />{t('poll_closed')}</span>}
+        {poll.multiple && <span className="rounded-sm bg-surface-2 px-2 py-0.5 text-muted">{t('poll_multiple')}</span>}
+        {(poll.target_names || []).length > 0 && <span className="inline-flex items-center gap-1 rounded-sm bg-brand-soft px-2 py-0.5 text-ink"><Users size={11} aria-hidden />{t('br_only', { names: poll.target_names.join(', ') })}</span>}
         {poll.open && poll.closes_at && <span className="text-muted">{t('poll_until', { d: fmtDate(poll.closes_at, { day: 'numeric', month: 'long', hour: '2-digit', minute: '2-digit' }) })}</span>}
         {onEdit && has('polls') && (
-          <button type="button" onClick={() => onEdit(poll)} className="ml-auto inline-flex items-center gap-1 text-muted hover:text-brand"><Pencil size={13} />{t('edit')}</button>
+          <button type="button" onClick={() => onEdit(poll)} className="ml-auto inline-flex items-center gap-1 text-muted hover:text-brand-text"><Pencil size={13} />{t('edit')}</button>
         )}
       </div>
       <h3 className={`mt-2 font-display font-semibold leading-snug ${compact ? 'text-lg' : 'text-xl'}`}>{loc(poll, 'question')}</h3>
@@ -74,11 +75,11 @@ export function PollCard({ poll, onChange, onEdit, compact = false }) {
             return (
               <div key={i}>
                 <div className="flex items-baseline justify-between gap-3 text-sm">
-                  <span className={`inline-flex items-center gap-1.5 ${mine ? 'font-semibold' : ''}`}>{mine && <CheckCircle2 size={14} className="text-brand" />}{optionText(o, lang)}</span>
+                  <span className={`inline-flex items-center gap-1.5 ${mine ? 'font-semibold' : ''}`}>{mine && <CheckCircle2 size={14} className="text-brand-text" />}{optionText(o, lang)}</span>
                   <span className="shrink-0 tabular-nums text-muted">{pct} % · {n}</span>
                 </div>
-                <div className="mt-1 h-2.5 overflow-hidden rounded-full bg-surface-2">
-                  <div className={`h-full rounded-full ${n === max && n > 0 ? 'bg-brand' : 'bg-brand/45'}`} style={{ width: `${pct}%` }} />
+                <div className="mt-1 h-2.5 overflow-hidden rounded-sm bg-surface-2">
+                  <div className={`h-full rounded-sm ${n === max && n > 0 ? 'bg-brand' : 'bg-brand/45'}`} style={{ width: `${pct}%` }} />
                 </div>
               </div>
             );
@@ -90,7 +91,7 @@ export function PollCard({ poll, onChange, onEdit, compact = false }) {
           {!user && poll.open && (
             <Button variant="outline" onClick={() => navigate(`/login?next=${encodeURIComponent('/polls')}`)}>{t('poll_login')}</Button>
           )}
-          {user && voted && poll.open && <button type="button" onClick={() => setChanging(true)} className="text-sm font-medium text-brand hover:underline">{t('poll_change')}</button>}
+          {user && voted && poll.open && <button type="button" onClick={() => setChanging(true)} className="text-sm font-medium text-brand-text hover:underline">{t('poll_change')}</button>}
         </div>
       )}
       {error && <p role="alert" className="mt-2 text-sm text-alert">{error}</p>}
@@ -100,7 +101,7 @@ export function PollCard({ poll, onChange, onEdit, compact = false }) {
 }
 
 const EMPTY = { question_de: '', question_en: '', description_de: '', description_en: '', options: [{ de: '', en: '' }, { de: '', en: '' }],
-  multiple: false, results: 'after_vote', closes_at: '', closed: false };
+  multiple: false, results: 'after_vote', closes_at: '', closed: false, target_departments: [], target_branches: [] };
 
 const toLocalInput = (v) => (v ? String(v).slice(0, 16) : '');
 
@@ -112,6 +113,11 @@ function PollEditor({ initial, onClose, onSaved }) {
   const locked = Boolean(initial?.voters); // with votes: rename answers only
   const set = (k, v) => setF((x) => ({ ...x, [k]: v }));
   const setOpt = (i, k, v) => set('options', f.options.map((o, j) => (j === i ? { ...o, [k]: v } : o)));
+  const departments = useFetch('/departments', undefined, 'departments');
+  const branches = useFetch('/branches', undefined, 'branches');
+  const toggleIn = (k, v) => set(k, (f[k] || []).includes(v) ? f[k].filter((x) => x !== v) : [...(f[k] || []), v]);
+  const everybody = !(f.target_departments || []).length && !(f.target_branches || []).length;
+  const chip = (on) => `rounded-full border px-3 py-1.5 text-sm font-medium transition-colors ${on ? 'border-brand bg-brand-soft text-ink' : 'border-rule-strong bg-surface text-ink hover:border-ink'}`;
 
   const save = async (e) => {
     e.preventDefault(); setBusy(true); setError('');
@@ -119,6 +125,7 @@ function PollEditor({ initial, onClose, onSaved }) {
       question_de: f.question_de, question_en: f.question_en, description_de: f.description_de, description_en: f.description_en,
       options: f.options.filter((o) => o.de.trim()), multiple: f.multiple, results: f.results,
       closes_at: f.closes_at || null, closed: f.closed,
+      target_departments: f.target_departments || [], target_branches: f.target_branches || [],
     };
     try {
       await api(initial ? `/polls/${initial.id}` : '/polls', { method: initial ? 'PUT' : 'POST', body });
@@ -166,6 +173,36 @@ function PollEditor({ initial, onClose, onSaved }) {
             <input type="datetime-local" value={f.closes_at} onChange={(e) => set('closes_at', e.target.value)} className={inputClass} />
           </Field>
         </div>
+        <fieldset className="rounded-xl border border-line p-3">
+          <legend className="px-1 text-sm font-medium">{t('poll_for')}</legend>
+          <div className="flex flex-wrap gap-2">
+            <button type="button" aria-pressed={everybody} onClick={() => setF((x) => ({ ...x, target_departments: [], target_branches: [] }))}
+              className={`rounded-full border px-3 py-1.5 text-sm font-medium ${everybody ? 'border-ink bg-ink text-surface' : 'border-rule-strong bg-surface text-ink hover:border-ink'}`}>{t('poll_for_all')}</button>
+          </div>
+          {(departments.data || []).length > 0 && (
+            <>
+              <p className="mb-1.5 mt-3 text-sm text-muted">{t('admin_departments')}</p>
+              <div className="flex flex-wrap gap-2">
+                {departments.data.map((d) => (
+                  <button key={d.id} type="button" aria-pressed={(f.target_departments || []).includes(d.name)}
+                    onClick={() => toggleIn('target_departments', d.name)} className={chip((f.target_departments || []).includes(d.name))}>{d.name}</button>
+                ))}
+              </div>
+            </>
+          )}
+          {(branches.data || []).length > 0 && (
+            <>
+              <p className="mb-1.5 mt-3 text-sm text-muted">{t('admin_branches')}</p>
+              <div className="flex flex-wrap gap-2">
+                {branches.data.map((b) => (
+                  <button key={b.id} type="button" aria-pressed={(f.target_branches || []).includes(b.id)}
+                    onClick={() => toggleIn('target_branches', b.id)} className={chip((f.target_branches || []).includes(b.id))}>{b.name}</button>
+                ))}
+              </div>
+            </>
+          )}
+          <p className="mt-2 text-xs text-muted">{everybody ? t('poll_for_all_hint') : t('poll_for_some_hint')}</p>
+        </fieldset>
         <label className="flex items-center gap-2 text-sm"><input type="checkbox" checked={f.multiple} disabled={locked} onChange={(e) => set('multiple', e.target.checked)} className="h-4 w-4 accent-[var(--brand)]" />{t('poll_multiple_label')}</label>
         {initial && <label className="flex items-center gap-2 text-sm"><input type="checkbox" checked={f.closed} onChange={(e) => set('closed', e.target.checked)} className="h-4 w-4 accent-[var(--brand)]" />{t('poll_close_now')}</label>}
         {error && <p role="alert" className="text-sm text-alert">{error}</p>}
@@ -204,7 +241,7 @@ export default function Polls() {
       {open.length > 0 && <div className="mt-8 grid gap-5 lg:grid-cols-2">{open.map(card)}</div>}
       {closed.length > 0 && (
         <section className="mt-12">
-          <h2 className="mb-4 inline-flex items-center gap-2 font-display text-xl font-semibold"><BarChart3 size={20} className="text-brand" />{t('polls_closed')}</h2>
+          <h2 className="mb-4 inline-flex items-center gap-2 font-display text-xl font-semibold"><BarChart3 size={20} className="text-brand-text" />{t('polls_closed')}</h2>
           <div className="grid gap-5 lg:grid-cols-2">{closed.map(card)}</div>
         </section>
       )}

@@ -7,11 +7,12 @@ import { useFetch } from '../lib/useFetch';
 import { useAuth } from '../lib/auth';
 import { api } from '../lib/api';
 
-export const ROLES = ['user', 'author', 'moderator', 'editor', 'admin'];
+export const ROLES = ['user', 'author', 'hr', 'moderator', 'editor', 'admin'];
 export const PERMISSIONS = ['content_own', 'content_all', 'trainings', 'moderate', 'quicklinks', 'polls', 'locations', 'people'];
 export const ROLE_PERMS = {
   user: [],
   author: ['content_own'],
+  hr: ['content_own', 'trainings', 'people'],
   moderator: ['content_own', 'trainings', 'moderate', 'quicklinks', 'polls'],
   editor: ['content_own', 'content_all', 'trainings', 'moderate', 'quicklinks', 'polls'],
   admin: PERMISSIONS,
@@ -33,13 +34,13 @@ function Matrix() {
             <tr key={p}>
               <td className="px-4 py-2.5"><span className="font-medium">{t(`perm_${p}`)}</span><span className="block text-xs text-muted">{t(`perm_${p}_hint`)}</span></td>
               {ROLES.map((r) => (
-                <td key={r} className="px-3 py-2.5 text-center">{ROLE_PERMS[r].includes(p) ? <Check size={16} className="mx-auto text-safe" /> : <span className="text-muted">–</span>}</td>
+                <td key={r} className="px-3 py-2.5 text-center">{ROLE_PERMS[r].includes(p) ? <Check size={16} className="mx-auto text-safe" /> : <span className="sr-only">nein</span>}</td>
               ))}
             </tr>
           ))}
           <tr className="bg-bg">
             <td className="px-4 py-2.5"><span className="inline-flex items-center gap-1.5 font-medium"><Lock size={14} />{t('perm_system')}</span><span className="block text-xs text-muted">{t('perm_system_hint')}</span></td>
-            {ROLES.map((r) => <td key={r} className="px-3 py-2.5 text-center">{r === 'admin' ? <Check size={16} className="mx-auto text-safe" /> : <span className="text-muted">–</span>}</td>)}
+            {ROLES.map((r) => <td key={r} className="px-3 py-2.5 text-center">{r === 'admin' ? <Check size={16} className="mx-auto text-safe" /> : <span className="sr-only">nein</span>}</td>)}
           </tr>
         </tbody>
       </table>
@@ -84,8 +85,8 @@ function PersonRow({ person, me, onSaved }) {
             return (
               <button key={p} type="button" disabled={busy || viaRole} onClick={() => toggle(p)} aria-pressed={on}
                 title={viaRole ? t('perm_via_role') : t(`perm_${p}_hint`)}
-                className={`inline-flex items-center gap-1.5 rounded-full border px-2.5 py-0.5 text-xs font-medium transition-colors ${
-                  on ? (viaRole ? 'border-line bg-surface-2 text-muted' : 'border-brand bg-brand-soft text-brand') : 'border-line text-muted hover:border-muted hover:text-ink'}`}>
+                className={`inline-flex items-center gap-1.5 rounded-sm border px-2.5 py-0.5 text-xs font-medium transition-colors ${
+                  on ? (viaRole ? 'border-line bg-surface-2 text-muted' : 'border-brand bg-brand-soft text-brand-text') : 'border-line text-muted hover:border-muted hover:text-ink'}`}>
                 {on && <Check size={12} />}{t(`perm_${p}`)}
               </button>
             );
@@ -111,7 +112,7 @@ export default function AdminPermissions() {
   return (
     <div className="space-y-6">
       <div className="flex items-start gap-3 rounded-xl border border-line bg-bg px-4 py-3 text-sm">
-        <ShieldCheck size={18} className="mt-0.5 shrink-0 text-brand" />
+        <ShieldCheck size={18} className="mt-0.5 shrink-0 text-brand-text" />
         <p>{t('perm_intro')}</p>
       </div>
       <Matrix />

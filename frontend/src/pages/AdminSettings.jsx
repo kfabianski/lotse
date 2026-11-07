@@ -1,6 +1,9 @@
 import { useEffect, useState } from 'react';
 import { CheckCircle2, ChevronDown, ImagePlus, MailPlus, PlugZap, RefreshCw, RotateCcw, ShieldAlert, XCircle } from 'lucide-react';
 import MailTemplates from '../components/MailTemplates';
+import { applyScheme } from '../lib/scheme';
+import SchemePicker from '../components/SchemePicker';
+import { useAuth } from '../lib/auth';
 import { Button, Field, inputClass } from '../components/ui';
 import { useI18n } from '../lib/i18n';
 import { api } from '../lib/api';
@@ -12,8 +15,8 @@ function Toggle({ checked, onChange, label, hint }) {
       <span><span className="block font-medium">{label}</span>{hint && <span className="block text-sm text-muted">{hint}</span>}</span>
       <span className="relative mt-0.5 inline-flex shrink-0">
         <input type="checkbox" className="peer sr-only" checked={checked} onChange={(e) => onChange(e.target.checked)} />
-        <span className="h-6 w-11 rounded-full bg-line transition-colors peer-checked:bg-brand peer-focus-visible:ring-2 peer-focus-visible:ring-brand" />
-        <span className="absolute left-0.5 top-0.5 h-5 w-5 rounded-full bg-white shadow transition-transform peer-checked:translate-x-5" />
+        <span className="h-6 w-11 rounded-sm bg-line transition-colors peer-checked:bg-brand peer-focus-visible:ring-2 peer-focus-visible:ring-brand" />
+        <span className="absolute left-0.5 top-0.5 h-5 w-5 rounded-sm bg-on-photo shadow transition-transform peer-checked:translate-x-5" />
       </span>
     </label>
   );
@@ -61,6 +64,7 @@ function HolidaySettings({ value, onChange }) {
 }
 
 export default function AdminSettings() {
+  const { user: me } = useAuth();
   const { t } = useI18n();
   const [form, setForm] = useState(null);
   const [password, setPassword] = useState('');
@@ -96,6 +100,7 @@ export default function AdminSettings() {
         smtp_password: smtpPassword || null, teams_webhook_url: webhook || null,
       } });
       setForm(saved);
+      applyScheme(me?.color_scheme || saved.color_scheme);
       setPassword('');
       setSmtpPassword('');
       setWebhook('');
@@ -126,12 +131,13 @@ export default function AdminSettings() {
     } finally { setBusy(false); }
   };
 
-  const attrs = ['username', 'first_name', 'last_name', 'email', 'department', 'title', 'phone', 'photo', 'manager', 'branch'];
+  const attrs = ['username', 'first_name', 'last_name', 'email', 'department', 'title', 'phone', 'photo', 'manager', 'branch', 'start_date'];
 
   return (
     <form onSubmit={save} className="space-y-5">
       <Section title={t('settings_general')} description={t('settings_general_hint')}>
         <Field label={t('settings_company')}><input required className={inputClass} value={form.company_name} onChange={set('company_name')} /></Field>
+        <Field label={t('settings_footer')} hint={t('settings_footer_hint')}><input maxLength={300} className={inputClass} value={form.footer_text || ''} onChange={set('footer_text')} /></Field>
         <Toggle checked={form.public_read} onChange={set('public_read')} label={t('settings_public_read')} hint={t('settings_public_read_hint')} />
         <div>
           <span className="block font-medium">{t('settings_login_image')}</span>
@@ -157,6 +163,11 @@ export default function AdminSettings() {
             </div>
           </div>
         </div>
+      </Section>
+
+      <Section title={t('cs_title')} description={t('cs_hint')}>
+        <SchemePicker value={form.color_scheme || 'hafen'} onChange={(id) => { set('color_scheme')(id); applyScheme(id, { cache: false }); }} />
+        <p className="text-sm text-muted">{t('cs_note')}</p>
       </Section>
 
       <HolidaySettings value={form.holiday_regions || []} onChange={set('holiday_regions')} />
@@ -274,7 +285,7 @@ export default function AdminSettings() {
           <Field label={t('settings_editor_group')}><input className={inputClass} placeholder="CN=Intranet-Redaktion,OU=Gruppen,…" value={form.ldap_editor_group} onChange={set('ldap_editor_group')} /></Field>
         </div>
 
-        <button type="button" onClick={() => setAdvanced((a) => !a)} aria-expanded={advanced} className="inline-flex items-center gap-1.5 text-sm font-medium text-brand">
+        <button type="button" onClick={() => setAdvanced((a) => !a)} aria-expanded={advanced} className="inline-flex items-center gap-1.5 text-sm font-medium text-brand-text">
           <ChevronDown size={16} className={`transition-transform ${advanced ? 'rotate-180' : ''}`} />{t('settings_advanced')}
         </button>
         {advanced && (

@@ -21,6 +21,10 @@ COLUMNS = [
     ("articles", "pinned", "BOOLEAN NOT NULL DEFAULT 0", None),
     ("articles", "pinned_until", "DATE", None),
     ("users", "notify_ideas", "BOOLEAN NOT NULL DEFAULT 1", None),
+    ("users", "color_scheme", "VARCHAR(20)", None),
+    ("users", "ldap_guid", "VARCHAR(64)", None),
+    ("polls", "target_departments", "TEXT NOT NULL DEFAULT '[]'", None),
+    ("polls", "target_branches", "TEXT NOT NULL DEFAULT '[]'", None),
     # existing articles count as announced - switching notifications on must not mail old news
     ("articles", "notified_at", "DATETIME", "UPDATE articles SET notified_at = CURRENT_TIMESTAMP"),
 ]

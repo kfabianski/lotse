@@ -47,7 +47,7 @@ function Attachments({ value, onChange }) {
           ))}
         </ul>
       )}
-      <label className={`flex cursor-pointer items-center justify-center gap-2 rounded-xl border-2 border-dashed border-line py-4 text-muted hover:border-brand hover:text-brand ${busy ? 'opacity-60' : ''}`}>
+      <label className={`flex cursor-pointer items-center justify-center gap-2 rounded-xl border-2 border-dashed border-line py-4 text-muted hover:border-brand hover:text-brand-text ${busy ? 'opacity-60' : ''}`}>
         <Paperclip size={18} /><span className="font-medium">{busy ? t('loading') : t('add_attachments')}</span>
         <input type="file" multiple accept="image/png,image/jpeg,image/webp,image/gif,application/pdf" className="sr-only" disabled={busy}
           onChange={(e) => { add([...e.target.files]); e.target.value = ''; }} />
@@ -78,10 +78,10 @@ export function ImagePicker({ value, onChange, tall = false }) {
         <div className="relative">
           <img src={value} alt="" className={`${tall ? 'aspect-square' : 'aspect-[16/7]'} w-full rounded-xl object-cover`} />
           <button type="button" onClick={() => onChange(null)} aria-label={t('remove_image')}
-            className="absolute right-2 top-2 rounded-full bg-surface p-1.5 shadow"><X size={16} /></button>
+            className="absolute right-2 top-2 rounded-sm bg-surface p-1.5 shadow"><X size={16} /></button>
         </div>
       ) : (
-        <label className={`flex cursor-pointer flex-col items-center justify-center gap-2 rounded-xl border-2 border-dashed border-line py-8 text-muted hover:border-brand hover:text-brand ${tall ? 'min-h-48 flex-1' : ''}`}>
+        <label className={`flex cursor-pointer flex-col items-center justify-center gap-2 rounded-xl border-2 border-dashed border-line py-8 text-muted hover:border-brand hover:text-brand-text ${tall ? 'min-h-48 flex-1' : ''}`}>
           <ImagePlus size={24} /><span className="font-medium">{t('upload_image')}</span>
           <input type="file" accept="image/png,image/jpeg,image/webp,image/gif" className="sr-only" onChange={pick} />
         </label>
@@ -99,6 +99,7 @@ export default function ArticleEdit() {
   const navigate = useNavigate();
   const [form, setForm] = useState({ ...EMPTY, category: params.get('category') || 'news' });
   const [tab, setTab] = useState('de');
+  const [addEn, setAddEn] = useState(false);
   const [preview, setPreview] = useState(false);
   const [error, setError] = useState('');
   const branches = useFetch('/branches', undefined, 'branches');
@@ -134,6 +135,7 @@ export default function ArticleEdit() {
   const publishAt = form.published_at ? form.published_at.slice(0, 16) : '';
   const isScheduled = form.published && publishAt && new Date(publishAt) > new Date();
 
+  const showEn = addEn || Boolean(form.title_en || form.summary_en || form.body_en);
   return (
     <form onSubmit={save} className="mx-auto max-w-[920px]">
       <h1 className="font-display text-[2rem] font-semibold leading-tight">{id ? t('edit') : t('new_article')}</h1>
@@ -153,10 +155,10 @@ export default function ArticleEdit() {
             <p className="mb-1.5 text-sm font-medium">{t('br_visible_for')}</p>
             <div className="flex flex-wrap gap-2">
               <button type="button" onClick={() => setForm((f) => ({ ...f, branch_ids: [] }))} aria-pressed={!form.branch_ids.length}
-                className={`rounded-full border px-3.5 py-1.5 text-sm font-medium ${!form.branch_ids.length ? 'border-ink bg-ink text-surface' : 'border-line hover:border-muted'}`}>{t('br_all')}</button>
+                className={`rounded-sm border px-3.5 py-1.5 text-sm font-medium ${!form.branch_ids.length ? 'border-ink bg-ink text-surface' : 'border-line hover:border-muted'}`}>{t('br_all')}</button>
               {branches.data.map((b) => (
                 <button key={b.id} type="button" onClick={() => toggleBranch(b.id)} aria-pressed={form.branch_ids.includes(b.id)}
-                  className={`rounded-full border px-3.5 py-1.5 text-sm font-medium ${form.branch_ids.includes(b.id) ? 'border-brand bg-brand-soft text-brand' : 'border-line hover:border-muted'}`}>{b.name}</button>
+                  className={`rounded-sm border px-3.5 py-1.5 text-sm font-medium ${form.branch_ids.includes(b.id) ? 'border-brand bg-brand-soft text-brand-text' : 'border-line hover:border-muted'}`}>{b.name}</button>
               ))}
             </div>
             <p className="mt-1 text-xs text-muted">{form.branch_ids.length ? t('br_visible_some') : t('br_visible_all')}</p>
@@ -201,12 +203,15 @@ export default function ArticleEdit() {
 
       <div className="mt-8 flex items-center justify-between border-b border-line">
         <div role="tablist" className="flex gap-6">
-          {[['de', t('german')], ['en', t('english')]].map(([code, label]) => (
+          {(showEn ? [['de', t('content_original')], ['en', t('content_translation')]] : [['de', t('content_original')]]).map(([code, label]) => (
             <button key={code} type="button" role="tab" aria-selected={tab === code} onClick={() => setTab(code)}
-              className={`-mb-px border-b-[3px] pb-2 font-medium ${tab === code ? 'border-signal text-ink' : 'border-transparent text-muted'}`}>
+              className={`-mb-px border-b-[3px] pb-2 font-medium ${tab === code ? 'border-brand text-ink' : 'border-transparent text-muted'}`}>
               {label}
             </button>
           ))}
+          {!showEn && (
+            <button type="button" onClick={() => { setAddEn(true); setTab('en'); }} className="-mb-px pb-2 text-sm text-muted hover:text-ink">+ {t('content_add_translation')}</button>
+          )}
         </div>
         <label className="mb-2 flex items-center gap-2 text-sm text-muted">
           <input type="checkbox" checked={preview} onChange={(e) => setPreview(e.target.checked)} className="accent-[var(--brand)]" />{t('preview')}

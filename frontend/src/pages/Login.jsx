@@ -84,11 +84,11 @@ export default function Login({ config }) {
 
       {/* Picture side: the company's own team photo if an admin uploaded one, otherwise the bundled sample photo. */}
       <div className="relative hidden p-4 lg:block">
-        <div className="relative h-full overflow-hidden rounded-[1.75rem] bg-[#1d2129]">
+        <div className="relative h-full overflow-hidden bg-well">
           <img src={image} alt="" className="absolute inset-0 h-full w-full object-cover" style={{ objectPosition: ownPhoto ? 'center' : '64% center' }} />
-          <div className={`absolute inset-x-6 bottom-6 rounded-2xl bg-black/40 px-6 py-5 text-white backdrop-blur-md`}>
-            <p className="text-xl font-semibold tracking-tight">{t('login_tagline')}</p>
-            <p className="mt-1 text-sm text-white/80">{t('login_tagline_sub')}</p>
+          <div className="absolute inset-x-0 bottom-0 border-t border-line bg-surface px-6 py-5 text-ink">
+            <p className="font-display text-xl font-semibold">{t('login_tagline')}</p>
+            <p className="mt-1 text-muted">{t('login_tagline_sub')}</p>
           </div>
         </div>
       </div>

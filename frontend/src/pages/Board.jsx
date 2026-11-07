@@ -31,7 +31,7 @@ function NoticeForm({ onDone }) {
       <div className="flex flex-wrap gap-2">
         {KINDS.map((k) => (
           <button key={k} type="button" onClick={() => setForm({ ...form, kind: k })} aria-pressed={form.kind === k}
-            className={`rounded-full border px-3 py-1 font-medium ${form.kind === k ? 'border-ink bg-ink text-surface' : 'border-line text-muted'}`}>
+            className={`rounded-sm border px-3 py-1 font-medium ${form.kind === k ? 'border-ink bg-ink text-surface' : 'border-line text-muted'}`}>
             {t(`kind_${k}`)}
           </button>
         ))}
@@ -83,7 +83,7 @@ export default function Board() {
       <div className="mt-6 flex flex-wrap gap-2 border-b border-line pb-4">
         {['', ...KINDS].map((k) => (
           <button key={k || 'all'} type="button" onClick={() => setKind(k)} aria-pressed={kind === k}
-            className={`rounded-full border px-4 py-1.5 font-medium ${kind === k ? 'border-ink bg-ink text-surface' : 'border-line text-muted hover:text-ink'}`}>
+            className={`rounded-sm border px-4 py-1.5 font-medium ${kind === k ? 'border-ink bg-ink text-surface' : 'border-line text-muted hover:text-ink'}`}>
             {k ? t(`kind_${k}`) : t('all')}
           </button>
         ))}
@@ -112,7 +112,7 @@ export default function Board() {
                   <Avatar person={c.author} size={34} />
                   <div className="min-w-0 flex-1 text-sm">
                     <p className="font-medium">{c.author.full_name}</p>
-                    <div className="flex gap-3 text-brand">
+                    <div className="flex gap-3 text-brand-text">
                       {c.author.email && <a href={`mailto:${c.author.email}?subject=${encodeURIComponent(c.title)}`} aria-label={t('email')}><Mail size={15} /></a>}
                       {c.author.phone_ext && <a href={`tel:${c.author.phone_ext}`} className="inline-flex items-center gap-1"><Phone size={15} />{c.author.phone_ext}</a>}
                     </div>

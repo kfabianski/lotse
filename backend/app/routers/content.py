@@ -79,9 +79,8 @@ def _may_edit(user: User, article: Article) -> bool:
     return has_perm(user, "content_all") or (has_perm(user, "content_own") and article.author_id == user.id)
 
 
-HOME_BLOCKS = ("greeting", "slider", "quicklinks", "upcoming", "news", "people", "photos", "recent", "poll", "board")
+HOME_BLOCKS = ("slider", "quicklinks", "upcoming", "news", "people", "photos", "recent", "poll", "board")
 DEFAULT_LAYOUT = [
-    {"id": "greeting", "show": True, "width": "full"},
     {"id": "slider", "show": True, "width": "full"}, {"id": "quicklinks", "show": True, "width": "full"},
     {"id": "upcoming", "show": True, "width": "full"}, {"id": "news", "show": True, "width": "full"},
     {"id": "people", "show": True, "width": "full"}, {"id": "photos", "show": True, "width": "full"},

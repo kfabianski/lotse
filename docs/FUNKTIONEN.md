@@ -24,6 +24,8 @@ Diese Beschreibung erklärt, was Lotse kann und wer was darf. Installation und K
 17. [Startseite gestalten](#17-startseite-gestalten)
 18. [Niederlassungen](#18-niederlassungen)
 19. [Beiträge oben anheften](#19-beiträge-oben-anheften)
+20. [Aussehen, Sprache und Navigation](#20-aussehen-sprache-und-navigation)
+21. [Personal (HR) und neue Kolleg:innen](#21-personal-hr-und-neue-kolleginnen)
 
 ---
 
@@ -338,6 +340,9 @@ allgemeine Anleitungen. Es gibt zwei Arten der Sichtbarkeit, frei kombinierbar:
   ändern oder zurückziehen.
 - **Anonym**: Gespeichert wird nur, *dass* jemand abgestimmt hat (damit niemand doppelt abstimmt) – angezeigt
   werden ausschließlich die Summen je Antwort. Auch Redaktion und Administratoren sehen keine Einzelstimmen.
+- **Wer wird gefragt?** Eine Umfrage gilt für *Alle* oder nur für gewählte **Abteilungen** und/oder **Niederlassungen**
+  (z. B. *Vertrieb* und *München*). Dann sehen nur diese Personen sie (auf der Startseite, in der Liste, in der Suche
+  und in der Begrüßung) und nur sie dürfen abstimmen; die Redaktion sieht alles. Nicht Angemeldete sehen nur Umfragen für alle.
 - **Anlegen** (Recht *Umfragen erstellen* – Moderator:in, Redaktion, Administrator): Frage (DE, optional EN),
   Erläuterung, 2–12 Antworten (je DE/EN), **Mehrfachauswahl**, **Endet am** (optional) und wann das
   **Ergebnis sichtbar** ist: *nach der eigenen Stimme*, *immer* oder *erst nach dem Ende*.
@@ -388,6 +393,11 @@ allgemeine Anleitungen. Es gibt zwei Arten der Sichtbarkeit, frei kombinierbar:
   danach nach Belieben anpassen und speichern. *Standard wiederherstellen* setzt alles zurück.
 - Leere Blöcke (keine Umfrage, keine angehefteten Beiträge, Begrüßung für nicht Angemeldete) werden übersprungen.
 - **Zurück im Browser** führt wieder an die Stelle, an der man auf der Seite war.
+- **Farbschema** (nur Admin, *Verwaltung → Einstellungen*): *Hafen* (Marineblau, Eisblau, Rot; Standard), *Signal* (Rot-Orange),
+  *Meer* (Türkis), *Indigo*, *Nordsee* (Kobalt), *Fjord* (Petrol), *Azur* (Himmelblau), *Marine* (Dunkelblau). Ein Klick zeigt
+  die Vorschau, *Speichern* übernimmt es für alle; jedes Schema hat eigene Töne für den Dunkelmodus.
+  Jede Person kann im **Profil → Meine Farben** ein eigenes Schema wählen (gespeichert am Konto, gilt auf jedem Gerät)
+  oder beim *Firmenstandard* bleiben.
 
 ## 18. Niederlassungen
 
@@ -409,3 +419,35 @@ allgemeine Anleitungen. Es gibt zwei Arten der Sichtbarkeit, frei kombinierbar:
   in **Was gibt’s Neues** (Zeichen *angepinnt*).
 - Gedacht für Dinge, die lange sichtbar sein sollen: Jahresplanung, Inventur, Audits, Betriebsferien – damit alle
   ihren Urlaub danach planen können. Nach dem Datum verschwindet der Beitrag automatisch aus dem Block.
+
+## 20. Aussehen, Sprache und Navigation
+
+- **Oben links** Datum und Begrüßung (*Guten Morgen, Mehmet*), **oben rechts** die **Suche** (Lupe oder *Strg + K*,
+  ein kleines Fenster mit Treffern beim Tippen), Sprache, Hell/Dunkel, die **Glocke** und das Konto.
+- **Glocke**: alles, was die Person betrifft – offene Schulungen (überfällige rot), neue Umfragen ohne eigene Stimme,
+  Antworten auf eigene Ideen, Termine von heute. Die Zahl zeigt, wie viele Punkte offen sind.
+- **Menü links** lässt sich unten mit dem Pfeil **einklappen** (nur Symbole) und wieder ausklappen; das bleibt gespeichert.
+- **Fußzeile**: © Jahr und Firmenname, ein freier Text aus *Verwaltung → Einstellungen* (z. B. Anschrift,
+  Handelsregister, Datenschutzhinweis) und Links zu Dokumenten, Mitarbeitenden, Ideen und Profil.
+- **Farbschema**: siehe Abschnitt 17 – für alle (Admin) oder pro Person im Profil.
+- **Sprache**: Die Umschaltung betrifft die **Oberfläche** (Menüs, Knöpfe, Hinweise). **Inhalte bleiben in der
+  Sprache, in der sie geschrieben wurden** – niemand muss Artikel oder Dokumente übersetzen. Wer möchte, kann im
+  Editor eine *Übersetzung hinzufügen (optional)*; sie wird dann bei englischer Oberfläche gezeigt, sonst das Original.
+  Umfragen behalten ihre optionalen zweisprachigen Felder. Weitere Oberflächensprachen: in `frontend/src/lib/i18n.jsx`
+  ein Wörterbuch ergänzen (z. B. `pl: {...}`) – es erscheint automatisch in der Umschaltung.
+
+## 21. Personal (HR) und neue Kolleg:innen
+
+- **Rolle Personal (HR)**: darf Mitarbeitenden-Karten bearbeiten und anlegen, Schulungen erstellen und zuweisen und
+  eigene Beiträge schreiben. Rollen, Rechte und Einstellungen (LDAP, SMTP …) bleiben dem Administrator vorbehalten.
+- **Neue Kolleg:innen** erkennt Lotse am **Eintrittsdatum** (Mitarbeitenden-Karte). Bei LDAP wird es beim ersten
+  Abgleich gefüllt: aus dem Attribut *Eintrittsdatum* (Standard `whenCreated`, einstellbar, z. B. ein eigenes
+  Feld für das Einstellungsdatum), sonst mit dem Tag, an dem das Konto in Lotse erscheint. Ein gesetztes Datum wird
+  nie überschrieben und lässt sich von Hand korrigieren.
+- **Zuordnung beim LDAP-Abgleich** – nie über den Namen: zuerst über die feste Verzeichnis-ID (**objectGUID**, bleibt
+  bei Namensänderung, neuer Mail-Domain oder neuem Benutzernamen gleich), dann über den Benutzernamen, dann über die
+  E-Mail-Adresse. So entsteht bei einer Heirat oder Domainumstellung kein zweites Konto.
+- **Pflichtschulungen zum Start**: Beim Zuweisen einer Schulung *Neue Kolleg:innen* wählen – sie gilt dann für alle in
+  ihren ersten 90 Tagen ab Eintrittsdatum, auch für alle, die später dazukommen. Erscheint in der Glocke und unter
+  *Schulungen*.
+

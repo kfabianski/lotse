@@ -1,0 +1,349 @@
+/* Hallmark · tokens: Almanac adjusted at the user's request (light paper, rounded, sans, user palette: frosted blue, cerulean, oxford navy, punch red), light and night · v2.0.0 */
+:root {
+  color-scheme: light;
+  --space-3xs: 2px; --space-2xs: 4px; --space-xs: 8px; --space-sm: 12px; --space-md: 16px; --space-lg: 24px; --space-xl: 40px; --space-2xl: 64px; --space-3xl: 96px; --space-4xl: 144px;
+  --text-xs: 0.75rem; --text-sm: 0.875rem; --text-md: 1rem; --text-lg: 1.2rem; --text-xl: 1.44rem; --text-2xl: 1.728rem; --text-3xl: 2.074rem;
+  --text-display-s: 1.44rem; --text-display: 1.728rem; --text-section: 1.2rem; --text-title: 1rem; --text-lead: 1rem;
+  --ease-out: cubic-bezier(0.16, 1, 0.3, 1); --ease-in: cubic-bezier(0.7, 0, 0.84, 0); --ease-in-out: cubic-bezier(0.65, 0, 0.35, 1);
+  --dur-micro: 120ms; --dur-short: 220ms; --dur-long: 420ms;
+  --color-error: #cb1928; --color-success: oklch(50% 0.12 150); --color-warning: oklch(80% 0.11 85);
+  --container: 1440px; --gutter: 64px; --gap-columns: 32px; --section-gap-s: 120px; --section-gap: 144px; --section-gap-l: 176px;
+  --z-base: 1; --z-raised: 10; --z-dropdown: 100; --z-sticky: 200; --z-sticky-nav: 300; --z-modal: 400; --z-toast: 500; --z-tooltip: 600;
+  /* Palette chosen by the user (coolors.co): frosted blue, cerulean, oxford navy, punch red */
+  --color-paper: #f4f7f9; --color-paper-2: #e7eef2; --color-paper-3: #d9e4ea;
+  --color-ink: #1d3557; --color-ink-2: #29495e; --color-muted: #37627d;
+  --color-rule: #dce6ec; --color-rule-2: #88b1cb;
+  /* punch red for the action: #cb1928 carries white text at 5.6:1 (#e63946 would be 4.1:1) */
+  --color-accent: #cb1928; --color-accent-2: #99131e; --color-accent-ink: #fdfeff; --color-focus: #457b9d;
+  --color-accent-text: #cb1928; --color-accent-soft: #e3f1f2;
+  --color-sheet: #fdfeff; --color-sheet-2: #eef4f7;
+  --color-on-photo: #fdfeff; --color-scrim: #060b12;
+  --font-display: "Hanken Grotesk", ui-sans-serif, system-ui, sans-serif;
+  --font-body: "Hanken Grotesk", ui-sans-serif, system-ui, sans-serif;
+  --font-outlier: "IBM Plex Mono", ui-monospace, monospace;
+  --radius-card: 14px; --radius-pill: 999px; --rule-hair: 1px; --rule-bar: 2px; --shadow-card: none;
+  --tracking-display: -0.02em; --display-weight: 600;
+
+  /* Lotse role names, read by the Tailwind theme (index.css) and every component */
+  --bg: var(--color-paper);
+  --surface: var(--color-sheet);
+  --surface-2: var(--color-sheet-2);
+  --well: var(--color-paper-2);
+  --ink: var(--color-ink);
+  --ink-2: var(--color-ink-2);
+  --muted: var(--color-muted);
+  --line: var(--color-rule);
+  --rule-strong: var(--color-rule-2);
+  --brand: var(--color-accent);
+  --brand-strong: var(--color-accent-2);
+  --brand-soft: var(--color-accent-soft);
+  --brand-ink: var(--color-accent-ink);
+  --brand-text: var(--color-accent-text);
+  --signal: var(--color-warning);
+  --safe: var(--color-success);
+  --alert: var(--color-error);
+  --on-photo: var(--color-on-photo);
+  --scrim: var(--color-scrim);
+}
+
+/* Night edition: the same register printed on a dark slate. */
+.dark {
+  color-scheme: dark;
+  --color-paper: #0c1623; --color-paper-2: #122035; --color-paper-3: #172b46;
+  --color-ink: #eef3f6; --color-ink-2: #d5e2e9; --color-muted: #b0cbdc;
+  --color-rule: #1d3557; --color-rule-2: #37627d;
+  --color-accent: #eb5f6b; --color-accent-2: #f08790; --color-accent-ink: #060b12; --color-focus: #88b1cb;
+  --color-accent-text: #f08790; --color-accent-soft: #1d3557;
+  --color-sheet: #122035; --color-sheet-2: #172b46;
+  --color-error: #f08790; --color-success: oklch(73% 0.13 150); --color-warning: oklch(80% 0.11 85);
+}
+
+/* Colour schemes the admin picks in Verwaltung > Einstellungen; "hafen" (above) is the default. */
+:root[data-scheme="signal"]:not(.dark) {
+  --color-paper: oklch(97.6% 0.005 250);
+  --color-paper-2: oklch(95.2% 0.008 250);
+  --color-paper-3: oklch(92.5% 0.010 250);
+  --color-sheet: oklch(99.6% 0.002 250);
+  --color-sheet-2: oklch(96.4% 0.007 250);
+  --color-ink: oklch(21% 0.025 258);
+  --color-ink-2: oklch(30% 0.022 258);
+  --color-muted: oklch(49% 0.020 258);
+  --color-rule: oklch(90.5% 0.010 250);
+  --color-rule-2: oklch(78% 0.014 250);
+  --color-accent: oklch(57% 0.185 40);
+  --color-accent-2: oklch(50% 0.170 38);
+  --color-accent-ink: oklch(99% 0.004 60);
+  --color-accent-text: oklch(52% 0.180 38);
+  --color-accent-soft: oklch(95% 0.030 45);
+  --color-focus: oklch(57% 0.185 40);
+}
+:root.dark[data-scheme="signal"] {
+  --color-paper: oklch(17% 0.018 258);
+  --color-paper-2: oklch(21% 0.018 258);
+  --color-paper-3: oklch(25% 0.018 258);
+  --color-sheet: oklch(21.5% 0.018 258);
+  --color-sheet-2: oklch(26% 0.018 258);
+  --color-ink: oklch(95% 0.006 250);
+  --color-ink-2: oklch(88% 0.008 250);
+  --color-muted: oklch(72% 0.014 250);
+  --color-rule: oklch(29% 0.016 258);
+  --color-rule-2: oklch(45% 0.016 258);
+  --color-accent: oklch(72% 0.160 45);
+  --color-accent-2: oklch(79% 0.130 50);
+  --color-accent-ink: oklch(18% 0.025 258);
+  --color-accent-text: oklch(78% 0.140 48);
+  --color-accent-soft: oklch(30% 0.050 45);
+  --color-focus: oklch(74% 0.160 45);
+}
+:root[data-scheme="meer"]:not(.dark) {
+  --color-paper: oklch(97.6% 0.005 250);
+  --color-paper-2: oklch(95.2% 0.008 250);
+  --color-paper-3: oklch(92.5% 0.010 250);
+  --color-sheet: oklch(99.6% 0.002 250);
+  --color-sheet-2: oklch(96.4% 0.007 250);
+  --color-ink: oklch(21% 0.025 258);
+  --color-ink-2: oklch(30% 0.022 258);
+  --color-muted: oklch(49% 0.020 258);
+  --color-rule: oklch(90.5% 0.010 250);
+  --color-rule-2: oklch(78% 0.014 250);
+  --color-accent: #5bd2ec;
+  --color-accent-2: oklch(75% 0.120 214);
+  --color-accent-ink: oklch(21% 0.025 258);
+  --color-accent-text: oklch(47% 0.095 222);
+  --color-accent-soft: oklch(94% 0.035 213);
+  --color-focus: oklch(52% 0.110 220);
+}
+:root.dark[data-scheme="meer"] {
+  --color-paper: oklch(17% 0.018 258);
+  --color-paper-2: oklch(21% 0.018 258);
+  --color-paper-3: oklch(25% 0.018 258);
+  --color-sheet: oklch(21.5% 0.018 258);
+  --color-sheet-2: oklch(26% 0.018 258);
+  --color-ink: oklch(95% 0.006 250);
+  --color-ink-2: oklch(88% 0.008 250);
+  --color-muted: oklch(72% 0.014 250);
+  --color-rule: oklch(29% 0.016 258);
+  --color-rule-2: oklch(45% 0.016 258);
+  --color-accent: #5bd2ec;
+  --color-accent-2: oklch(86% 0.090 210);
+  --color-accent-ink: oklch(18% 0.025 258);
+  --color-accent-text: oklch(82% 0.100 213);
+  --color-accent-soft: oklch(30% 0.050 215);
+  --color-focus: oklch(80% 0.110 213);
+}
+:root[data-scheme="indigo"]:not(.dark) {
+  --color-paper: #edf2f4;
+  --color-paper-2: #e8ebef;
+  --color-paper-3: #d2d6df;
+  --color-sheet: #fbfcfd;
+  --color-sheet-2: #f0f4f6;
+  --color-ink: #2b2d42;
+  --color-ink-2: #343c4a;
+  --color-muted: #4f5b6f;
+  --color-rule: #d2d6df;
+  --color-rule-2: #a4aebf;
+  --color-accent: #d90429;
+  --color-accent-2: #ac0420;
+  --color-accent-ink: #fbfcfd;
+  --color-accent-text: #d90429;
+  --color-accent-soft: #e8ebef;
+  --color-focus: #4a4d72;
+}
+:root.dark[data-scheme="indigo"] {
+  --color-paper: #11121a;
+  --color-paper-2: #191b27;
+  --color-paper-3: #222334;
+  --color-sheet: #191b27;
+  --color-sheet-2: #222334;
+  --color-ink: #edf2f4;
+  --color-ink-2: #d2d6df;
+  --color-muted: #a4aebf;
+  --color-rule: #2b2d42;
+  --color-rule-2: #4a4d72;
+  --color-accent: #f25063;
+  --color-accent-2: #f57c8a;
+  --color-accent-ink: #08090d;
+  --color-accent-text: #f57c8a;
+  --color-accent-soft: #2b2d42;
+  --color-focus: #9da0bf;
+}
+:root[data-scheme="nordsee"]:not(.dark) {
+  --color-paper: #f4f6fa;
+  --color-paper-2: #e6ebf4;
+  --color-paper-3: #d8e0ee;
+  --color-sheet: #fdfdff;
+  --color-sheet-2: #eef2f9;
+  --color-ink: #14213d;
+  --color-ink-2: #26365a;
+  --color-muted: #4a5a7a;
+  --color-rule: #dde3ee;
+  --color-rule-2: #9aa8c2;
+  --color-accent: oklch(48% 0.170 260);
+  --color-accent-2: oklch(41% 0.150 262);
+  --color-accent-ink: #fdfdff;
+  --color-accent-text: oklch(46% 0.160 260);
+  --color-accent-soft: oklch(94% 0.030 260);
+  --color-focus: oklch(48% 0.170 260);
+}
+:root.dark[data-scheme="nordsee"] {
+  --color-paper: #0b1222;
+  --color-paper-2: #111a2e;
+  --color-paper-3: #18233b;
+  --color-sheet: #111a2e;
+  --color-sheet-2: #18233b;
+  --color-ink: #edf1f8;
+  --color-ink-2: #d3dbe9;
+  --color-muted: #a3b1c9;
+  --color-rule: #1f2b45;
+  --color-rule-2: #3a4a6b;
+  --color-accent: oklch(72% 0.130 258);
+  --color-accent-2: oklch(79% 0.100 258);
+  --color-accent-ink: #0b1222;
+  --color-accent-text: oklch(78% 0.110 258);
+  --color-accent-soft: #1c2a4a;
+  --color-focus: oklch(72% 0.130 258);
+}
+:root[data-scheme="fjord"]:not(.dark) {
+  --color-paper: #f3f7f8;
+  --color-paper-2: #e4eef1;
+  --color-paper-3: #d3e3e8;
+  --color-sheet: #fcfefe;
+  --color-sheet-2: #ecf4f6;
+  --color-ink: #102a36;
+  --color-ink-2: #1f4150;
+  --color-muted: #46646f;
+  --color-rule: #d9e6ea;
+  --color-rule-2: #93b2bd;
+  --color-accent: oklch(50% 0.100 220);
+  --color-accent-2: oklch(43% 0.090 222);
+  --color-accent-ink: #fcfefe;
+  --color-accent-text: oklch(47% 0.095 222);
+  --color-accent-soft: oklch(94% 0.025 215);
+  --color-focus: oklch(50% 0.100 220);
+}
+:root.dark[data-scheme="fjord"] {
+  --color-paper: #0a171d;
+  --color-paper-2: #10222a;
+  --color-paper-3: #172d36;
+  --color-sheet: #10222a;
+  --color-sheet-2: #172d36;
+  --color-ink: #eaf3f5;
+  --color-ink-2: #cfe0e5;
+  --color-muted: #9fbcc6;
+  --color-rule: #1b343e;
+  --color-rule-2: #36586a;
+  --color-accent: oklch(74% 0.100 215);
+  --color-accent-2: oklch(81% 0.080 212);
+  --color-accent-ink: #0a171d;
+  --color-accent-text: oklch(79% 0.090 215);
+  --color-accent-soft: #16343f;
+  --color-focus: oklch(74% 0.100 215);
+}
+:root[data-scheme="azur"]:not(.dark) {
+  --color-paper: #f5f8fc;
+  --color-paper-2: #e8eef7;
+  --color-paper-3: #dae4f2;
+  --color-sheet: #fdfeff;
+  --color-sheet-2: #eff4fb;
+  --color-ink: #16243b;
+  --color-ink-2: #283a57;
+  --color-muted: #4b5d7c;
+  --color-rule: #dfe7f2;
+  --color-rule-2: #9db0cc;
+  --color-accent: oklch(70% 0.130 240);
+  --color-accent-2: oklch(64% 0.140 242);
+  --color-accent-ink: #16243b;
+  --color-accent-text: oklch(48% 0.140 245);
+  --color-accent-soft: oklch(94% 0.030 240);
+  --color-focus: oklch(52% 0.150 245);
+}
+:root.dark[data-scheme="azur"] {
+  --color-paper: #0c1420;
+  --color-paper-2: #121d2d;
+  --color-paper-3: #19263a;
+  --color-sheet: #121d2d;
+  --color-sheet-2: #19263a;
+  --color-ink: #eef3fa;
+  --color-ink-2: #d3deed;
+  --color-muted: #a5b6cf;
+  --color-rule: #1f2d44;
+  --color-rule-2: #3b4e6c;
+  --color-accent: oklch(75% 0.120 240);
+  --color-accent-2: oklch(82% 0.090 238);
+  --color-accent-ink: #0c1420;
+  --color-accent-text: oklch(80% 0.100 240);
+  --color-accent-soft: #1b2c47;
+  --color-focus: oklch(78% 0.120 240);
+}
+:root[data-scheme="marine"]:not(.dark) {
+  --color-paper: #f4f6f9;
+  --color-paper-2: #e7ebf1;
+  --color-paper-3: #d9dfe8;
+  --color-sheet: #fdfdfe;
+  --color-sheet-2: #eef1f6;
+  --color-ink: #121c2e;
+  --color-ink-2: #243049;
+  --color-muted: #4b5872;
+  --color-rule: #dde2ea;
+  --color-rule-2: #9ba6ba;
+  --color-accent: oklch(32% 0.080 258);
+  --color-accent-2: oklch(25% 0.070 258);
+  --color-accent-ink: #fdfdfe;
+  --color-accent-text: oklch(36% 0.090 258);
+  --color-accent-soft: oklch(93% 0.020 255);
+  --color-focus: oklch(40% 0.100 258);
+}
+:root.dark[data-scheme="marine"] {
+  --color-paper: #0a0f19;
+  --color-paper-2: #101725;
+  --color-paper-3: #172032;
+  --color-sheet: #101725;
+  --color-sheet-2: #172032;
+  --color-ink: #eef1f6;
+  --color-ink-2: #d4dae5;
+  --color-muted: #a6b0c3;
+  --color-rule: #1e283b;
+  --color-rule-2: #3a4660;
+  --color-accent: oklch(80% 0.070 250);
+  --color-accent-2: oklch(86% 0.050 250);
+  --color-accent-ink: #0a0f19;
+  --color-accent-text: oklch(83% 0.060 250);
+  --color-accent-soft: #1d2a44;
+  --color-focus: oklch(80% 0.070 250);
+}
+
+/* Preview swatches for the scheme picker (page, text, highlight, action). */
+:root {
+  --swatch-hafen-0: #f4f7f9;
+  --swatch-hafen-1: #1d3557;
+  --swatch-hafen-2: #a8dadc;
+  --swatch-hafen-3: #cb1928;
+  --swatch-signal-0: #f6f8fa;
+  --swatch-signal-1: #1b2232;
+  --swatch-signal-2: #fbe3d6;
+  --swatch-signal-3: #d9541e;
+  --swatch-meer-0: #f6f8fa;
+  --swatch-meer-1: #1b2232;
+  --swatch-meer-2: #dcf5fb;
+  --swatch-meer-3: #5bd2ec;
+  --swatch-indigo-0: #edf2f4;
+  --swatch-indigo-1: #2b2d42;
+  --swatch-indigo-2: #8d99ae;
+  --swatch-indigo-3: #d90429;
+  --swatch-nordsee-0: #f4f6fa;
+  --swatch-nordsee-1: #14213d;
+  --swatch-nordsee-2: #e3eafb;
+  --swatch-nordsee-3: #2a55c7;
+  --swatch-fjord-0: #f3f7f8;
+  --swatch-fjord-1: #102a36;
+  --swatch-fjord-2: #dcedf2;
+  --swatch-fjord-3: #1b6f8f;
+  --swatch-azur-0: #f5f8fc;
+  --swatch-azur-1: #16243b;
+  --swatch-azur-2: #e1edfb;
+  --swatch-azur-3: #5aa6e6;
+  --swatch-marine-0: #f4f6f9;
+  --swatch-marine-1: #121c2e;
+  --swatch-marine-2: #e4e8ef;
+  --swatch-marine-3: #1e2f50;
+}

@@ -132,11 +132,11 @@ export default function RichTextEditor({ value, onChange, minHeight = 220, maxHe
               {TEXT_COLORS.map((c) => (
                 <button key={c} type="button" onMouseDown={(e) => e.preventDefault()} aria-label={c}
                   onClick={() => { chain().setColor(c).run(); setPalette(false); }}
-                  className={`h-6 w-6 rounded-full ${st.color === c ? 'ring-2 ring-brand ring-offset-1' : ''}`} style={{ background: c }} />
+                  className={`h-6 w-6 rounded-sm ${st.color === c ? 'ring-2 ring-brand ring-offset-1' : ''}`} style={{ background: c }} />
               ))}
               <button type="button" onMouseDown={(e) => e.preventDefault()} title={s.noColor} aria-label={s.noColor}
                 onClick={() => { chain().unsetColor().run(); setPalette(false); }}
-                className="flex h-6 w-6 items-center justify-center rounded-full border border-line text-muted"><Eraser size={13} /></button>
+                className="flex h-6 w-6 items-center justify-center rounded-sm border border-line text-muted"><Eraser size={13} /></button>
             </span>
           )}
         </span>

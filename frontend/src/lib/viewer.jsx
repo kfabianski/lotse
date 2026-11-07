@@ -32,25 +32,25 @@ function Viewer({ items, start, onClose }) {
     return () => { window.removeEventListener('keydown', key); el?.close(); };
   }, [go, multi]);
 
-  const nav = 'absolute top-1/2 z-10 -translate-y-1/2 rounded-full bg-white/10 p-3 text-white backdrop-blur hover:bg-white/20';
+  const nav = 'absolute top-1/2 z-10 -translate-y-1/2 rounded-sm bg-on-photo/10 p-3 text-on-photo  hover:bg-on-photo/20';
 
   return (
     <dialog ref={ref} onCancel={(e) => { e.preventDefault(); onClose(); }} aria-label={item.name}
-      className="m-0 h-full max-h-none w-full max-w-none bg-[#0b0c0f]/[0.97] p-0 backdrop:bg-black/60">
-      <div className="flex h-full flex-col text-white">
+      className="m-0 h-full max-h-none w-full max-w-none bg-scrim/[0.97] p-0 backdrop:bg-scrim/60">
+      <div className="flex h-full flex-col text-on-photo">
         <div className="flex items-center gap-3 px-4 py-3 sm:px-6">
           {item.kind === 'pdf' && <FileText size={18} className="shrink-0 opacity-70" />}
           <p className="min-w-0 flex-1 truncate font-medium">{item.name}</p>
-          {multi && <span className="text-sm tabular-nums text-white/60">{index + 1} / {items.length}</span>}
-          <a href={item.url} download={item.name || true} className="inline-flex items-center gap-2 rounded-xl bg-white/10 px-3 py-2 text-sm font-medium hover:bg-white/20">
+          {multi && <span className="text-sm tabular-nums text-on-photo/60">{index + 1} / {items.length}</span>}
+          <a href={item.url} download={item.name || true} className="inline-flex items-center gap-2 rounded-xl bg-on-photo/10 px-3 py-2 text-sm font-medium hover:bg-on-photo/20">
             <Download size={16} /><span className="hidden sm:inline">{t('download')}</span>
           </a>
-          <button type="button" onClick={onClose} aria-label={t('close')} className="rounded-xl bg-white/10 p-2 hover:bg-white/20"><X size={20} /></button>
+          <button type="button" onClick={onClose} aria-label={t('close')} className="rounded-xl bg-on-photo/10 p-2 hover:bg-on-photo/20"><X size={20} /></button>
         </div>
 
         <div className="relative min-h-0 flex-1 px-4 pb-4 sm:px-16" onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}>
           {item.kind === 'pdf' ? (
-            <iframe key={item.url} src={`${item.url}#view=FitH`} title={item.name} className="h-full w-full rounded-xl bg-white" />
+            <iframe key={item.url} src={`${item.url}#view=FitH`} title={item.name} className="h-full w-full rounded-xl bg-on-photo" />
           ) : (
             <img key={item.url} src={item.url} alt={item.name} className="mx-auto h-full w-full object-contain" />
           )}
@@ -66,7 +66,7 @@ function Viewer({ items, start, onClose }) {
           <div className="flex justify-center gap-2 overflow-x-auto px-4 pb-4">
             {items.map((it, i) => it.kind === 'image' && (
               <button key={it.url} type="button" onClick={() => setIndex(i)} aria-label={it.name} aria-current={i === index}
-                className={`h-14 w-20 shrink-0 overflow-hidden rounded-lg ring-2 transition-opacity ${i === index ? 'ring-white' : 'opacity-50 ring-transparent hover:opacity-80'}`}>
+                className={`h-14 w-20 shrink-0 overflow-hidden rounded-lg ring-2 transition-opacity ${i === index ? 'ring-on-photo' : 'opacity-50 ring-transparent hover:opacity-80'}`}>
                 <img src={it.url} alt="" className="h-full w-full object-cover" />
               </button>
             ))}

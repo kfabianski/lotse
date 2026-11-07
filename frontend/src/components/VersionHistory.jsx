@@ -112,16 +112,16 @@ export default function VersionHistory({ articleId, canRestore = false, onRestor
           <li key={r.number}>
             <button type="button" onClick={() => setOpen(r.number)} className="group flex w-full flex-wrap items-baseline gap-x-3 gap-y-0.5 px-4 py-2.5 text-left text-sm">
               <span className="font-semibold">{t('rev_version', { n: r.number })}</span>
-              {i === 0 && <span className="rounded-full bg-brand-soft px-2 text-xs font-medium text-brand">{t('rev_current')}</span>}
+              {i === 0 && <span className="rounded-sm bg-brand-soft px-2 text-xs font-medium text-brand-text">{t('rev_current')}</span>}
               <span className="text-muted">{fmtDate(r.created_at, { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' })}</span>
               {r.editor_name && <span className="text-muted">· {r.editor_name}</span>}
               {r.note && <span className="w-full truncate text-muted sm:w-auto sm:flex-1">„{r.note}“</span>}
-              <span className="ml-auto text-xs font-medium text-brand opacity-0 group-hover:opacity-100">{t('rev_compare')}</span>
+              <span className="ml-auto text-xs font-medium text-brand-text opacity-0 group-hover:opacity-100">{t('rev_compare')}</span>
             </button>
           </li>
         ))}
       </ol>
-      {data.length > 5 && !all && <button type="button" onClick={() => setAll(true)} className="mt-2 text-sm font-medium text-brand hover:underline">{t('show_all')}</button>}
+      {data.length > 5 && !all && <button type="button" onClick={() => setAll(true)} className="mt-2 text-sm font-medium text-brand-text hover:underline">{t('show_all')}</button>}
       {open && <Compare articleId={articleId} number={open} canRestore={canRestore} onClose={() => setOpen(null)} onRestored={() => { setOpen(null); reload(); onRestored(); }} />}
     </section>
   );

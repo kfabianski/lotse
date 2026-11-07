@@ -34,4 +34,5 @@ def user_out(user: User, full: bool = False) -> dict:
         "effective_permissions": sorted(permissions_of(user)) if full else [],
         "notify_articles": bool(user.notify_articles) if full else None,
         "notify_ideas": bool(user.notify_ideas) if full else None,
+        "color_scheme": user.color_scheme if full else None,
     }

@@ -103,7 +103,33 @@ def entry_data(entry) -> dict:
         "dn": str(getattr(entry, "entry_dn", "") or ""),
         "manager_dn": str(_first(entry, settings.ldap_attr_manager) or "").strip(),
         "branch": str(_first(entry, settings.ldap_attr_branch) or "").strip() if settings.ldap_attr_branch else "",
+        "guid": _guid(_first(entry, "objectGUID")),
+        "start_date": _to_date(_first(entry, settings.ldap_attr_start_date)) if settings.ldap_attr_start_date else None,
     }
+
+
+def _guid(value) -> str:
+    """objectGUID as text (ldap3 gives a string or the raw 16 bytes)."""
+    if not value:
+        return ""
+    if isinstance(value, bytes | bytearray):
+        import uuid
+        return str(uuid.UUID(bytes_le=bytes(value))) if len(value) == 16 else bytes(value).hex()
+    return str(value).strip("{}").lower()
+
+
+def _to_date(value):
+    """whenCreated / a hire-date attribute: datetime, date or "20240115..." text."""
+    from datetime import date, datetime
+    if isinstance(value, datetime):
+        return value.date()
+    if isinstance(value, date):
+        return value
+    text = str(value or "").strip()
+    try:
+        return datetime.strptime(text[:8], "%Y%m%d").date() if len(text) >= 8 and text[:8].isdigit() else None
+    except ValueError:
+        return None
 
 
 def _special(user: User) -> bool:
@@ -111,8 +137,13 @@ def _special(user: User) -> bool:
 
 
 def match(db: Session, data: dict) -> tuple[User | None, str]:
-    """Find the Lotse account for a directory person: by user name, otherwise by e-mail address
-    (unique per person - names can be spelled differently). Returns (user, "username" | "email" | "")."""
+    """Find the Lotse account for a directory person: by the directory's own id (objectGUID - it survives a new
+    surname, user name or mail domain), then by user name, then by e-mail address. Names are never used.
+    Returns (user, "guid" | "username" | "email" | "")."""
+    if data.get("guid"):
+        user = db.query(User).filter(User.ldap_guid == data["guid"]).first()
+        if user:
+            return user, "guid"
     user = db.query(User).filter(User.username == data["username"]).first()
     if user:
         return user, "username"
@@ -154,6 +185,11 @@ def apply_data(db: Session, user: User, data: dict) -> None:
         user.avatar_url = photo
     if data.get("dn"):
         user.ldap_dn = data["dn"]
+    if data.get("guid"):
+        user.ldap_guid = data["guid"]
+    if not user.start_date:  # first day: from the directory, otherwise the day the account appears in Lotse
+        from datetime import date
+        user.start_date = data.get("start_date") or (date.today() if user.id is None else None)
     if settings.ldap_attr_branch:
         if data.get("branch"):
             from app.routers.branches import ensure_branch  # local import avoids a cycle
@@ -194,8 +230,8 @@ def _upsert(db: Session, entry) -> User:
     if user is None:
         user = User(username=data["username"], auth_source="ldap", role="user", role_source="ldap")
         db.add(user)
-    elif how == "email":
-        user.username = data["username"]  # linked: from now on the directory user name is used
+    elif how in ("email", "guid"):
+        user.username = data["username"]  # linked / renamed in the directory: from now on the new user name is used
     apply_data(db, user, data)
     db.flush()
     resolve_manager(db, user, data.get("manager_dn", ""))

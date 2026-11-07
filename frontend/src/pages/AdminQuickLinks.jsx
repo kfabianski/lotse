@@ -49,7 +49,7 @@ export default function AdminQuickLinks() {
           const Icon = QUICK_ICONS[l.icon] || QUICK_ICONS.link;
           return (
             <li key={l.id} className={`flex items-center gap-3 px-4 py-2.5 ${l.active ? '' : 'opacity-60'}`}>
-              <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg text-white" style={{ background: l.color }}><Icon size={17} /></span>
+              <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg text-on-photo" style={{ background: l.color }}><Icon size={17} /></span>
               <span className="min-w-0 flex-1">
                 <span className="block truncate font-medium">{l.title_de}{!l.active && <span className="ml-2 inline-flex items-center gap-1 text-xs text-muted"><EyeOff size={12} />{t('ql_hidden')}</span>}</span>
                 <span className="block truncate text-sm text-muted">{l.url}</span>
@@ -77,7 +77,7 @@ export default function AdminQuickLinks() {
               <div className="flex flex-wrap gap-1.5">
                 {Object.entries(QUICK_ICONS).map(([k, Icon]) => (
                   <button key={k} type="button" onClick={() => setEdit({ ...edit, icon: k })} aria-pressed={edit.icon === k} aria-label={k} title={k}
-                    className={`flex h-9 w-9 items-center justify-center rounded-lg border ${edit.icon === k ? 'border-brand bg-brand-soft text-brand' : 'border-line text-muted hover:text-ink'}`}><Icon size={17} /></button>
+                    className={`flex h-9 w-9 items-center justify-center rounded-lg border ${edit.icon === k ? 'border-brand bg-brand-soft text-brand-text' : 'border-line text-muted hover:text-ink'}`}><Icon size={17} /></button>
                 ))}
               </div>
             </Field>
@@ -85,7 +85,7 @@ export default function AdminQuickLinks() {
               <div className="flex flex-wrap items-center gap-1.5">
                 {COLORS.map((c) => (
                   <button key={c} type="button" onClick={() => setEdit({ ...edit, color: c })} aria-label={c} aria-pressed={edit.color === c}
-                    className={`h-7 w-7 rounded-full ring-offset-2 ring-offset-[var(--surface)] ${edit.color === c ? 'ring-2 ring-ink' : ''}`} style={{ background: c }} />
+                    className={`h-7 w-7 rounded-sm ring-offset-2 ring-offset-[var(--surface)] ${edit.color === c ? 'ring-2 ring-ink' : ''}`} style={{ background: c }} />
                 ))}
                 <input type="color" value={edit.color} onChange={set('color')} className="h-7 w-9 cursor-pointer rounded border border-line bg-transparent" />
               </div>

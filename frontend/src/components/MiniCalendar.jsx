@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { ArrowUpRight, ChevronLeft, ChevronRight } from 'lucide-react';
+import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { useI18n } from '../lib/i18n';
 import { useFetch } from '../lib/useFetch';
 import { CountryBadges, useHolidays } from '../lib/holidays';
@@ -39,10 +39,10 @@ export default function MiniCalendar() {
   return (
     <div className="card flex h-full flex-col p-5">
       <div className="flex items-center justify-between">
-        <p className="font-semibold capitalize tracking-tight">{new Intl.DateTimeFormat(locale, { month: 'long', year: 'numeric' }).format(month)}</p>
+        <p className="font-display font-semibold capitalize text-ink">{new Intl.DateTimeFormat(locale, { month: 'long', year: 'numeric' }).format(month)}</p>
         <span className="flex">
-          <button type="button" onClick={() => go(-1)} aria-label={t('prev_month')} className="rounded-lg p-1.5 text-muted hover:bg-surface-2"><ChevronLeft size={18} /></button>
-          <button type="button" onClick={() => go(1)} aria-label={t('next_month')} className="rounded-lg p-1.5 text-muted hover:bg-surface-2"><ChevronRight size={18} /></button>
+          <button type="button" onClick={() => go(-1)} aria-label={t('prev_month')} className="rounded-sm p-1.5 text-muted hover:bg-surface-2 hover:text-ink"><ChevronLeft size={18} /></button>
+          <button type="button" onClick={() => go(1)} aria-label={t('next_month')} className="rounded-sm p-1.5 text-muted hover:bg-surface-2 hover:text-ink"><ChevronRight size={18} /></button>
         </span>
       </div>
 
@@ -61,25 +61,25 @@ export default function MiniCalendar() {
             <button key={key} type="button" disabled={!has && !hol} onClick={() => setSelected(isSel ? null : key)}
               aria-label={`${fmtDate(d)}${hol ? `, ${hol.map(hName).join(', ')}` : ''}${has ? `, ${byDay[key].length}` : ''}`} aria-pressed={isSel}
               title={hol ? hol.map(hName).join(', ') : undefined}
-              className={`relative mx-auto flex h-9 w-9 items-center justify-center rounded-full transition-colors ${
-                isSel ? 'bg-ink text-surface' : isToday ? 'bg-brand font-semibold text-white dark:text-[#0d0f13]' : hol ? 'bg-alert/10 font-semibold text-alert hover:bg-alert/15' : has ? 'font-semibold hover:bg-surface-2' : ''} ${
+              className={`relative mx-auto flex h-9 w-9 items-center justify-center rounded-sm transition-colors ${
+                isSel ? 'bg-ink text-surface' : isToday ? 'bg-brand font-semibold text-brand-ink' : hol ? 'bg-alert/10 font-semibold text-alert hover:bg-alert/15' : has ? 'font-semibold hover:bg-surface-2' : ''} ${
                 inMonth ? '' : 'opacity-35'} disabled:cursor-default`}>
               {d.getDate()}
-              {has && !isSel && <span className={`absolute bottom-1 h-1 w-1 rounded-full ${isToday ? 'bg-white' : 'bg-brand'}`} />}
+              {has && !isSel && <span className={`absolute bottom-1 h-1 w-1 rounded-sm ${isToday ? 'bg-brand-ink' : 'bg-brand'}`} />}
             </button>
           );
         })}
       </div>
 
       <div className="mt-4 flex-1 border-t border-line pt-3">
-        <p className="mb-2 text-xs font-medium text-muted">
+        <p className="mb-2 text-sm font-medium text-muted">
           {selected ? fmtDate(`${selected}T12:00`, { weekday: 'long', day: 'numeric', month: 'long' }) : t('events_next_in_month')}
         </p>
         {hols.length > 0 && (
           <ul className="mb-2 space-y-1.5">
             {hols.map((h) => (
               <li key={`${h.date}-${h.name_en}`} className="flex items-center gap-2 text-sm">
-                <span className="w-12 shrink-0 tabular-nums font-medium text-alert">{fmtDate(`${h.date}T12:00`, { day: '2-digit', month: '2-digit' })}</span>
+                <span className="w-12 shrink-0 font-mono text-alert">{fmtDate(`${h.date}T12:00`, { day: '2-digit', month: '2-digit' })}</span>
                 <span className="min-w-0 flex-1 truncate font-medium">{hName(h)}</span>
                 <CountryBadges holiday={h} />
               </li>
@@ -91,8 +91,8 @@ export default function MiniCalendar() {
             {list.map((e) => (
               <li key={e.id}>
                 <Link to={`/articles/${e.id}`} className="group flex items-baseline gap-2 text-sm">
-                  <span className="w-12 shrink-0 tabular-nums text-muted">{fmtDate(e.event_date, { day: '2-digit', month: '2-digit' })}</span>
-                  <span className="min-w-0 truncate font-medium group-hover:text-brand">{loc(e, 'title')}</span>
+                  <span className="w-12 shrink-0 font-mono text-muted">{fmtDate(e.event_date, { day: '2-digit', month: '2-digit' })}</span>
+                  <span className="min-w-0 truncate font-medium text-ink group-hover:underline group-hover:decoration-brand-text">{loc(e, 'title')}</span>
                 </Link>
               </li>
             ))}
@@ -100,8 +100,8 @@ export default function MiniCalendar() {
         ) : !hols.length && <p className="text-sm text-muted">{t('no_events_day')}</p>}
       </div>
 
-      <Link to="/calendar?view=calendar" className="mt-4 inline-flex items-center gap-1 text-sm font-medium text-brand hover:underline">
-        {t('open_calendar')}<ArrowUpRight size={15} />
+      <Link to="/calendar?view=calendar" className="link mt-4 font-display text-sm font-medium">
+        {t('open_calendar')}
       </Link>
     </div>
   );

@@ -6,23 +6,23 @@ import { api } from '../lib/api';
 import { layoutRows } from './Home';
 
 const B = (id, width = 'full', show = true) => ({ id, show, width });
-const ALL = ['greeting', 'slider', 'quicklinks', 'upcoming', 'news', 'people', 'photos', 'recent', 'poll', 'board'];
+const ALL = ['slider', 'quicklinks', 'upcoming', 'news', 'people', 'photos', 'recent', 'poll', 'board'];
 const complete = (list) => [...list, ...ALL.filter((id) => !list.some((b) => b.id === id)).map((id) => B(id, 'full', false))];
 
 /** Ready-made layouts – one click, then fine-tune by dragging. */
 const PRESETS = {
   standard: null, // = server default
-  news: complete([B('greeting'), B('news'), B('upcoming', 'half'), B('poll', 'half'), B('quicklinks'),
+  news: complete([B('news'), B('upcoming', 'half'), B('poll', 'half'), B('quicklinks'),
     B('people'), B('photos'), B('board')]),
-  events: complete([B('slider'), B('greeting'), B('upcoming'), B('photos'), B('news'), B('people', 'half'),
+  events: complete([B('slider'), B('upcoming'), B('photos'), B('news'), B('people', 'half'),
     B('board', 'half'), B('quicklinks')]),
-  compact: complete([B('greeting'), B('quicklinks'), B('upcoming', 'half'), B('poll', 'half'),
+  compact: complete([B('quicklinks'), B('upcoming', 'half'), B('poll', 'half'),
     B('news', 'half'), B('board', 'half')]),
 };
 
 /** Rough block heights for the preview (in rem). */
-const HEIGHT = { greeting: 3, slider: 7, quicklinks: 3.5, upcoming: 6, news: 7, people: 5, photos: 7, recent: 5, poll: 5, board: 4 };
-const TINT = { greeting: '#3557f5', slider: '#0f766e', quicklinks: '#0891b2', upcoming: '#7c3aed',
+const HEIGHT = { slider: 7, quicklinks: 3.5, upcoming: 6, news: 7, people: 5, photos: 7, recent: 5, poll: 5, board: 4 };
+const TINT = { slider: '#0f766e', quicklinks: '#0891b2', upcoming: '#7c3aed',
   news: '#2563eb', people: '#db2777', photos: '#ea580c', recent: '#64748b', poll: '#16a34a', board: '#d97706' };
 
 export default function AdminHomeLayout() {
@@ -60,7 +60,7 @@ export default function AdminHomeLayout() {
         <span className="text-sm font-medium">{t('hl_presets')}:</span>
         {Object.keys(PRESETS).map((k) => (
           <button key={k} type="button" onClick={() => change(PRESETS[k] || fallback)}
-            className="rounded-full border border-line bg-surface px-3.5 py-1.5 text-sm font-medium hover:border-brand hover:text-brand">
+            className="rounded-sm border border-line bg-surface px-3.5 py-1.5 text-sm font-medium hover:border-brand hover:text-brand-text">
             {t(`hl_preset_${k}`)}
           </button>
         ))}
@@ -100,7 +100,7 @@ export default function AdminHomeLayout() {
               {preview.map((row) => (
                 <div key={row[0].id} className={`grid gap-2.5 ${row.length === 2 ? 'grid-cols-2' : ''}`}>
                   {row.map((b) => (
-                    <div key={b.id} className="flex items-center justify-center rounded-lg px-2 text-center text-xs font-semibold text-white"
+                    <div key={b.id} className="flex items-center justify-center rounded-lg px-2 text-center text-xs font-semibold text-on-photo"
                       style={{ background: TINT[b.id], height: `${HEIGHT[b.id] * (row.length === 2 ? 0.8 : 0.6)}rem` }}>
                       {t(`hl_b_${b.id}`)}
                     </div>

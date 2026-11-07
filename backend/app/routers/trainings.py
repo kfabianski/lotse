@@ -12,7 +12,7 @@ import hmac
 import io
 import time
 import uuid
-from datetime import date, datetime
+from datetime import date, datetime, timedelta
 from typing import Literal
 
 from fastapi import APIRouter, Depends, File, Form, HTTPException, Query, Response, UploadFile
@@ -38,7 +38,7 @@ CHUNK = 1024 * 1024
 
 
 class TargetIn(BaseModel):
-    kind: Literal["all", "department", "group", "position", "branch", "user"]
+    kind: Literal["all", "newcomers", "department", "group", "position", "branch", "user"]
     value: str = Field(default="", max_length=80)
 
 
@@ -70,12 +70,18 @@ def _staff_query(db: Session):
     return db.query(User).filter(User.is_active.is_(True), User.show_in_directory.is_(True))
 
 
+NEWCOMER_DAYS = 90  # onboarding trainings reach people this long after their first day
+
+
 def assigned_ids(db: Session, training: Training) -> set[int]:
     """Active people the training is assigned to (union of all targets)."""
     ids: set[int] = set()
     for t in training.targets:
         if t.kind == "all":
             ids |= {u.id for u in _staff_query(db)}
+        elif t.kind == "newcomers":  # people in their first NEWCOMER_DAYS days (start date set by hand or from LDAP)
+            since = date.today() - timedelta(days=NEWCOMER_DAYS)
+            ids |= {u.id for u in _staff_query(db).filter(User.start_date.isnot(None), User.start_date >= since)}
         elif t.kind == "department":
             ids |= {u.id for u in _staff_query(db).filter(User.department == t.value)}
         elif t.kind == "branch" and t.value.isdigit():
@@ -225,8 +231,9 @@ def _apply(db: Session, t: Training, body: TrainingIn) -> None:
         setattr(t, k, v)
     seen, targets = set(), []
     for x in body.targets:
-        key = (x.kind, "" if x.kind == "all" else x.value.strip())
-        if key in seen or (x.kind != "all" and not key[1]):
+        valueless = x.kind in ("all", "newcomers")
+        key = (x.kind, "" if valueless else x.value.strip())
+        if key in seen or (not valueless and not key[1]):
             continue
         seen.add(key)
         targets.append(TrainingTarget(kind=key[0], value=key[1]))

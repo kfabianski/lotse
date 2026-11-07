@@ -25,7 +25,7 @@ function Section({ title, count, children }) {
 function Row({ to, href, onClick, icon: Icon, color, title, meta, snippet }) {
   const body = (
     <>
-      <span className="grid h-10 w-10 shrink-0 place-items-center rounded-xl text-white" style={{ background: color || 'var(--brand)' }}>
+      <span className="grid h-10 w-10 shrink-0 place-items-center rounded-xl text-on-photo" style={{ background: color || 'var(--brand)' }}>
         <Icon size={18} />
       </span>
       <span className="min-w-0">

@@ -37,6 +37,8 @@ class User(Base):
     ideas_seen_at: Mapped[datetime | None] = mapped_column(DateTime)
     notify_articles: Mapped[bool] = mapped_column(Boolean, default=True)  # e-mail for new articles and events
     notify_ideas: Mapped[bool] = mapped_column(Boolean, default=True)  # e-mail when my idea gets an answer
+    color_scheme: Mapped[str | None] = mapped_column(String(20))  # own colour scheme; empty = the company's
+    ldap_guid: Mapped[str | None] = mapped_column(String(64), index=True)  # objectGUID: survives renames and new mail domains
     # Org chart: who the person reports to (from LDAP "manager" or set by an admin)
     manager_id: Mapped[int | None] = mapped_column(ForeignKey("users.id", ondelete="SET NULL"), index=True)
     ldap_dn: Mapped[str | None] = mapped_column(String(400))
@@ -412,6 +414,9 @@ class Poll(Base):
     results: Mapped[str] = mapped_column(String(12), default="after_vote")  # always | after_vote | after_close
     closes_at: Mapped[datetime | None] = mapped_column(DateTime)
     closed: Mapped[bool] = mapped_column(Boolean, default=False)  # closed early by hand
+    # who is asked: JSON lists; both empty = everybody. A person matches by department name OR branch id.
+    target_departments: Mapped[str] = mapped_column(Text, default="[]")
+    target_branches: Mapped[str] = mapped_column(Text, default="[]")
     created_by: Mapped[int | None] = mapped_column(ForeignKey("users.id", ondelete="SET NULL"))
     created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.now, index=True)
 

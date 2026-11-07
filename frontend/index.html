@@ -8,16 +8,19 @@
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
-      href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&display=swap"
+      href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:ital,wght@0,400;0,500;0,600;0,700;1,400&family=IBM+Plex+Mono:wght@400;500&display=swap"
       rel="stylesheet"
     />
     <title>Lotse Intranet</title>
+    <meta name="description" content="Lotse, das Intranet: Neuigkeiten, Termine, Dokumente, Schulungen und Kolleg:innen an einem Ort." />
     <script>
       // Apply the saved theme before first paint so there is no flash.
       try {
         const t = localStorage.getItem('lotse-theme');
         const dark = t ? t === 'dark' : matchMedia('(prefers-color-scheme: dark)').matches;
         document.documentElement.classList.toggle('dark', dark);
+        const scheme = localStorage.getItem('lotse-scheme');
+        if (scheme) document.documentElement.dataset.scheme = scheme;
       } catch (e) {}
     </script>
   </head>

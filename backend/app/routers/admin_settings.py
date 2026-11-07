@@ -21,6 +21,7 @@ router = APIRouter(prefix="/api/admin/settings", tags=["admin"])
 class SettingsIn(BaseModel):
     company_name: str = Field(min_length=1, max_length=120)
     public_read: bool
+    color_scheme: Literal["hafen", "signal", "meer", "indigo", "nordsee", "fjord", "azur", "marine"] = "hafen"
     holiday_regions: list[str] = Field(default=["DE", "AT", "CH"], max_length=12)
     sso_enabled: bool = False
     sso_header: str = Field(default="X-Remote-User", pattern=r"^[A-Za-z][A-Za-z0-9-]{1,60}$")
@@ -49,6 +50,8 @@ class SettingsIn(BaseModel):
     ldap_attr_photo: str = "thumbnailPhoto"
     ldap_attr_manager: str = "manager"
     ldap_attr_branch: str = "physicalDeliveryOfficeName"
+    ldap_attr_start_date: str = Field(default="whenCreated", max_length=60)
+    footer_text: str = Field(default="", max_length=300)
     portal_url: str = Field(default="", max_length=200, pattern=r"^(https?://[^\s]+)?$")
     notify_email: bool = False
     smtp_host: str = Field(default="", max_length=255, pattern=r"^[A-Za-z0-9.\-:\[\]]*$")

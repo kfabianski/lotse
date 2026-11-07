@@ -115,7 +115,7 @@ export default function MailTemplates({ onClose }) {
           <div role="tablist" className="flex flex-wrap gap-2">
             {KINDS.map((k) => (
               <button key={k} type="button" role="tab" aria-selected={kind === k} onClick={() => { setKind(k); setPreview(null); setStatus(null); }}
-                className={`rounded-full border px-4 py-1.5 font-medium ${kind === k ? 'border-ink bg-ink text-surface' : 'border-line text-muted hover:text-ink'}`}>
+                className={`rounded-sm border px-4 py-1.5 font-medium ${kind === k ? 'border-ink bg-ink text-surface' : 'border-line text-muted hover:text-ink'}`}>
                 {t(`mt_kind_${k}`)}{data.templates[k].custom && <span className="ml-1.5 text-xs opacity-70">· {t('mt_custom')}</span>}
               </button>
             ))}
@@ -142,7 +142,7 @@ export default function MailTemplates({ onClose }) {
                   <li key={code}>
                     <button type="button" onMouseDown={(e) => e.preventDefault()} onClick={() => insert(code)}
                       className="w-full rounded-lg border border-line bg-surface px-2.5 py-1.5 text-left hover:border-brand">
-                      <code className="text-sm font-semibold text-brand">{`{${code}}`}</code>
+                      <code className="text-sm font-semibold text-brand-text">{`{${code}}`}</code>
                       <span className="block text-xs text-muted">{lang === 'en' ? en : de}</span>
                     </button>
                   </li>
@@ -154,7 +154,7 @@ export default function MailTemplates({ onClose }) {
           {preview && (
             <div className="rounded-2xl border border-line bg-bg p-4">
               <p className="text-sm text-muted">{t('mt_subject')}: <strong className="text-ink">{preview.subject}</strong></p>
-              <iframe title={t('hl_preview')} sandbox="" srcDoc={preview.html} className="mt-3 h-80 w-full rounded-xl border border-line bg-white" />
+              <iframe title={t('hl_preview')} sandbox="" srcDoc={preview.html} className="mt-3 h-80 w-full rounded-xl border border-line bg-on-photo" />
             </div>
           )}
 

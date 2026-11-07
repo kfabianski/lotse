@@ -24,8 +24,8 @@ function Status({ tr }) {
   }
   return (
     <span className="flex flex-wrap items-center gap-x-3 gap-y-1 text-sm">
-      {tr.optional && <span className="rounded-full bg-safe/10 px-2 py-0.5 text-xs font-medium text-safe">{t('tr_voluntary_badge')}</span>}
-      {tr.renewed && <span className="inline-flex items-center gap-1.5 font-medium text-brand"><RotateCcw size={14} />{t('tr_renewed')}</span>}
+      {tr.optional && <span className="rounded-sm bg-safe/10 px-2 py-0.5 text-xs font-medium text-safe">{t('tr_voluntary_badge')}</span>}
+      {tr.renewed && <span className="inline-flex items-center gap-1.5 font-medium text-brand-text"><RotateCcw size={14} />{t('tr_renewed')}</span>}
       {tr.due_date && (tr.overdue
         ? <span className="inline-flex items-center gap-1.5 font-medium text-alert"><AlertTriangle size={14} />{t('tr_overdue', { d: fmtDate(tr.due_date) })}</span>
         : <span className="inline-flex items-center gap-1.5 text-muted"><Clock size={14} />{t('tr_due', { d: fmtDate(tr.due_date) })}</span>)}
@@ -52,7 +52,7 @@ export default function Trainings() {
         {has('trainings') && (
           <div className="flex gap-2">
             <Link to="/admin?tab=trainings" className="inline-flex items-center gap-2 rounded-lg border border-line px-4 py-2 font-medium hover:bg-surface-2"><Settings2 size={17} />{t('tr_manage')}</Link>
-            <Link to="/admin?tab=trainings&new=1" className="inline-flex items-center gap-2 rounded-lg bg-brand px-4 py-2 font-medium text-white hover:bg-brand-strong dark:text-[#0e151e]"><Plus size={17} />{t('tr_new')}</Link>
+            <Link to="/admin?tab=trainings&new=1" className="inline-flex items-center gap-2 rounded-lg bg-brand px-4 py-2 font-medium text-brand-ink hover:bg-brand-strong"><Plus size={17} />{t('tr_new')}</Link>
           </div>
         )}
       </div>
@@ -70,7 +70,7 @@ export default function Trainings() {
         {list.map((tr) => (
           <li key={tr.id}>
             <Link to={`/trainings/${tr.id}`} className="card card-hover flex items-center gap-4 px-5 py-4">
-              <span className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-xl ${tr.completed_at ? 'bg-safe/10 text-safe' : tr.overdue ? 'bg-alert/10 text-alert' : 'bg-brand-soft text-brand'}`}>
+              <span className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-xl ${tr.completed_at ? 'bg-safe/10 text-safe' : tr.overdue ? 'bg-alert/10 text-alert' : 'bg-brand-soft text-brand-text'}`}>
                 {tr.completed_at ? <CheckCircle2 size={21} /> : <GraduationCap size={21} />}
               </span>
               <span className="min-w-0 flex-1">
@@ -135,18 +135,18 @@ export function TrainingView() {
               if (m.kind === 'video') {
                 return (
                   <li key={m.id} className="card overflow-hidden">
-                    <p className="flex items-center gap-2 px-4 py-3 font-medium"><PlayCircle size={18} className="text-brand" />{m.name}</p>
-                    <video src={m.url} controls preload="metadata" className="aspect-video w-full bg-black" />
+                    <p className="flex items-center gap-2 px-4 py-3 font-medium"><PlayCircle size={18} className="text-brand-text" />{m.name}</p>
+                    <video src={m.url} controls preload="metadata" className="aspect-video w-full bg-scrim" />
                   </li>
                 );
               }
               const external = m.kind === 'link' && /^https?:/i.test(m.url);
               const row = (
                 <>
-                  <span className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-xl ${m.kind === 'pdf' ? 'bg-alert/10 text-alert' : 'bg-brand-soft text-brand'}`}><Icon size={18} /></span>
-                  <span className="min-w-0 flex-1"><span className="block truncate font-medium group-hover:text-brand">{m.name}</span>
+                  <span className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-xl ${m.kind === 'pdf' ? 'bg-alert/10 text-alert' : 'bg-brand-soft text-brand-text'}`}><Icon size={18} /></span>
+                  <span className="min-w-0 flex-1"><span className="block truncate font-medium group-hover:text-brand-text">{m.name}</span>
                     <span className="block text-sm text-muted">{m.kind === 'link' ? m.url : `${m.kind.toUpperCase()}, ${fileSize(m.size)}`}</span></span>
-                  <span className="inline-flex items-center gap-1 text-sm font-medium text-brand">{t('tr_open_link')}{external && <ExternalLink size={14} />}</span>
+                  <span className="inline-flex items-center gap-1 text-sm font-medium text-brand-text">{t('tr_open_link')}{external && <ExternalLink size={14} />}</span>
                 </>
               );
               return (

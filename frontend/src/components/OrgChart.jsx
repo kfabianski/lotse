@@ -34,7 +34,7 @@ function PersonCard({ p, color, dim, hit, open, onToggle, reports, big }) {
   return (
     <div className={`relative ${big ? 'w-[15rem]' : 'w-[11.75rem]'} rounded-2xl border bg-surface text-left shadow-sm transition ${hit ? 'border-brand ring-2 ring-brand/30' : 'border-line'} ${dim ? 'opacity-35' : ''}`}>
       <span className="absolute inset-x-0 top-0 h-1 rounded-t-2xl" style={{ background: color || 'var(--line)' }} />
-      <Link to={`/people?view=plan&focus=${p.id}`} title={t('org_show_plan')} className="flex items-center gap-2.5 px-2.5 pb-2.5 pt-3.5 hover:text-brand">
+      <Link to={`/people?view=plan&focus=${p.id}`} title={t('org_show_plan')} className="flex items-center gap-2.5 px-2.5 pb-2.5 pt-3.5 hover:text-brand-text">
         <Avatar person={p} size={big ? 48 : 36} />
         <span className="min-w-0">
           <span className="block truncate font-semibold leading-tight">{p.full_name}</span>

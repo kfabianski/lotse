@@ -30,16 +30,16 @@ export function BuildingNav({ locations, active, onSelect, highlight }) {
     return (
       <button type="button" onClick={() => onSelect(loc.id)} aria-pressed={isActive}
         title={`${lang === 'en' ? loc.name_en : loc.name_de}: ${t('people_count', { n: taken })}, ${t('free_count', { n: free })}`}
-        className={`group relative flex w-full items-center justify-between gap-2 border-2 px-3 text-left transition-all ${
+        className={`group relative flex w-full items-center justify-between gap-2 border-2 px-3 text-left transition-colors ${
           hall ? 'h-14 rounded-t-2xl rounded-b-md' : 'h-12 rounded-lg'} ${
-          isActive ? 'z-10 border-brand bg-brand text-white shadow-lg shadow-brand/25 dark:text-[#0d0f13]'
+          isActive ? 'z-10 border-brand bg-brand text-brand-ink shadow-lg shadow-brand/25'
             : 'border-line bg-surface hover:-translate-y-0.5 hover:border-brand/60'}`}>
         <span className="min-w-0">
           <span className="block whitespace-nowrap text-sm font-semibold leading-tight">{loc.code}</span>
           <span className={`block truncate text-xs ${isActive ? 'opacity-80' : 'text-muted'}`}>{lang === 'en' ? loc.name_en : loc.name_de}</span>
         </span>
         <span className="flex items-center gap-1.5">
-          {highlight && hits > 0 && <span className="rounded-full bg-signal px-1.5 text-xs font-semibold text-[#15171c]">{hits}</span>}
+          {highlight && hits > 0 && <span className="rounded-sm bg-signal px-1.5 text-xs font-semibold text-ink">{hits}</span>}
           <span className={`text-xs font-medium tabular-nums ${isActive ? '' : 'text-muted'}`}>{taken}</span>
         </span>
       </button>
@@ -58,7 +58,7 @@ export function BuildingNav({ locations, active, onSelect, highlight }) {
           {halls.map((loc) => <Slab key={loc.id} loc={loc} hall />)}
         </div>
       )}
-      <div aria-hidden className="mt-1.5 h-1.5 rounded-full bg-line" />
+      <div aria-hidden className="mt-1.5 h-1.5 rounded-sm bg-line" />
     </div>
   );
 }
@@ -72,7 +72,7 @@ function PersonCard({ seat, color, onClose }) {
       {p ? (
         <>
           <div className="flex items-center gap-3 pr-6">
-            <span className="rounded-full p-0.5" style={{ boxShadow: `0 0 0 2px ${color}` }}><Avatar person={p} size={52} /></span>
+            <span className="rounded-sm p-0.5" style={{ boxShadow: `0 0 0 2px ${color}` }}><Avatar person={p} size={52} /></span>
             <div className="min-w-0">
               <p className="font-semibold leading-tight">{p.full_name}</p>
               <p className="text-sm leading-tight text-muted">{p.position}</p>
@@ -80,12 +80,12 @@ function PersonCard({ seat, color, onClose }) {
           </div>
           <dl className="mt-4 grid grid-cols-[auto_1fr] gap-x-4 gap-y-1.5 text-sm">
             <dt className="text-muted">{t('department')}</dt>
-            <dd className="flex items-center gap-1.5"><span className="h-2 w-2 rounded-full" style={{ background: color }} />{p.department}</dd>
+            <dd className="flex items-center gap-1.5"><span className="h-2 w-2 rounded-sm" style={{ background: color }} />{p.department}</dd>
             <dt className="text-muted">{t('seat')}</dt><dd>{seat.label}</dd>
           </dl>
           <div className="mt-4 grid gap-2">
-            {p.email && <a href={`mailto:${p.email}`} className="flex items-center gap-2 rounded-xl bg-surface-2 px-3 py-2 text-sm font-medium hover:text-brand"><Mail size={16} /><span className="truncate">{p.email}</span></a>}
-            {p.phone_ext && <a href={`tel:${p.phone_ext}`} className="flex items-center gap-2 rounded-xl bg-surface-2 px-3 py-2 text-sm font-medium hover:text-brand"><Phone size={16} />{t('extension')} {p.phone_ext}</a>}
+            {p.email && <a href={`mailto:${p.email}`} className="flex items-center gap-2 rounded-xl bg-surface-2 px-3 py-2 text-sm font-medium hover:text-brand-text"><Mail size={16} /><span className="truncate">{p.email}</span></a>}
+            {p.phone_ext && <a href={`tel:${p.phone_ext}`} className="flex items-center gap-2 rounded-xl bg-surface-2 px-3 py-2 text-sm font-medium hover:text-brand-text"><Phone size={16} />{t('extension')} {p.phone_ext}</a>}
           </div>
         </>
       ) : (
@@ -260,9 +260,9 @@ export default function FloorPlan({ locations, activeId, onActiveChange, focusPe
     <div className="mb-3 flex flex-wrap items-center gap-1.5" aria-label={t('departments_here')}>
       {floorDepts.map((d) => (
         <button key={d} type="button" onClick={() => setDept(dept === d ? null : d)} aria-pressed={dept === d}
-          className={`inline-flex items-center gap-2 rounded-full border px-3 py-1 text-sm transition-colors ${
+          className={`inline-flex items-center gap-2 rounded-sm border px-3 py-1 text-sm transition-colors ${
             dept === d ? 'border-ink bg-ink text-surface' : 'border-line bg-surface hover:border-muted'}`}>
-          <span className="h-2 w-2 rounded-full" style={{ background: colors[d] }} />{d}
+          <span className="h-2 w-2 rounded-sm" style={{ background: colors[d] }} />{d}
         </button>
       ))}
     </div>
@@ -277,7 +277,7 @@ export default function FloorPlan({ locations, activeId, onActiveChange, focusPe
             <p className="text-lg font-semibold tracking-tight">{lang === 'en' ? active.name_en : active.name_de}</p>
             <p className="text-sm text-muted">{t('people_count', { n: active.seats.length - freeSeats })}, {t('free_count', { n: freeSeats })}</p>
           </div>
-          <div className="absolute right-3 top-3 z-20 flex items-center gap-0.5 rounded-xl border border-line bg-surface/90 p-1 shadow-sm backdrop-blur">
+          <div className="absolute right-3 top-3 z-20 flex items-center gap-0.5 rounded-xl border border-line bg-surface/90 p-1 shadow-sm ">
             <button type="button" className={ctrl} aria-label={t('zoom_in')} title={t('zoom_in')} onClick={() => zoomAt(1.4, ...center())}><Plus size={17} /></button>
             <button type="button" className={ctrl} aria-label={t('zoom_out')} title={t('zoom_out')} onClick={() => zoomAt(1 / 1.4, ...center())}><Minus size={17} /></button>
             <button type="button" className={ctrl} aria-label={t('zoom_fit')} title={t('zoom_fit')} onClick={() => setView({ scale: 1, x: 0, y: 0 })}><Maximize2 size={16} /></button>
@@ -305,7 +305,7 @@ export default function FloorPlan({ locations, activeId, onActiveChange, focusPe
                       onPointerDown={(e) => onSeatDown(e, seat)} onPointerMove={onSeatDrag} onPointerUp={(e) => onSeatUp(e, seat)}
                       onPointerCancel={() => { seatDrag.current = null; setMoving(null); }}
                       style={{ left: `${at.x}%`, top: `${at.y}%`, zIndex: isSel || isHover ? 30 : p ? 10 : 5, transform: `translate(-50%, -50%) scale(${inv})` }}>
-                      {isSel && <span aria-hidden className="absolute -inset-2.5 animate-ping rounded-full bg-brand/30 motion-reduce:animate-none" />}
+                      {isSel && <span aria-hidden className="absolute -inset-2.5 animate-ping rounded-sm bg-brand/30 motion-reduce:animate-none" />}
                       <button type="button"
                         onClick={() => {
                           if (justDragged.current) { justDragged.current = false; return; }
@@ -313,9 +313,9 @@ export default function FloorPlan({ locations, activeId, onActiveChange, focusPe
                         }}
                         onMouseEnter={() => setHovered(seat.id)} onMouseLeave={() => setHovered(null)}
                         aria-label={p ? `${p.full_name}, ${seat.label}` : `${t('free_seat')} ${seat.label}`}
-                        className={`relative block rounded-full transition-[opacity,transform] duration-200 ${dim ? 'opacity-20' : ''} ${isSel || isHover ? 'scale-125' : ''}`}>
+                        className={`relative block rounded-sm transition-[opacity,transform] duration-200 ${dim ? 'opacity-20' : ''} ${isSel || isHover ? 'scale-125' : ''}`}>
                         {p ? (
-                          <span className="block rounded-full bg-surface p-[2px]" style={{ boxShadow: `0 0 0 2.5px ${color}` }}>
+                          <span className="block rounded-sm bg-surface p-[2px]" style={{ boxShadow: `0 0 0 2.5px ${color}` }}>
                             <Avatar person={p} size={30} />
                           </span>
                         ) : (
@@ -358,7 +358,7 @@ export default function FloorPlan({ locations, activeId, onActiveChange, focusPe
                     <Avatar person={s.occupant} size={32} />
                     <span className="min-w-0 flex-1">
                       <span className="block truncate text-sm font-medium">{s.occupant.full_name}</span>
-                      <span className="flex items-center gap-1.5 text-xs text-muted"><span className="h-1.5 w-1.5 rounded-full" style={{ background: colors[s.occupant.department] }} />{s.occupant.department}</span>
+                      <span className="flex items-center gap-1.5 text-xs text-muted"><span className="h-1.5 w-1.5 rounded-sm" style={{ background: colors[s.occupant.department] }} />{s.occupant.department}</span>
                     </span>
                     <Locate size={15} className="shrink-0 text-muted" />
                   </button>

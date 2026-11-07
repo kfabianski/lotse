@@ -38,14 +38,14 @@ export default function AdminDepartments() {
           const dirty = edits[d.id] && (e.name !== d.name || e.color !== d.color);
           return (
             <li key={d.id} className="flex flex-wrap items-center gap-3 px-4 py-3">
-              <label className="relative h-8 w-8 shrink-0 cursor-pointer overflow-hidden rounded-full ring-1 ring-line" title={t('color')}>
+              <label className="relative h-8 w-8 shrink-0 cursor-pointer overflow-hidden rounded-sm ring-1 ring-line" title={t('color')}>
                 <span className="absolute inset-0" style={{ background: e.color }} />
                 <input type="color" value={e.color} className="absolute inset-0 cursor-pointer opacity-0"
                   onChange={(ev) => setEdits({ ...edits, [d.id]: { ...edits[d.id], color: ev.target.value } })} />
               </label>
               <input disabled={ldapLeads && d.source === 'ldap'} title={ldapLeads && d.source === 'ldap' ? t('dept_ldap_locked') : undefined} className={`${inputClass} min-w-[180px] flex-1`} value={e.name} aria-label={t('name')}
                 onChange={(ev) => setEdits({ ...edits, [d.id]: { ...edits[d.id], name: ev.target.value } })} />
-              <span className={`rounded-full px-2 py-0.5 text-xs font-medium ${d.source === 'ldap' ? 'bg-brand-soft text-brand' : 'bg-surface-2 text-muted'}`}>
+              <span className={`rounded-sm px-2 py-0.5 text-xs font-medium ${d.source === 'ldap' ? 'bg-brand-soft text-brand-text' : 'bg-surface-2 text-muted'}`}>
                 {d.source === 'ldap' ? t('source_ldap') : t('source_manual')}
               </span>
               <span className="w-24 text-sm text-muted">{t('people_count', { n: d.count })}</span>

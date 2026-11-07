@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { ArrowUpRight, CalendarDays, ChevronLeft, ChevronRight, MapPin, Pause, Play } from 'lucide-react';
+import { CalendarDays, ChevronLeft, ChevronRight, MapPin, Pause, Play } from 'lucide-react';
 import { useI18n } from '../lib/i18n';
 
 const DURATION = 7000;
@@ -22,72 +22,66 @@ export default function HeroSlider({ slides }) {
   if (!slides.length) return null;
   const go = (i) => setIndex((i + slides.length) % slides.length);
   const s = slides[index];
-  const glass = 'rounded-full bg-white/15 p-2.5 text-white backdrop-blur-md transition-colors hover:bg-white/25';
+  const ctl = 'rounded-sm border border-line p-2 text-ink transition-colors hover:border-ink hover:bg-surface-2 active:bg-well';
 
   return (
     <section aria-roledescription="carousel" aria-label="Highlights"
       onMouseEnter={() => setHover(true)} onMouseLeave={() => setHover(false)}
       onFocus={() => setHover(true)} onBlur={() => setHover(false)}
-      className="relative isolate overflow-hidden rounded-[1.75rem] bg-[#0d0f13]">
+      className="relative isolate flex min-h-[460px] items-end overflow-hidden rounded-2xl bg-well p-4 sm:min-h-[540px] sm:p-6 lg:items-stretch lg:justify-end">
       {slides.map((slide, i) => (
         <img key={slide.id} src={slide.image_url || ''} alt=""
-          className={`absolute inset-0 -z-10 h-full w-full object-cover transition-[opacity,transform] duration-[1200ms] ease-out ${
-            i === index ? 'scale-100 opacity-100' : 'scale-105 opacity-0'}`} />
+          className={`absolute inset-0 -z-10 h-full w-full object-cover transition-opacity duration-700 ease-out ${
+            i === index ? 'opacity-100' : 'opacity-0'}`} />
       ))}
-      {/* Readability gradient: strongest bottom-left where the text sits. */}
-      <div aria-hidden className="absolute inset-0 -z-10 bg-gradient-to-tr from-black/80 via-black/35 to-transparent" />
 
-      <div className="flex min-h-[380px] flex-col justify-end p-6 sm:min-h-[460px] sm:p-10" aria-live="polite">
-        <span className="inline-flex w-fit items-center rounded-full bg-white/15 px-3 py-1 text-sm font-medium text-white backdrop-blur-md">
-          {t(`cat_${s.category}`)}
-        </span>
-        <h1 className="mt-4 max-w-[18ch] font-display text-[2.25rem] font-semibold leading-[1.05] text-white sm:text-[3.5rem]">
+      <div className="flex w-full flex-col rounded-xl bg-surface/85 p-6 sm:p-8 lg:w-[27rem]" aria-live="polite">
+        <p className="text-muted">{t(`cat_${s.category}`)}</p>
+        <h2 className="mt-2 font-display text-[2rem] font-semibold leading-[1.04] tracking-[-0.03em] text-ink sm:text-[2.4rem]">
           {loc(s, 'title')}
-        </h1>
-        <p className="mt-3 max-w-[56ch] text-[1.05rem] text-white/80">{loc(s, 'summary')}</p>
-        <div className="mt-6 flex flex-wrap items-center gap-x-6 gap-y-3">
+        </h2>
+        <p className="mt-3 max-w-[48ch] text-[1.0625rem] text-ink-2">{loc(s, 'summary')}</p>
+        {s.event_date && (
+          <dl className="mt-5 grid grid-cols-[auto_minmax(0,1fr)] gap-x-4 border-t border-line pt-3 text-ink-2">
+            <dt className="text-muted"><CalendarDays size={16} aria-label={t('date')} className="mt-1" /></dt>
+            <dd className="font-mono text-[0.9375rem]">{fmtDate(s.event_date, { weekday: 'short', day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' })}</dd>
+            {s.event_location && <><dt className="text-muted"><MapPin size={16} aria-label={t('location')} className="mt-1" /></dt><dd>{s.event_location}</dd></>}
+          </dl>
+        )}
+        <div className="mt-auto flex flex-wrap items-center justify-between gap-4 pt-6">
           <Link to={`/articles/${s.id}`}
-            className="inline-flex items-center gap-2 rounded-full bg-white px-5 py-2.5 text-sm font-semibold text-[#15171c] transition-transform hover:scale-[1.03]">
-            {t('read_more')}<ArrowUpRight size={16} />
+            className="inline-flex min-h-10 items-center rounded-sm border border-brand bg-brand px-5 py-2 font-display text-[0.9375rem] font-medium text-brand-ink transition-colors hover:bg-brand-strong">
+            {t('read_more')}
           </Link>
-          {s.event_date && (
-            <span className="flex flex-wrap gap-x-5 gap-y-1 text-sm text-white/85">
-              <span className="inline-flex items-center gap-1.5"><CalendarDays size={16} />
-                {fmtDate(s.event_date, { weekday: 'long', day: 'numeric', month: 'long', hour: '2-digit', minute: '2-digit' })}</span>
-              {s.event_location && <span className="inline-flex items-center gap-1.5"><MapPin size={16} />{s.event_location}</span>}
-            </span>
+          {slides.length > 1 && (
+            <div className="flex items-center gap-2">
+              <span className="mr-1 font-mono text-sm text-muted">{index + 1}/{slides.length}</span>
+              <button type="button" onClick={() => go(index - 1)} aria-label={t('slide_prev')} className={ctl}><ChevronLeft size={18} /></button>
+              <button type="button" onClick={() => setPaused((p) => !p)} aria-label={paused ? t('slide_play') : t('slide_pause')} className={ctl}>
+                {paused ? <Play size={18} /> : <Pause size={18} />}
+              </button>
+              <button type="button" onClick={() => go(index + 1)} aria-label={t('slide_next')} className={ctl}><ChevronRight size={18} /></button>
+            </div>
           )}
         </div>
+        {slides.length > 1 && (
+          <ol className="mt-4 flex gap-1">
+            {slides.map((slide, i) => (
+              <li key={slide.id} className="flex-1">
+                <button type="button" onClick={() => go(i)} aria-current={i === index} aria-label={loc(slide, 'title')} className="block w-full py-2">
+                  <span className="block h-[2px] overflow-hidden bg-line">
+                    {i === index && (
+                      <span key={`${index}-${running}`} className={`block h-full bg-ink ${running ? 'slide-progress' : ''}`}
+                        style={{ animationDuration: `${DURATION}ms`, transform: running ? undefined : 'scaleX(1)' }} />
+                    )}
+                    {i < index && <span className="block h-full bg-rule-strong" />}
+                  </span>
+                </button>
+              </li>
+            ))}
+          </ol>
+        )}
       </div>
-
-      {slides.length > 1 && (
-        <div className="absolute bottom-6 right-6 hidden items-center gap-2 sm:flex">
-          <button type="button" onClick={() => go(index - 1)} aria-label={t('slide_prev')} className={glass}><ChevronLeft size={18} /></button>
-          <button type="button" onClick={() => setPaused((p) => !p)} aria-label={paused ? t('slide_play') : t('slide_pause')} className={glass}>
-            {paused ? <Play size={18} /> : <Pause size={18} />}
-          </button>
-          <button type="button" onClick={() => go(index + 1)} aria-label={t('slide_next')} className={glass}><ChevronRight size={18} /></button>
-        </div>
-      )}
-
-      {slides.length > 1 && (
-        <ol className="absolute inset-x-6 top-5 flex gap-1.5 sm:inset-x-10 sm:top-7">
-          {slides.map((slide, i) => (
-            <li key={slide.id} className="flex-1">
-              <button type="button" onClick={() => go(i)} aria-current={i === index} aria-label={loc(slide, 'title')}
-                className="block w-full py-2">
-                <span className="block h-[3px] overflow-hidden rounded-full bg-white/25">
-                  {i === index && (
-                    <span key={`${index}-${running}`} className={`block h-full rounded-full bg-white ${running ? 'slide-progress' : ''}`}
-                      style={{ animationDuration: `${DURATION}ms`, transform: running ? undefined : 'scaleX(1)' }} />
-                  )}
-                  {i < index && <span className="block h-full bg-white/70" />}
-                </span>
-              </button>
-            </li>
-          ))}
-        </ol>
-      )}
     </section>
   );
 }

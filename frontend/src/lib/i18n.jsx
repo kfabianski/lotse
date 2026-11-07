@@ -63,6 +63,23 @@ const dict = {
     nt_smtp_password: 'Passwort', nt_smtp_from: 'Absender', nt_test_to: 'Test-Mail an', nt_test_mail: 'Test-Mail senden',
     nt_teams: 'Microsoft Teams', nt_teams_hint: 'Neue Artikel für alle Niederlassungen erscheinen als Karte im Kanal.',
     nt_webhook: 'Webhook-Adresse des Kanals', nt_webhook_hint: 'In Teams: Kanal → Workflows → „Bei Empfang einer Webhookanforderung in einem Kanal posten“',
+    footer_product: 'Lotse, das Intranet', footer_nav: 'Fußzeile', settings_footer: 'Text in der Fußzeile', settings_footer_hint: 'z. B. Anschrift, Handelsregister oder Hinweis zum Datenschutz (optional)',
+    menu_collapse: 'Menü einklappen', menu_expand: 'Menü ausklappen', role_hr: 'Personal (HR)',
+    tr_assign_newcomers: 'Neue Kolleg:innen', tr_assign_newcomers_hint: 'Alle in ihren ersten 90 Tagen (ab Eintrittsdatum) – ideal für Pflichtschulungen zum Start.',
+    settings_attr_start_date: 'Eintrittsdatum', content_original: 'Beitrag', content_translation: 'Übersetzung (Englisch)', content_add_translation: 'Übersetzung hinzufügen (optional)',
+    upload_plan_hint: 'Plan hochladen: ein Bild des Grundrisses (PNG, JPG oder SVG), z. B. aus dem Architektenplan exportiert oder ein Foto des Fluchtplans. Danach Plätze per Klick daraufsetzen und Räume einzeichnen.',
+    notif_title: 'Für Sie', notif_label: 'Benachrichtigungen', notif_label_n: '{n} neue Benachrichtigungen',
+    search_dialog_hint: 'Personen, Artikel, Dokumente, Räume, Programme … Enter zeigt alle Treffer, Esc schließt.',
+    poll_for: 'Wer wird gefragt?', poll_for_all: 'Alle', poll_for_all_hint: 'Alle sehen die Umfrage und dürfen abstimmen.',
+    poll_for_some_hint: 'Nur Personen aus den gewählten Abteilungen oder Niederlassungen sehen die Umfrage und stimmen ab (die Redaktion sieht alles).',
+    cs_title: 'Farbschema', cs_hint: 'Farben des ganzen Portals, für alle. Die Vorschau wirkt sofort; Speichern übernimmt sie für alle.',
+    cs_note: 'Hell- und Dunkelmodus haben je eigene, gut lesbare Töne. Jede Person kann im Profil ein eigenes Schema wählen.',
+    cs_company: 'Firmenstandard', cs_company_hint: 'Wie von der Verwaltung gewählt ({name})',
+    cs_profile_title: 'Meine Farben', cs_profile_hint: 'Nur für Sie, auf jedem Gerät. Die anderen sehen weiter das Firmenschema.',
+    cs_hafen: 'Hafen', cs_hafen_hint: 'Marineblau, Eisblau, Rot', cs_signal: 'Signal', cs_signal_hint: 'Warmes Rot-Orange',
+    cs_meer: 'Meer', cs_meer_hint: 'Helles Türkis', cs_indigo: 'Indigo', cs_indigo_hint: 'Indigo, Graublau, Flaggenrot',
+    cs_nordsee: 'Nordsee', cs_nordsee_hint: 'Kobaltblau', cs_fjord: 'Fjord', cs_fjord_hint: 'Petrolblau',
+    cs_azur: 'Azur', cs_azur_hint: 'Himmelblau', cs_marine: 'Marine', cs_marine_hint: 'Dunkelblau, ruhig',
     mt_open: 'Mail anpassen', mt_title: 'Benachrichtigungs-Mails anpassen', mt_kind_article: 'Neuer Beitrag / Termin', mt_kind_idea: 'Idee: neuer Status',
     mt_kind_article_hint: 'Geht an alle, die den Beitrag sehen dürfen und Mails nicht abbestellt haben.',
     mt_kind_idea_hint: 'Geht an die Person, die die Idee eingereicht hat, wenn sich Status oder Antwort ändern.',
@@ -93,7 +110,7 @@ const dict = {
     greet_polls: '{n} neue Umfragen', greet_polls_one: 'Neue Umfrage – Ihre Meinung zählt',
     perm_polls: 'Umfragen erstellen', perm_polls_hint: 'Umfragen anlegen, bearbeiten, beenden und löschen',
     greet_label: 'Ihr Tag', greet_morning: 'Guten Morgen, {name}', greet_day: 'Guten Tag, {name}', greet_evening: 'Guten Abend, {name}',
-    greet_nothing: 'Heute steht für Sie nichts Besonderes an.', greet_events: 'Heute {n} Termine mit Ihrer Zusage', greet_events_one: 'Heute ein Termin mit Ihrer Zusage',
+    greet_nothing: 'Heute steht für Sie nichts Besonderes an.', greet_events: 'Heute {n} Termine', greet_events_one: 'Heute ein Termin',
     greet_trainings: '{n} Schulungen noch zu bestätigen', greet_trainings_one: 'Eine Schulung noch zu bestätigen',
     greet_trainings_overdue: '{n} Schulungen offen – Frist überschritten', greet_trainings_overdue_one: 'Schulung offen – Frist überschritten',
     greet_ideas: 'Neues zu {n} Ihrer Ideen', greet_ideas_one: 'Neues zu Ihrer Idee',
@@ -153,7 +170,7 @@ const dict = {
     notice_posted: 'Anzeige veröffentlicht.', board_empty: 'Noch keine Anzeigen. Machen Sie den Anfang!',
     contact: 'Kontakt',
     people_title: 'Mitarbeitende', view_list: 'Liste', view_plan: 'Lageplan', department: 'Abteilung',
-    all_departments: 'Alle Abteilungen', extension: 'Durchwahl', email: 'E-Mail', seat: 'Platz', location: 'Standort',
+    all_departments: 'Alle Abteilungen', extension: 'Durchwahl', email: 'E-Mail', seat: 'Platz', location: 'Standort', date: 'Datum',
     no_seat: 'Kein fester Platz', show_on_plan: 'Auf dem Plan zeigen', free_seat: 'Freier Platz',
     started: 'Dabei seit', people_count: '{n} Personen', floor: 'Etage', warehouse: 'Lager',
     profile_title: 'Mein Profil', change_photo: 'Foto ändern', change_password: 'Passwort ändern',
@@ -314,6 +331,23 @@ const dict = {
     nt_smtp_password: 'Password', nt_smtp_from: 'Sender', nt_test_to: 'Test mail to', nt_test_mail: 'Send test mail',
     nt_teams: 'Microsoft Teams', nt_teams_hint: 'New articles for all branches appear as a card in the channel.',
     nt_webhook: 'Channel webhook address', nt_webhook_hint: 'In Teams: channel → Workflows → “Post to a channel when a webhook request is received”',
+    footer_product: 'Lotse, the intranet', footer_nav: 'Footer', settings_footer: 'Footer text', settings_footer_hint: 'e.g. address, company register or a privacy note (optional)',
+    menu_collapse: 'Collapse menu', menu_expand: 'Expand menu', role_hr: 'Human resources (HR)',
+    tr_assign_newcomers: 'New colleagues', tr_assign_newcomers_hint: 'Everyone in their first 90 days (from the start date) – ideal for mandatory onboarding trainings.',
+    settings_attr_start_date: 'Start date', content_original: 'Post', content_translation: 'Translation (English)', content_add_translation: 'Add a translation (optional)',
+    upload_plan_hint: 'Upload plan: an image of the floor plan (PNG, JPG or SVG), e.g. exported from the architect’s drawing or a photo of the escape plan. Then click to place desks and draw the rooms.',
+    notif_title: 'For you', notif_label: 'Notifications', notif_label_n: '{n} new notifications',
+    search_dialog_hint: 'People, articles, documents, rooms, programs … Enter shows all results, Esc closes.',
+    poll_for: 'Who is asked?', poll_for_all: 'Everybody', poll_for_all_hint: 'Everybody sees the poll and may vote.',
+    poll_for_some_hint: 'Only people from the chosen departments or branches see the poll and vote (the editors see everything).',
+    cs_title: 'Colour scheme', cs_hint: 'Colours of the whole portal, for everybody. The preview applies at once; Save makes it everyone’s.',
+    cs_note: 'Light and dark mode each get their own readable shades. Everyone can pick their own scheme in the profile.',
+    cs_company: 'Company standard', cs_company_hint: 'As chosen by the admins ({name})',
+    cs_profile_title: 'My colours', cs_profile_hint: 'Only for you, on every device. Everyone else keeps the company scheme.',
+    cs_hafen: 'Harbour', cs_hafen_hint: 'Navy, ice blue, red', cs_signal: 'Signal', cs_signal_hint: 'Warm red-orange',
+    cs_meer: 'Sea', cs_meer_hint: 'Bright turquoise', cs_indigo: 'Indigo', cs_indigo_hint: 'Indigo, grey blue, flag red',
+    cs_nordsee: 'North Sea', cs_nordsee_hint: 'Cobalt blue', cs_fjord: 'Fjord', cs_fjord_hint: 'Petrol blue',
+    cs_azur: 'Azure', cs_azur_hint: 'Sky blue', cs_marine: 'Marine', cs_marine_hint: 'Dark blue, calm',
     mt_open: 'Customize mail', mt_title: 'Customize notification mails', mt_kind_article: 'New post / event', mt_kind_idea: 'Idea: new status',
     mt_kind_article_hint: 'Goes to everybody who may see the post and has not unsubscribed.',
     mt_kind_idea_hint: 'Goes to the person who submitted the idea when its status or answer changes.',
@@ -344,7 +378,7 @@ const dict = {
     greet_polls: '{n} new polls', greet_polls_one: 'New poll – your opinion counts',
     perm_polls: 'Create polls', perm_polls_hint: 'Create, edit, end and delete polls',
     greet_label: 'Your day', greet_morning: 'Good morning, {name}', greet_day: 'Good afternoon, {name}', greet_evening: 'Good evening, {name}',
-    greet_nothing: 'Nothing special on your list today.', greet_events: '{n} events today you signed up for', greet_events_one: 'One event today you signed up for',
+    greet_nothing: 'Nothing special on your list today.', greet_events: '{n} events today', greet_events_one: 'One event today',
     greet_trainings: '{n} trainings to confirm', greet_trainings_one: 'One training to confirm',
     greet_trainings_overdue: '{n} trainings open – overdue', greet_trainings_overdue_one: 'Training open – overdue',
     greet_ideas: 'News on {n} of your ideas', greet_ideas_one: 'News on your idea',
@@ -394,14 +428,14 @@ const dict = {
     save: 'Save', cancel: 'Cancel', publish: 'Publish', published: 'Published', draft: 'Draft',
     featured: 'Show in the home page slider', category: 'Section', title: 'Title', summary: 'Teaser',
     body: 'Text (Markdown)', image: 'Image', upload_image: 'Upload image', remove_image: 'Remove image',
-    event_date: 'Date & time', event_location: 'Location', german: 'German', english: 'English',
+    event_date: 'Date & time', event_location: 'Location', date: 'Date', german: 'German', english: 'English',
     confirm_delete: 'Delete this for good? This cannot be undone.', by: 'by', updated: 'updated', back: 'Back',
     board_title: 'Classifieds', board_intro: 'Offer, look for, give away – or find a car pool.',
     new_notice: 'Post an ad', kind_offer: 'Offering', kind_search: 'Looking for', kind_give: 'Free to a good home',
     kind_carpool: 'Car pool', kind_other: 'Other', price: 'Price (optional)', description: 'Description',
     notice_posted: 'Ad posted.', board_empty: 'No ads yet. Be the first!', contact: 'Contact',
     people_title: 'People', view_list: 'List', view_plan: 'Floor plan', department: 'Department',
-    all_departments: 'All departments', extension: 'Extension', email: 'Email', seat: 'Desk', location: 'Location',
+    all_departments: 'All departments', extension: 'Extension', email: 'Email', seat: 'Desk', location: 'Location', date: 'Date',
     no_seat: 'No fixed desk', show_on_plan: 'Show on plan', free_seat: 'Free desk', started: 'Joined',
     people_count: '{n} people', floor: 'Floor', warehouse: 'Warehouse',
     profile_title: 'My profile', change_photo: 'Change photo', change_password: 'Change password',
@@ -504,12 +538,17 @@ const dict = {
 
 const I18nContext = createContext(null);
 
+/** Interface languages: add a dictionary above (e.g. pl: {...}) and it appears in the switch. Content stays as written. */
+export const LANGUAGES = Object.keys(dict);
+const LOCALES = { de: 'de-DE', en: 'en-GB', pl: 'pl-PL', fr: 'fr-FR', it: 'it-IT', cs: 'cs-CZ', tr: 'tr-TR' };
+
 function initialLang() {
   try {
     const saved = localStorage.getItem('lotse-lang');
-    if (saved === 'de' || saved === 'en') return saved;
+    if (saved && dict[saved]) return saved;
   } catch { /* ignore */ }
-  return navigator.language?.startsWith('de') ? 'de' : 'en';
+  const nav = (navigator.language || 'de').slice(0, 2);
+  return dict[nav] ? nav : 'de';
 }
 
 export function I18nProvider({ children }) {
@@ -534,7 +573,7 @@ export function I18nProvider({ children }) {
   const loc = useCallback((obj, field) => (obj?.[`${field}_${lang}`] || obj?.[`${field}_de`] || ''), [lang]);
 
   const fmtDate = useCallback((value, opts = { day: 'numeric', month: 'long', year: 'numeric' }) => (
-    value ? new Intl.DateTimeFormat(lang === 'de' ? 'de-DE' : 'en-GB', opts).format(new Date(value)) : ''
+    value ? new Intl.DateTimeFormat(LOCALES[lang] || lang, opts).format(new Date(value)) : ''
   ), [lang]);
 
   const value = useMemo(() => ({ lang, setLang, t, loc, fmtDate }), [lang, setLang, t, loc, fmtDate]);

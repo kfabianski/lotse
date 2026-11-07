@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Lightbulb, MessageSquareReply, Star, Trash2 } from 'lucide-react';
+import { Building2, CheckCircle2, ClipboardList, HardHat, Leaf, Monitor, Workflow, Flame, Lightbulb, MessageSquareReply, Search, Sparkles, Star, Trash2, XCircle, LayoutGrid, Clock } from 'lucide-react';
 import { Avatar, Button, Empty, Field, Modal, inputClass, relativeDay } from '../components/ui';
 import { useI18n } from '../lib/i18n';
 import { useFetch } from '../lib/useFetch';
@@ -9,14 +9,17 @@ import { api } from '../lib/api';
 import { useHashFocus } from '../lib/hashFocus';
 
 export const TOPICS = ['process', 'workplace', 'it', 'safety', 'sustainability', 'other'];
+const TOPIC_ICON = { process: Workflow, workplace: Building2, it: Monitor, safety: HardHat, sustainability: Leaf, other: Lightbulb };
 const STEPS = ['new', 'review', 'planned', 'done'];
 const STATUSES = [...STEPS, 'declined'];
+/* One icon per status, as on the Aktuelles filters. */
+const STATUS_ICON = { '': LayoutGrid, new: Sparkles, review: Search, planned: ClipboardList, done: CheckCircle2, declined: XCircle };
 
 /** Where an idea is on its way: a real sequence, so it is drawn as one. */
 export function StatusTrack({ status }) {
   const { t } = useI18n();
   if (status === 'declined') {
-    return <span className="inline-flex rounded-full border border-alert px-2.5 py-0.5 text-sm font-medium text-alert">{t('idea_status_declined')}</span>;
+    return <span className="inline-flex rounded-sm border border-alert px-2.5 py-0.5 text-sm font-medium text-alert">{t('idea_status_declined')}</span>;
   }
   const reached = STEPS.indexOf(status);
   return (
@@ -24,8 +27,8 @@ export function StatusTrack({ status }) {
       {STEPS.map((step, i) => (
         <li key={step} className="flex items-center gap-1.5" aria-current={i === reached ? 'step' : undefined}>
           {i > 0 && <span aria-hidden className={`h-0.5 w-4 ${i <= reached ? 'bg-safe' : 'bg-line'}`} />}
-          <span className={`rounded-full px-2.5 py-0.5 font-medium ${
-            i === reached ? (status === 'done' ? 'bg-safe text-white dark:text-[#0e151e]' : 'bg-ink text-surface')
+          <span className={`rounded-sm px-2.5 py-0.5 font-medium ${
+            i === reached ? (status === 'done' ? 'bg-safe text-on-photo' : 'bg-ink text-surface')
               : i < reached ? 'text-safe' : 'text-muted'}`}>
             {t(`idea_status_${step}`)}
           </span>
@@ -38,9 +41,9 @@ export function StatusTrack({ status }) {
 /** Single status pill (for compact places like the home page). */
 export function StatusPill({ status }) {
   const { t } = useI18n();
-  const tone = { new: 'bg-surface-2 text-ink', review: 'bg-brand-soft text-brand', planned: 'bg-ink text-surface',
-    done: 'bg-safe text-white dark:text-[#0e151e]', declined: 'border border-alert text-alert' }[status];
-  return <span className={`inline-flex rounded-full px-2.5 py-0.5 text-sm font-medium ${tone}`}>{t(`idea_status_${status}`)}</span>;
+  const tone = { new: 'bg-surface-2 text-ink', review: 'bg-brand-soft text-brand-text', planned: 'bg-ink text-surface',
+    done: 'bg-safe text-on-photo', declined: 'border border-alert text-alert' }[status];
+  return <span className={`inline-flex rounded-sm px-2.5 py-0.5 text-sm font-medium ${tone}`}>{t(`idea_status_${status}`)}</span>;
 }
 
 /** Average stars of an idea: what colleagues like best at a glance. */
@@ -48,7 +51,7 @@ export function RatingSummary({ idea }) {
   const { t, lang } = useI18n();
   const avg = idea.rating_avg;
   return (
-    <div className="flex w-24 shrink-0 flex-col items-center self-start rounded-xl border-2 border-line py-2 text-center"
+    <div className="flex w-24 shrink-0 flex-col items-center self-start py-2 text-center"
       aria-label={avg ? t('idea_rating_aria', { avg: avg.toLocaleString(lang), n: idea.rating_count }) : t('idea_no_ratings')}>
       <Star size={20} className={avg ? 'fill-signal text-signal' : 'text-muted'} />
       <span className="mt-0.5 font-display text-2xl font-semibold leading-none">{avg ? avg.toLocaleString(lang, { minimumFractionDigits: 1 }) : '–'}</span>
@@ -193,17 +196,24 @@ export default function Ideas() {
 
       <div className="mt-6 flex flex-wrap items-center justify-between gap-3 border-b border-line pb-4">
         <div className="flex flex-wrap gap-2">
-          {['', ...STATUSES].map((s) => (
-            <button key={s || 'all'} type="button" onClick={() => setStatus(s)} aria-pressed={status === s}
-              className={`rounded-full border px-4 py-1.5 font-medium ${status === s ? 'border-ink bg-ink text-surface' : 'border-line text-muted hover:text-ink'}`}>
-              {s ? t(`idea_status_${s}`) : t('all')}
-            </button>
-          ))}
+          {['', ...STATUSES].map((s) => {
+            const Icon = STATUS_ICON[s];
+            const on = status === s;
+            return (
+              <button key={s || 'all'} type="button" onClick={() => setStatus(s)} aria-pressed={on}
+                className={`inline-flex min-h-10 items-center gap-1.5 rounded-full border px-4 py-1.5 text-[0.9375rem] font-medium transition-colors ${on ? 'border-ink bg-ink text-surface' : 'border-rule-strong bg-surface text-ink hover:border-ink'}`}>
+                <Icon size={15} aria-hidden className={on ? 'text-surface' : 'text-brand-text'} />
+                {s ? t(`idea_status_${s}`) : t('all')}
+              </button>
+            );
+          })}
         </div>
-        <div role="group" aria-label={t('idea_sort')} className="flex rounded-full border border-line p-0.5 text-sm">
-          {[['top', t('idea_sort_top')], ['new', t('idea_sort_new')]].map(([k, label]) => (
+        <div role="group" aria-label={t('idea_sort')} className="flex rounded-full border border-rule-strong bg-surface p-0.5 text-sm">
+          {[['top', t('idea_sort_top'), Flame], ['new', t('idea_sort_new'), Clock]].map(([k, label, Icon]) => (
             <button key={k} type="button" onClick={() => setSort(k)} aria-pressed={sort === k}
-              className={`rounded-full px-3 py-1 font-medium ${sort === k ? 'bg-ink text-surface' : 'text-muted hover:text-ink'}`}>{label}</button>
+              className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 font-medium ${sort === k ? 'bg-ink text-surface' : 'text-ink hover:bg-surface-2'}`}>
+              <Icon size={14} aria-hidden className={sort === k ? 'text-surface' : 'text-brand-text'} />{label}
+            </button>
           ))}
         </div>
       </div>
@@ -216,7 +226,7 @@ export default function Ideas() {
               <RatingSummary idea={idea} />
               <div className="min-w-0 flex-1">
                 <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-2">
-                  <span className="text-sm font-medium text-muted">{t(`idea_topic_${idea.topic}`)}</span>
+                  <span className="inline-flex items-center gap-1.5 text-sm font-medium text-muted">{(() => { const I = TOPIC_ICON[idea.topic] || Lightbulb; return <I size={14} aria-hidden className="text-brand-text" />; })()}{t(`idea_topic_${idea.topic}`)}</span>
                   <StatusTrack status={idea.status} />
                 </div>
                 <h2 className="mt-1 font-display text-[1.25rem] font-semibold leading-tight">{idea.title}</h2>

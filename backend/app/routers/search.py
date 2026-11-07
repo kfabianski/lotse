@@ -111,8 +111,9 @@ def search(q: str = Query("", max_length=200), limit: int = Query(30, ge=1, le=1
                     for x in db.query(QuickLink).filter(QuickLink.active.is_(True)).order_by(QuickLink.sort)
                     if _matches(words, x.title_de, x.title_en, x.subtitle_de, x.subtitle_en, x.url)][:limit]
 
+    from app.routers.polls import may_see
     for p in db.query(Poll).order_by(Poll.created_at.desc()):
-        if _matches(words, p.question_de, p.question_en, p.description_de, p.description_en, p.options):
+        if may_see(p, viewer) and _matches(words, p.question_de, p.question_en, p.description_de, p.description_en, p.options):
             out["polls"].append({"id": p.id, "question_de": p.question_de, "question_en": p.question_en, "open": p.is_open()})
     out["polls"] = out["polls"][:limit]
 

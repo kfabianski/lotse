@@ -3,7 +3,7 @@ from typing import Literal
 
 from pydantic import BaseModel, ConfigDict, EmailStr, Field
 
-Role = Literal["admin", "editor", "moderator", "author", "user"]
+Role = Literal["admin", "editor", "moderator", "hr", "author", "user"]
 Permission = Literal["content_own", "content_all", "trainings", "moderate", "quicklinks", "locations", "people"]
 Category = Literal["news", "events", "people", "products", "rules", "safety", "cyber", "knowhow"]
 ClassifiedKind = Literal["offer", "search", "give", "carpool", "other"]
@@ -45,6 +45,7 @@ class UserOut(ORM):
     branch: str = ""
     permissions: list[str] = []  # extra permissions (only shown to admins and to the person)
     effective_permissions: list[str] = []  # role + extras (only for the person and admins)
+    color_scheme: str | None = None
     notify_articles: bool | None = None
     notify_ideas: bool | None = None
 
@@ -82,7 +83,8 @@ class UserUpdate(BaseModel):
 
 
 class MeUpdate(BaseModel):
-    language: Literal["de", "en"] | None = None
+    language: str | None = Field(default=None, pattern=r"^[a-z]{2}$")
+    color_scheme: Literal["", "hafen", "signal", "meer", "indigo", "nordsee", "fjord", "azur", "marine"] | None = None  # "" = back to the company scheme
     notify_articles: bool | None = None
     notify_ideas: bool | None = None
     phone_ext: str | None = None

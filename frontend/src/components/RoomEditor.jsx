@@ -242,7 +242,7 @@ export default function RoomEditor({ location, onChanged }) {
           {error && <span className="text-alert">{error}</span>}
         </div>
         <div className="card overflow-hidden p-3 sm:p-4">
-          <svg ref={svgRef} viewBox={`0 0 ${PLAN_W} ${H}`} className="block w-full touch-none select-none" style={{ aspectRatio: `${PLAN_W} / ${H}`, cursor: 'crosshair' }}
+          <svg ref={svgRef} role="img" aria-label="Raumplan" viewBox={`0 0 ${PLAN_W} ${H}`} className="block w-full touch-none select-none" style={{ aspectRatio: `${PLAN_W} / ${H}`, cursor: 'crosshair' }}
             onPointerDown={startDraw} onPointerMove={onMove} onPointerUp={onUp} onPointerCancel={onUp}>
             <defs>
               <pattern id="re-grid" width={GRID * 4} height={GRID * 4} patternUnits="userSpaceOnUse">

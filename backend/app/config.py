@@ -10,6 +10,7 @@ class Settings(BaseSettings):
     model_config = SettingsConfigDict(env_file=BACKEND_DIR / ".env", env_prefix="LOTSE_", extra="ignore")
 
     company_name: str = "Muster GmbH"
+    color_scheme: str = "hafen"  # colour scheme of the portal, picked by the admin
     login_image_url: str = ""  # own photo for the sign-in page; empty = bundled illustration
     database_url: str = f"sqlite:///{(BACKEND_DIR / 'data' / 'lotse.db').as_posix()}"
     upload_dir: Path = BACKEND_DIR / "data" / "uploads"
@@ -67,6 +68,8 @@ class Settings(BaseSettings):
     ldap_attr_photo: str = "thumbnailPhoto"
     ldap_attr_manager: str = "manager"
     ldap_attr_branch: str = "physicalDeliveryOfficeName"  # Niederlassung; empty = set by hand
+    ldap_attr_start_date: str = "whenCreated"  # first day (only filled when empty); new accounts otherwise get today
+    footer_text: str = ""  # free text in the page footer, e.g. address or imprint note
     ldap_departments_auto: bool = True  # create departments from the LDAP "department" attribute
     ldap_admin_group: str = ""  # full DN; members become admins
     ldap_editor_group: str = ""  # full DN; members become editors
@@ -75,11 +78,11 @@ class Settings(BaseSettings):
 # Settings an administrator may change in the web UI; stored in the app_settings table and applied
 # on top of the .env values at startup and on every save.
 EDITABLE = {
-    "company_name", "public_read", "login_image_url", "holiday_regions", "sso_enabled", "sso_header", "trusted_proxies", "ldap_enabled", "ldap_host", "ldap_port", "ldap_mode", "ldap_ca_pem",
+    "company_name", "public_read", "color_scheme", "login_image_url", "holiday_regions", "sso_enabled", "sso_header", "trusted_proxies", "ldap_enabled", "ldap_host", "ldap_port", "ldap_mode", "ldap_ca_pem",
     "ldap_verify_cert", "ldap_bind_dn", "ldap_bind_password", "ldap_base_dn", "ldap_user_filter",
     "ldap_sync_filter", "ldap_admin_group", "ldap_departments_auto", "ldap_editor_group", "ldap_attr_username", "ldap_attr_first_name",
     "ldap_attr_last_name", "ldap_attr_email", "ldap_attr_department", "ldap_attr_title", "ldap_attr_phone",
-    "ldap_attr_photo", "ldap_attr_manager", "ldap_attr_branch", "portal_url", "notify_email", "smtp_host", "smtp_port", "smtp_mode",
+    "ldap_attr_photo", "ldap_attr_manager", "ldap_attr_branch", "ldap_attr_start_date", "footer_text", "portal_url", "notify_email", "smtp_host", "smtp_port", "smtp_mode",
     "smtp_user", "smtp_password", "smtp_from", "notify_teams", "teams_webhook_url",
 }
 SECRET = {"ldap_bind_password", "smtp_password", "teams_webhook_url"}  # never sent back to the browser

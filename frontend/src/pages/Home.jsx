@@ -1,61 +1,56 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { ArrowUpRight, Camera, Images, Pin } from 'lucide-react';
+import { Pin } from 'lucide-react';
 import HeroSlider from '../components/HeroSlider';
 import { Avatar, CategoryTag, Empty, SectionHeading, relativeDay } from '../components/ui';
 import { useI18n } from '../lib/i18n';
 import { useFetch } from '../lib/useFetch';
-import { useAuth } from '../lib/auth';
 import { useViewer } from '../lib/viewer';
-import { UpcomingCard } from './Events';
 import MiniCalendar from '../components/MiniCalendar';
 import QuickLinks from '../components/QuickLinks';
-import Greeting from '../components/Greeting';
 import { PollCard } from './Polls';
-import { ArticleCover } from './Articles';
 
 function ShowAll({ to, label }) {
   const { t } = useI18n();
-  return (
-    <Link to={to} className="inline-flex items-center gap-1 text-sm font-medium text-brand hover:underline">
-      {label || t('show_all')}<ArrowUpRight size={15} />
-    </Link>
-  );
+  return <Link to={to} className="link whitespace-nowrap font-display text-sm font-medium">{label || t('show_all')}</Link>;
 }
 
-function NewsItem({ a, large }) {
+/** The lead story: its photograph in a hairline frame, the head, two lines. */
+function NewsLead({ a }) {
   const { loc } = useI18n();
   return (
     <Link to={`/articles/${a.id}`} className="group block">
-      {large && a.image_url && (
-        <img src={a.image_url} alt="" className="mb-3 aspect-[16/8] w-full rounded-2xl object-cover" />
+      {a.image_url && (
+        <img src={a.image_url} alt="" className="mb-4 aspect-[16/9] w-full object-cover rounded-xl" />
       )}
       <CategoryTag category={a.category} />
-      <h3 className={`mt-1 font-display font-semibold leading-tight group-hover:text-brand ${large ? 'text-[1.4rem]' : 'text-[1.05rem]'}`}>
+      <h3 className="mt-1 font-display text-[1.6rem] font-semibold leading-[1.1] text-ink group-hover:underline group-hover:decoration-brand-text group-hover:decoration-2 group-hover:underline-offset-[0.12em]">
         {loc(a, 'title')}
       </h3>
-      <p className="mt-1 line-clamp-2 text-muted">{loc(a, 'summary')}</p>
+      <p className="mt-2 line-clamp-2 text-[1.0625rem] text-ink-2">{loc(a, 'summary')}</p>
     </Link>
   );
 }
 
-/** Teaser with a small picture, for the right-hand column of the news block. */
-function NewsTeaser({ a }) {
+/** One ruled row in the news column: section, head, date; the picture only when the story has one. */
+function NewsRow({ a }) {
   const { t, loc, fmtDate } = useI18n();
   return (
-    <Link to={`/articles/${a.id}`} className="group flex gap-4">
-      <span className="block h-20 w-28 shrink-0 overflow-hidden rounded-xl [&_span]:hidden"><ArticleCover article={a} className="h-full" /></span>
-      <span className="min-w-0">
-        <span className="flex items-center gap-2"><CategoryTag category={a.category} />
-          {a.pinned_now && <span className="inline-flex items-center gap-1 rounded-md bg-signal/25 px-1.5 text-xs font-medium"><Pin size={11} />{t('pinned_badge')}</span>}</span>
-        <span className="mt-0.5 line-clamp-2 block font-semibold leading-snug group-hover:text-brand">{loc(a, 'title')}</span>
-        <span className="mt-0.5 block text-sm text-muted" title={fmtDate(a.published_at)}>{relativeDay(t, a.published_at)}</span>
-      </span>
-    </Link>
+    <li className="border-b border-line">
+      <Link to={`/articles/${a.id}`} className="group flex gap-4 py-3.5 hover:bg-surface-2">
+        <span className="min-w-0 flex-1">
+          <span className="flex flex-wrap items-center gap-x-3"><CategoryTag category={a.category} />
+            {a.pinned_now && <span className="inline-flex items-center gap-1 text-sm font-medium text-brand-text"><Pin size={13} aria-hidden />{t('pinned_badge')}</span>}</span>
+          <span className="mt-0.5 line-clamp-2 block font-display text-[1.0625rem] font-semibold leading-snug text-ink">{loc(a, 'title')}</span>
+          <span className="mt-0.5 block text-sm text-muted" title={fmtDate(a.published_at)}>{relativeDay(t, a.published_at)}</span>
+        </span>
+        {a.image_url && <img src={a.image_url} alt="" loading="lazy" className="h-[4.5rem] w-24 shrink-0 object-cover" />}
+      </Link>
+    </li>
   );
 }
 
-/** Photo wall: one large picture plus up to four smaller ones; every tile opens the in-app viewer. */
+/** Photo wall: one large picture and up to four smaller ones, captions beneath, never on the picture. */
 function PhotoWall({ photos }) {
   const { t, lang } = useI18n();
   const { open } = useViewer();
@@ -65,30 +60,24 @@ function PhotoWall({ photos }) {
   const rest = photos.length - shown.length;
   return (
     <section>
-      <SectionHeading action={<ShowAll to="/calendar?view=past" label={t('photos_all')} />}>
-        <span className="inline-flex items-center gap-2"><Camera size={22} className="text-brand" />{t('photos_title')}</span>
-      </SectionHeading>
-      <ul className="grid auto-rows-[160px] grid-cols-2 gap-3 sm:auto-rows-[200px] md:grid-cols-4">
+      <SectionHeading action={<ShowAll to="/calendar?view=past" label={t('photos_all')} />}>{t('photos_title')}</SectionHeading>
+      <ul className="grid grid-cols-2 gap-x-4 gap-y-5 md:grid-cols-[minmax(0,2fr)_minmax(0,1fr)_minmax(0,1fr)]">
         {shown.map((p, i) => {
           const title = lang === 'en' && p.article_title_en ? p.article_title_en : p.article_title_de;
-          const last = i === shown.length - 1 && rest > 0;
           return (
-            <li key={p.id} className={i === 0 ? 'col-span-2 row-span-2' : ''}>
-              <button type="button" onClick={() => open(items, i)}
-                className="group relative block h-full w-full cursor-zoom-in overflow-hidden rounded-2xl bg-surface-2">
-                <img src={p.url} alt={p.name} loading="lazy"
-                  className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105" />
-                <span className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/0 to-transparent" />
-                <span className="absolute inset-x-0 bottom-0 p-3 text-left text-white sm:p-4">
-                  <span className={`block font-semibold leading-tight ${i === 0 ? 'text-lg sm:text-xl' : 'text-sm'}`}>{title}</span>
-                  {i === 0 && <span className="mt-0.5 block text-sm text-white/80">{p.name}</span>}
-                </span>
-                {last && (
-                  <span className="absolute inset-0 flex items-center justify-center bg-black/45 text-white">
-                    <span className="inline-flex items-center gap-2 text-lg font-semibold"><Images size={20} />+{rest}</span>
-                  </span>
-                )}
-              </button>
+            <li key={p.id} className={i === 0 ? 'col-span-2 md:col-span-1 md:row-span-2' : ''}>
+              <figure className="flex h-full flex-col">
+                <button type="button" onClick={() => open(items, i)} className="block min-h-0 flex-1 cursor-zoom-in bg-well">
+                  <img src={p.url} alt={p.name} loading="lazy"
+                    className={`h-full w-full object-cover rounded-xl ${i === 0 ? 'aspect-[4/3] md:aspect-auto' : 'aspect-[4/3]'}`} />
+                </button>
+                <figcaption className="mt-1.5 flex items-baseline justify-between gap-3 text-sm">
+                  <span className={`line-clamp-1 ${i === 0 ? 'font-medium text-ink' : 'text-muted'}`}>{title}</span>
+                  {i === shown.length - 1 && rest > 0 && (
+                    <button type="button" onClick={() => open(items, i + 1)} className="link shrink-0 font-mono">+{rest}</button>
+                  )}
+                </figcaption>
+              </figure>
             </li>
           );
         })}
@@ -97,7 +86,6 @@ function PhotoWall({ photos }) {
   );
 }
 
-
 function NewsBlock({ news, half }) {
   const { t } = useI18n();
   const lead = news.find((a) => !a.pinned_now && a.image_url) || news.find((a) => !a.pinned_now) || news[0];
@@ -105,33 +93,40 @@ function NewsBlock({ news, half }) {
   return (
     <section>
       <SectionHeading action={<ShowAll to="/news" />}>{t('latest_news')}</SectionHeading>
-      <div className={`grid gap-8 ${half ? '' : 'md:grid-cols-[minmax(0,1.3fr)_minmax(0,1fr)]'}`}>
-        <NewsItem a={lead} large />
+      <div className={`grid gap-x-10 gap-y-6 ${half ? '' : 'md:grid-cols-[minmax(0,1.25fr)_minmax(0,1fr)]'}`}>
+        <NewsLead a={lead} />
         {rest.length > 0 && (
-          <div className={`space-y-5 ${half ? 'border-t border-line pt-5' : 'md:border-l md:border-line md:pl-8'}`}>
-            {rest.slice(0, half ? 3 : 5).map((a) => <NewsTeaser key={a.id} a={a} />)}
-          </div>
+          <ul className="border-t border-line">
+            {rest.slice(0, half ? 3 : 5).map((a) => <NewsRow key={a.id} a={a} />)}
+          </ul>
         )}
       </div>
     </section>
   );
 }
 
-/** New colleagues as photo cards instead of a list. */
+/** New colleagues: a ruled register of photo, name, role and first day. */
 function PeopleBlock({ people, half }) {
   const { t, fmtDate } = useI18n();
-  const shown = people.slice(0, 6); // one tidy row (two rows of three when half)
+  const shown = people.slice(0, 6);
   return (
     <section>
       <SectionHeading action={<ShowAll to="/people" />}>{t('new_colleagues')}</SectionHeading>
-      <ul className={`grid grid-cols-2 gap-3 sm:grid-cols-3 ${half ? '' : 'lg:grid-cols-6'}`}>
+      <ul className={`grid gap-x-8 sm:grid-cols-2 ${half ? '' : 'lg:grid-cols-3'}`}>
         {shown.map((p) => (
-          <li key={p.id}>
-            <Link to={`/people?focus=${p.id}`} className="group flex h-full flex-col items-center rounded-2xl border border-line bg-surface px-3 pb-4 pt-5 text-center hover:border-brand">
-              <Avatar person={p} size={72} />
-              <span className="mt-3 block font-semibold leading-tight group-hover:text-brand">{p.full_name}</span>
-              <span className="mt-0.5 line-clamp-2 block text-sm text-muted">{p.position}</span>
-              {p.start_date && <span className="mt-auto pt-2 text-xs text-muted">{t('since_date', { d: fmtDate(p.start_date, { day: 'numeric', month: 'short' }) })}</span>}
+          <li key={p.id} className="border-b border-line">
+            <Link to={`/people?focus=${p.id}`} className="group flex items-center gap-4 py-3 hover:bg-surface-2">
+              <Avatar person={p} size={56} />
+              <span className="min-w-0 flex-1">
+                <span className="block font-display font-semibold leading-tight text-ink">{p.full_name}</span>
+                <span className="block truncate text-muted">{p.position}</span>
+              </span>
+              {p.start_date && (
+                <span className="shrink-0 text-right text-sm text-muted">
+                  {t('since_date', { d: '' }).trim()}
+                  <span className="block font-mono text-ink">{fmtDate(p.start_date, { day: '2-digit', month: '2-digit' })}</span>
+                </span>
+              )}
             </Link>
           </li>
         ))}
@@ -140,16 +135,40 @@ function PeopleBlock({ people, half }) {
   );
 }
 
-function UpcomingBlock({ events, half, onChange }) {
-  const { t } = useI18n();
+/** The register of what comes next: date and time in figures, the event, the place, who is in. */
+function UpcomingBlock({ events, half }) {
+  const { t, loc, fmtDate } = useI18n();
   return (
     <section>
       <SectionHeading action={<ShowAll to="/calendar" label={t('events_all')} />}>{t('events_home')}</SectionHeading>
-      <div className={`grid gap-5 ${half ? '' : 'md:grid-cols-2 xl:grid-cols-3'}`}>
-        {events.length
-          ? events.slice(0, half ? 1 : 2).map((e) => <ul key={e.id} className="contents"><UpcomingCard event={e} onChange={onChange} /></ul>)
-          : <div className={half ? '' : 'md:col-span-1 xl:col-span-2'}><Empty>{t('no_events')}</Empty></div>}
-        {!half && <div className="md:col-span-2 xl:col-span-1"><MiniCalendar /></div>}
+      <div className={`grid gap-x-10 gap-y-8 ${half ? '' : 'xl:grid-cols-[minmax(0,1fr)_20rem]'}`}>
+        {events.length ? (
+          <div className="self-start overflow-hidden rounded-2xl border border-line bg-surface"><table className="w-full border-collapse">
+            <thead className="sr-only"><tr><th>{t('date')}</th><th>{t('events_home')}</th></tr></thead>
+            <tbody>
+              {events.map((e) => {
+                const d = new Date(e.event_date);
+                return (
+                  <tr key={e.id} className="border-b border-line align-top last:border-b-0">
+                    <td className="w-[8rem] py-4 pl-4 pr-2">
+                      <span className="block font-mono text-[1.75rem] leading-none text-ink">{String(d.getDate()).padStart(2, '0')}.{String(d.getMonth() + 1).padStart(2, '0')}.</span>
+                      <span className="mt-1 block text-sm capitalize text-muted">{fmtDate(d, { weekday: 'long' })}</span>
+                    </td>
+                    <td className="py-4 pr-4">
+                      <Link to={`/articles/${e.id}`} className="font-display text-[1.125rem] font-semibold leading-snug text-ink hover:underline hover:decoration-brand-text">{loc(e, 'title')}</Link>
+                      <span className="mt-1 block text-muted">
+                        <span className="font-mono text-ink-2">{fmtDate(d, { hour: '2-digit', minute: '2-digit' })}</span>
+                        {e.event_location && <>, {e.event_location}</>}
+                      </span>
+                      {!half && loc(e, 'summary') && <span className="mt-1 line-clamp-1 block max-w-[60ch] text-muted">{loc(e, 'summary')}</span>}
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table></div>
+        ) : <Empty>{t('no_events')}</Empty>}
+        {!half && <MiniCalendar />}
       </div>
     </section>
   );
@@ -160,13 +179,13 @@ function RecentBlock({ items }) {
   return (
     <section>
       <SectionHeading>{t('recent_articles')}</SectionHeading>
-      <ul className="card divide-y divide-line">
+      <ul>
         {items.map((a) => (
-          <li key={a.id}>
-            <Link to={`/articles/${a.id}`} className="group flex items-center gap-4 px-5 py-3.5">
+          <li key={a.id} className="border-b border-line">
+            <Link to={`/articles/${a.id}`} className="group flex items-baseline gap-4 py-3 hover:bg-surface-2">
               <span className="min-w-0 flex-1">
-                <span className="block truncate font-medium group-hover:text-brand">{loc(a, 'title')}</span>
-                <CategoryTag category={a.category} className="mt-0.5" />
+                <span className="block truncate font-display font-semibold text-ink">{loc(a, 'title')}</span>
+                <CategoryTag category={a.category} />
               </span>
               <span className="shrink-0 text-sm text-muted" title={fmtDate(a.published_at)}>{relativeDay(t, a.published_at)}</span>
             </Link>
@@ -182,13 +201,16 @@ function BoardBlock({ items, half }) {
   return (
     <section>
       <SectionHeading action={<ShowAll to="/board" />}>{t('board_latest')}</SectionHeading>
-      <ul className={`grid gap-3 ${half ? 'sm:grid-cols-2' : 'sm:grid-cols-2 xl:grid-cols-4'}`}>
+      <ul className={`grid gap-x-8 ${half ? '' : 'sm:grid-cols-2'}`}>
         {items.map((c) => (
-          <li key={c.id}>
-            <Link to={`/board#notice-${c.id}`} className="flex h-full flex-col card px-4 py-3 hover:border-brand">
-              <span className="text-sm text-muted">{t(`kind_${c.kind}`)}{c.price && ` · ${c.price}`}</span>
-              <span className="font-medium leading-snug">{c.title}</span>
-              <span className="mt-auto pt-1 text-sm text-muted">{c.author.full_name}</span>
+          <li key={c.id} className="border-b border-line">
+            <Link to={`/board#notice-${c.id}`} className="group flex items-baseline gap-4 py-3 hover:bg-surface-2">
+              <span className="min-w-0 flex-1">
+                <span className="block text-sm text-muted">{t(`kind_${c.kind}`)}</span>
+                <span className="block font-display font-semibold leading-snug text-ink">{c.title}</span>
+                <span className="block text-sm text-muted">{c.author.full_name}</span>
+              </span>
+              {c.price && <span className="shrink-0 font-mono text-ink">{c.price}</span>}
             </Link>
           </li>
         ))}
@@ -224,19 +246,17 @@ export function layoutRows(blocks) {
 
 export default function Home() {
   const { t } = useI18n();
-  const { user } = useAuth();
   const { data, error, loading } = useFetch('/home');
   const polls = useFetch('/polls', { params: { state: 'open', limit: 1 } }, 'home-poll');
-  const [rsvps, setRsvps] = useState({});
   const [poll, setPoll] = useState(null);
 
   if (loading && !data) return <p className="py-20 text-center text-muted">{t('loading')}</p>;
   if (error) return <Empty>{t('error_generic', { msg: error.message })}</Empty>;
-  const events = data.events.map((e) => rsvps[e.id] || e);
+  const { events } = data;
   const currentPoll = poll || polls.data?.[0];
 
   const has = {
-    greeting: Boolean(user), slider: data.slides.length > 0, quicklinks: true,
+    slider: data.slides.length > 0, quicklinks: true,
     upcoming: true, news: data.news.length > 0, people: data.new_people.length > 0, photos: (data.photos || []).length > 0,
     recent: data.recent.length > 0, poll: Boolean(currentPoll), board: data.classifieds.length > 0,
   };
@@ -244,10 +264,9 @@ export default function Home() {
 
   const render = (b, half) => {
     switch (b.id) {
-      case 'greeting': return <Greeting />;
       case 'slider': return <HeroSlider slides={data.slides} />;
       case 'quicklinks': return <QuickLinks />;
-      case 'upcoming': return <UpcomingBlock events={events} half={half} onChange={(ev) => setRsvps((r) => ({ ...r, [ev.id]: ev }))} />;
+      case 'upcoming': return <UpcomingBlock events={events} half={half} />;
       case 'news': return <NewsBlock news={data.news} half={half} />;
       case 'people': return <PeopleBlock people={data.new_people} half={half} />;
       case 'photos': return <PhotoWall photos={data.photos} />;
@@ -259,10 +278,10 @@ export default function Home() {
   };
 
   return (
-    <div className="space-y-12">
+    <div className="space-y-14">
       {layoutRows(blocks).map((row) => (
         row.length === 2
-          ? <div key={row[0].id} className="grid gap-12 lg:grid-cols-2 lg:gap-10">{row.map((b) => <div key={b.id} className="min-w-0">{render(b, true)}</div>)}</div>
+          ? <div key={row[0].id} className="grid gap-14 lg:grid-cols-2 lg:gap-12">{row.map((b) => <div key={b.id} className="min-w-0">{render(b, true)}</div>)}</div>
           : <div key={row[0].id}>{render(row[0], false)}</div>
       ))}
     </div>

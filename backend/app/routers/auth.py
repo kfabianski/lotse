@@ -16,7 +16,7 @@ router = APIRouter(prefix="/api/auth", tags=["auth"])
 @router.get("/config")
 def public_config():
     """What the login screen needs to know before anyone is signed in."""
-    return {"company_name": settings.company_name, "ldap_enabled": settings.ldap_enabled,
+    return {"company_name": settings.company_name, "color_scheme": settings.color_scheme, "footer_text": settings.footer_text, "ldap_enabled": settings.ldap_enabled,
             "public_read": settings.public_read, "login_image_url": settings.login_image_url or None,
             "ldap_departments_auto": settings.ldap_enabled and settings.ldap_departments_auto,
             "ldap_branch_attr": bool(settings.ldap_enabled and settings.ldap_attr_branch),
@@ -96,6 +96,8 @@ def update_me(body: MeUpdate, user: User = Depends(current_user), db: Session = 
         user.notify_articles = body.notify_articles
     if body.notify_ideas is not None:
         user.notify_ideas = body.notify_ideas
+    if body.color_scheme is not None:
+        user.color_scheme = body.color_scheme or None
     if body.new_password:
         if user.auth_source != "local":
             raise HTTPException(400, "Directory accounts change their password in Windows/LDAP")

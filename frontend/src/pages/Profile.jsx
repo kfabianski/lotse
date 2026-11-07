@@ -1,3 +1,5 @@
+import SchemePicker from '../components/SchemePicker';
+import { useFetch } from '../lib/useFetch';
 import { useState } from 'react';
 import { Camera } from 'lucide-react';
 import { Avatar, Button, Field, inputClass } from '../components/ui';
@@ -6,6 +8,7 @@ import { useI18n } from '../lib/i18n';
 import { api, uploadImage } from '../lib/api';
 
 export default function Profile() {
+  const { data: config } = useFetch('/auth/config', undefined, 'public-config');
   const { user, setUser } = useAuth();
   const { t } = useI18n();
   const [ext, setExt] = useState(user.phone_ext);
@@ -28,7 +31,7 @@ export default function Profile() {
       <div className="mt-8 flex items-center gap-6 card p-6">
         <div className="relative">
           <Avatar person={user} size={96} />
-          <label className="absolute -bottom-1 -right-1 cursor-pointer rounded-full bg-brand p-2 text-white shadow hover:bg-brand-strong" title={t('change_photo')}>
+          <label className="absolute -bottom-1 -right-1 cursor-pointer rounded-sm bg-brand p-2 text-brand-ink shadow hover:bg-brand-strong" title={t('change_photo')}>
             <Camera size={16} /><span className="sr-only">{t('change_photo')}</span>
             <input type="file" accept="image/png,image/jpeg,image/webp" className="sr-only"
               onChange={(e) => e.target.files?.[0] && run(() => uploadImage(e.target.files[0], '/auth/me/avatar'))} />
@@ -46,6 +49,15 @@ export default function Profile() {
         <Field label={t('extension')} className="flex-1"><input className={inputClass} value={ext} onChange={(e) => setExt(e.target.value)} /></Field>
         <Button type="submit">{t('save')}</Button>
       </form>
+
+      <section className="mt-10">
+        <h2 className="font-display text-xl font-semibold">{t('cs_profile_title')}</h2>
+        <p className="mt-1 text-sm text-muted">{t('cs_profile_hint')}</p>
+        <div className="mt-4">
+          <SchemePicker value={user.color_scheme || ''} companyDefault={config?.color_scheme || 'hafen'}
+            onChange={(id) => run(() => api('/auth/me', { method: 'PATCH', body: { color_scheme: id } }))} />
+        </div>
+      </section>
 
       <section className="mt-10">
         <h2 className="font-display text-xl font-semibold">{t('nt_profile_title')}</h2>
