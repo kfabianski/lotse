@@ -1,6 +1,7 @@
 """Admin settings editable in the web UI (company, public reading, LDAP connection)."""
 
 import json
+import re
 from typing import Literal
 
 from fastapi import APIRouter, Depends, File, HTTPException, UploadFile
@@ -197,3 +198,75 @@ def ldap_test(body: TestIn, _: User = Depends(require("admin"))):
         return {"ok": True, **ldap_auth.test_connection(body.username.strip())}
     except ldap_auth.LdapError as exc:
         return {"ok": False, "error": str(exc)}
+
+
+# --- editable notification mails -------------------------------------------------------------------------
+class TemplateIn(BaseModel):
+    subject: str = Field("", max_length=300)
+    body: str = Field("", max_length=30000)
+
+
+class TemplatesIn(BaseModel):
+    article: TemplateIn
+    idea: TemplateIn
+
+
+class PreviewIn(BaseModel):
+    kind: Literal["article", "idea"]
+    subject: str = Field("", max_length=300)
+    body: str = Field("", max_length=30000)
+    to: str = Field("", max_length=200)
+
+
+def _templates_view(db: Session) -> dict:
+    from app import mail_templates as mt
+    return {"templates": mt.load(db), "defaults": mt.DEFAULTS,
+            "shortcodes": {k: {**v, **mt.COMMON} for k, v in mt.SHORTCODES.items()}}
+
+
+@router.get("/mail-templates")
+def get_mail_templates(_: User = Depends(require("admin")), db: Session = Depends(get_db)):
+    return _templates_view(db)
+
+
+@router.put("/mail-templates")
+def save_mail_templates(body: TemplatesIn, _: User = Depends(require("admin")), db: Session = Depends(get_db)):
+    from app import mail_templates as mt
+    mt.save(db, body.model_dump())
+    return _templates_view(db)
+
+
+def _sample(body: PreviewIn, me: User):
+    from app import mail_templates as mt
+    from app import notify
+    tpl = {"subject": body.subject or mt.DEFAULTS[body.kind]["subject"], "body": body.body or mt.DEFAULTS[body.kind]["body"]}
+    values = {**mt.SAMPLE[body.kind], **notify._person(me)}
+    url = notify.portal(values.pop("path"))
+    if not url.startswith("http"):
+        url = "https://intranet.example" + url  # preview only: show the button even without a portal address
+    return mt.render(body.kind, tpl, values, url)
+
+
+@router.post("/mail-templates/preview")
+def preview_mail_template(body: PreviewIn, me: User = Depends(require("admin"))):
+    """Renders the (unsaved) template with example data."""
+    subject, page, _ = _sample(body, me)
+    return {"subject": subject, "html": page}
+
+
+@router.post("/mail-templates/test")
+def test_mail_template(body: PreviewIn, me: User = Depends(require("admin"))):
+    import smtplib
+
+    from app import notify
+    if not re.match(r"^[^@\s]+@[^@\s]+$", body.to or ""):
+        raise HTTPException(422, "E-Mail-Adresse fehlt")
+    if not (settings.smtp_host and settings.smtp_from):
+        return {"ok": False, "error": "SMTP-Server und Absender eintragen und speichern."}
+    subject, page, text = _sample(body, me)
+    try:
+        with notify._smtp() as server:
+            server.send_message(notify._message(body.to, "[Test] " + subject, text, page))
+        return {"ok": True}
+    except (OSError, smtplib.SMTPException) as exc:
+        return {"ok": False, "error": str(exc)[:300]}

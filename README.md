@@ -74,11 +74,12 @@ Alle Funktionen im Detail: **[docs/FUNKTIONEN.md](docs/FUNKTIONEN.md)** · Bildn
   Verwaltung eingetragen; Äste ein-/ausklappen, an Breite anpassen, Zoom, Suche und Abteilungsfilter heben Personen hervor.
 - **Startseite gestalten** (Redaktion/Admin): Blöcke per Ziehen anordnen, ein-/ausblenden, *breit* oder *halb*;
   fertige Vorlagen (*Standard*, *Nachrichten zuerst*, *Bilder & Termine*, *Kompakt*) mit Live-Vorschau.
-- **Bitte vormerken**: Beiträge **oben anheften** (optional bis zu einem Datum) – z. B. Jahresplanung, Inventur.
+- **Oben anheften**: wichtige Beiträge (optional bis zu einem Datum) stehen ganz oben in *Aktuelles* und in *Was gibt’s Neues* – z. B. Jahresplanung, Inventur.
 - **Niederlassungen**: Artikel und Termine nur für bestimmte Standorte; Personen gehören zu einer Niederlassung
   (von Hand oder aus LDAP), Schulungen lassen sich einer Niederlassung zuweisen.
 - **Benachrichtigungen** per **E-Mail** (neue Artikel und Termine, Antworten auf eigene Ideen) und als Karte in
-  einem **Teams-Kanal**; jede Person kann sie im Profil abschalten.
+  einem **Teams-Kanal**; jede Person kann sie im Profil abschalten. Betreff und Text der Mails gestaltet der Admin
+  selbst (**Mail anpassen**: Editor mit Platzhaltern wie `{article}`, Vorschau, Test-Mail).
 - **Kleinanzeigen**: Biete, Suche, Zu verschenken, Fahrgemeinschaften – mit Foto, Preis und Kontakt.
 - **Ideenbox**: Ideen einreichen (auf Wunsch **wirklich anonym** – der Name wird dann gar nicht gespeichert),
   mit **1–5 Sternen** bewerten, Sortierung *Beste Bewertung* oder *Neueste*, Status von *Neu* bis *Umgesetzt*

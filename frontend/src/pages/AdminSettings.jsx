@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
-import { CheckCircle2, ChevronDown, ImagePlus, PlugZap, RefreshCw, RotateCcw, ShieldAlert, XCircle } from 'lucide-react';
+import { CheckCircle2, ChevronDown, ImagePlus, MailPlus, PlugZap, RefreshCw, RotateCcw, ShieldAlert, XCircle } from 'lucide-react';
+import MailTemplates from '../components/MailTemplates';
 import { Button, Field, inputClass } from '../components/ui';
 import { useI18n } from '../lib/i18n';
 import { api } from '../lib/api';
@@ -67,6 +68,7 @@ export default function AdminSettings() {
   const [webhook, setWebhook] = useState('');
   const [mailTo, setMailTo] = useState('');
   const [notifyTest, setNotifyTest] = useState(null);
+  const [mailEditor, setMailEditor] = useState(false);
   const [status, setStatus] = useState(null); // { kind: 'ok'|'error', text }
   const [test, setTest] = useState(null);
   const [testUser, setTestUser] = useState('');
@@ -187,7 +189,9 @@ export default function AdminSettings() {
             if (!(await save())) return;
             setNotifyTest(await api('/admin/settings/mail-test', { method: 'POST', body: { to: mailTo } }));
           }}>{t('nt_test_mail')}</Button>
+          <Button variant="outline" onClick={() => setMailEditor(true)}><MailPlus size={16} />{t('mt_open')}</Button>
         </div>
+        {mailEditor && <MailTemplates onClose={() => setMailEditor(false)} />}
         <Toggle checked={form.notify_teams} onChange={set('notify_teams')} label={t('nt_teams')} hint={t('nt_teams_hint')} />
         <div className="flex flex-wrap items-end gap-2">
           <Field label={t('nt_webhook')} hint={form.teams_webhook_url_set ? t('settings_password_kept') : t('nt_webhook_hint')} className="min-w-[16rem] flex-1">

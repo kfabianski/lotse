@@ -366,6 +366,11 @@ allgemeine Anleitungen. Es gibt zwei Arten der Sichtbarkeit, frei kombinierbar:
   Einschalten erschienen sind, werden nicht nachträglich verschickt.
 - **Ideen**: Ändert die Redaktion Status oder Antwort, bekommt die Einreicherin / der Einreicher eine E-Mail
   (bei anonymen Ideen nicht – dort ist niemand gespeichert).
+- **Mail anpassen**: Betreff und Text beider Mails frei gestalten – kleiner Editor (fett, kursiv, Überschrift, Listen,
+  Links) mit **Platzhaltern**, die per Klick eingefügt werden: `{article}` (Titel), `{summary}`, `{category}`, `{when}`
+  (Datum/Ort bei Terminen), `{author}`, `{idea}`, `{status}`, `{answer}`, `{name}`, `{first_name}`, `{company}`, `{link}`,
+  `{button}`. **Vorschau** mit Beispieldaten, **Test senden**, **Standardtext** stellt das Original wieder her.
+  Kopfzeile und Abbestell-Hinweis werden immer ergänzt; Skripte und fremde Formatierungen werden entfernt.
 - **Microsoft Teams**: Webhook-Adresse eines Kanals (in Teams: Kanal → *Workflows* → *Bei Empfang einer
   Webhookanforderung in einem Kanal posten*). Neue Beiträge erscheinen dort als Karte mit Knopf *Im Intranet öffnen*.
 - **Abbestellen**: jede Person im **Profil → Benachrichtigungen** (*Neue Artikel und Termine*, *Neuigkeiten zu meinen
@@ -374,7 +379,7 @@ allgemeine Anleitungen. Es gibt zwei Arten der Sichtbarkeit, frei kombinierbar:
 ## 17. Startseite gestalten
 
 - **Verwaltung → Startseite** (Redaktion und Administratoren). Die Startseite besteht aus Blöcken: *Begrüßung*,
-  *Bitte vormerken*, *Slider*, *Schnellzugriff*, *Was kommt*, *Was gibt’s Neues*, *Neu im Team*, *So war’s*,
+  *Slider*, *Schnellzugriff*, *Was kommt*, *Was gibt’s Neues*, *Neu im Team*, *So war’s*,
   *Frisch erschienen*, *Umfrage*, *Kleinanzeigen*.
 - Blöcke **ziehen** (oder mit den Pfeilen verschieben), mit dem Auge **ein-/ausblenden**, Breite **Breit** oder
   **Halb** wählen. Zwei halbe Blöcke stehen nebeneinander; ein einzelner halber Block wird automatisch breit – so
@@ -399,7 +404,8 @@ allgemeine Anleitungen. Es gibt zwei Arten der Sichtbarkeit, frei kombinierbar:
 
 ## 19. Beiträge oben anheften
 
-- Im Editor (Redaktion): **Oben anheften**, optional **bis** zu einem Datum. Angeheftete Beiträge stehen auf der
-  Startseite im Block **Bitte vormerken** und in ihrer Liste ganz oben (Zeichen *angepinnt*).
+- Im Editor (Redaktion): **Oben anheften**, optional **bis** zu einem Datum. Angeheftete Beiträge stehen ganz oben
+  in **Aktuelles** (auch wenn sie z. B. unter *Regeln* abgelegt sind), in ihrer eigenen Liste und auf der Startseite
+  in **Was gibt’s Neues** (Zeichen *angepinnt*).
 - Gedacht für Dinge, die lange sichtbar sein sollen: Jahresplanung, Inventur, Audits, Betriebsferien – damit alle
   ihren Urlaub danach planen können. Nach dem Datum verschwindet der Beitrag automatisch aus dem Block.

@@ -46,7 +46,8 @@ function NewsTeaser({ a }) {
     <Link to={`/articles/${a.id}`} className="group flex gap-4">
       <span className="block h-20 w-28 shrink-0 overflow-hidden rounded-xl [&_span]:hidden"><ArticleCover article={a} className="h-full" /></span>
       <span className="min-w-0">
-        <CategoryTag category={a.category} />
+        <span className="flex items-center gap-2"><CategoryTag category={a.category} />
+          {a.pinned_now && <span className="inline-flex items-center gap-1 rounded-md bg-signal/25 px-1.5 text-xs font-medium"><Pin size={11} />{t('pinned_badge')}</span>}</span>
         <span className="mt-0.5 line-clamp-2 block font-semibold leading-snug group-hover:text-brand">{loc(a, 'title')}</span>
         <span className="mt-0.5 block text-sm text-muted" title={fmtDate(a.published_at)}>{relativeDay(t, a.published_at)}</span>
       </span>
@@ -97,33 +98,10 @@ function PhotoWall({ photos }) {
 }
 
 
-/** Pinned articles: long-lived info such as the annual plan or stocktaking dates. */
-function PinnedBlock({ items }) {
-  const { t, loc, fmtDate } = useI18n();
-  return (
-    <section aria-label={t('pinned_title')}>
-      <SectionHeading><span className="inline-flex items-center gap-2"><Pin size={20} className="text-brand" />{t('pinned_title')}</span></SectionHeading>
-      <ul className={`grid gap-4 ${items.length > 1 ? 'md:grid-cols-2' : ''} ${items.length > 2 ? 'xl:grid-cols-3' : ''}`}>
-        {items.map((a) => (
-          <li key={a.id}>
-            <Link to={`/articles/${a.id}`} className="group flex h-full items-start gap-4 rounded-2xl border border-signal/60 bg-signal/10 p-4 hover:border-brand">
-              {a.image_url && <img src={a.image_url} alt="" className="h-16 w-16 shrink-0 rounded-xl object-cover" />}
-              <span className="min-w-0">
-                <span className="block font-semibold leading-snug group-hover:text-brand">{loc(a, 'title')}</span>
-                <span className="mt-0.5 line-clamp-2 block text-sm text-muted">{loc(a, 'summary')}</span>
-                {a.event_date && <span className="mt-1 block text-sm font-medium">{fmtDate(a.event_date)}</span>}
-              </span>
-            </Link>
-          </li>
-        ))}
-      </ul>
-    </section>
-  );
-}
-
 function NewsBlock({ news, half }) {
   const { t } = useI18n();
-  const [lead, ...rest] = news;
+  const lead = news.find((a) => !a.pinned_now && a.image_url) || news.find((a) => !a.pinned_now) || news[0];
+  const rest = news.filter((a) => a !== lead);
   return (
     <section>
       <SectionHeading action={<ShowAll to="/news" />}>{t('latest_news')}</SectionHeading>
@@ -131,7 +109,7 @@ function NewsBlock({ news, half }) {
         <NewsItem a={lead} large />
         {rest.length > 0 && (
           <div className={`space-y-5 ${half ? 'border-t border-line pt-5' : 'md:border-l md:border-line md:pl-8'}`}>
-            {rest.slice(0, half ? 2 : 4).map((a) => <NewsTeaser key={a.id} a={a} />)}
+            {rest.slice(0, half ? 3 : 5).map((a) => <NewsTeaser key={a.id} a={a} />)}
           </div>
         )}
       </div>
@@ -258,7 +236,7 @@ export default function Home() {
   const currentPoll = poll || polls.data?.[0];
 
   const has = {
-    greeting: Boolean(user), pinned: data.pinned?.length > 0, slider: data.slides.length > 0, quicklinks: true,
+    greeting: Boolean(user), slider: data.slides.length > 0, quicklinks: true,
     upcoming: true, news: data.news.length > 0, people: data.new_people.length > 0, photos: (data.photos || []).length > 0,
     recent: data.recent.length > 0, poll: Boolean(currentPoll), board: data.classifieds.length > 0,
   };
@@ -267,7 +245,6 @@ export default function Home() {
   const render = (b, half) => {
     switch (b.id) {
       case 'greeting': return <Greeting />;
-      case 'pinned': return <PinnedBlock items={data.pinned} />;
       case 'slider': return <HeroSlider slides={data.slides} />;
       case 'quicklinks': return <QuickLinks />;
       case 'upcoming': return <UpcomingBlock events={events} half={half} onChange={(ev) => setRsvps((r) => ({ ...r, [ev.id]: ev }))} />;

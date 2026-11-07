@@ -6,23 +6,23 @@ import { api } from '../lib/api';
 import { layoutRows } from './Home';
 
 const B = (id, width = 'full', show = true) => ({ id, show, width });
-const ALL = ['greeting', 'pinned', 'slider', 'quicklinks', 'upcoming', 'news', 'people', 'photos', 'recent', 'poll', 'board'];
+const ALL = ['greeting', 'slider', 'quicklinks', 'upcoming', 'news', 'people', 'photos', 'recent', 'poll', 'board'];
 const complete = (list) => [...list, ...ALL.filter((id) => !list.some((b) => b.id === id)).map((id) => B(id, 'full', false))];
 
 /** Ready-made layouts – one click, then fine-tune by dragging. */
 const PRESETS = {
   standard: null, // = server default
-  news: complete([B('greeting'), B('pinned'), B('news'), B('upcoming', 'half'), B('poll', 'half'), B('quicklinks'),
+  news: complete([B('greeting'), B('news'), B('upcoming', 'half'), B('poll', 'half'), B('quicklinks'),
     B('people'), B('photos'), B('board')]),
-  events: complete([B('slider'), B('greeting'), B('pinned'), B('upcoming'), B('photos'), B('news'), B('people', 'half'),
+  events: complete([B('slider'), B('greeting'), B('upcoming'), B('photos'), B('news'), B('people', 'half'),
     B('board', 'half'), B('quicklinks')]),
-  compact: complete([B('greeting'), B('pinned'), B('quicklinks'), B('upcoming', 'half'), B('poll', 'half'),
+  compact: complete([B('greeting'), B('quicklinks'), B('upcoming', 'half'), B('poll', 'half'),
     B('news', 'half'), B('board', 'half')]),
 };
 
 /** Rough block heights for the preview (in rem). */
-const HEIGHT = { greeting: 3, pinned: 3, slider: 7, quicklinks: 3.5, upcoming: 6, news: 7, people: 5, photos: 7, recent: 5, poll: 5, board: 4 };
-const TINT = { greeting: '#3557f5', pinned: '#eab308', slider: '#0f766e', quicklinks: '#0891b2', upcoming: '#7c3aed',
+const HEIGHT = { greeting: 3, slider: 7, quicklinks: 3.5, upcoming: 6, news: 7, people: 5, photos: 7, recent: 5, poll: 5, board: 4 };
+const TINT = { greeting: '#3557f5', slider: '#0f766e', quicklinks: '#0891b2', upcoming: '#7c3aed',
   news: '#2563eb', people: '#db2777', photos: '#ea580c', recent: '#64748b', poll: '#16a34a', board: '#d97706' };
 
 export default function AdminHomeLayout() {

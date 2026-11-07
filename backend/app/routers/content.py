@@ -34,9 +34,14 @@ def live_for(user: User | None):
     return and_(Article.live(), branch_ok(user))
 
 
+def pinned_now():
+    """Filter: pinned and still within the pin date."""
+    return and_(Article.pinned.is_(True), or_(Article.pinned_until.is_(None), Article.pinned_until >= date.today()))
+
+
 def pinned_first():
     """Order expression: pinned articles (still within their pin date) first."""
-    active = and_(Article.pinned.is_(True), or_(Article.pinned_until.is_(None), Article.pinned_until >= date.today()))
+    active = pinned_now()
     return case((active, 0), else_=1)
 
 
@@ -74,9 +79,9 @@ def _may_edit(user: User, article: Article) -> bool:
     return has_perm(user, "content_all") or (has_perm(user, "content_own") and article.author_id == user.id)
 
 
-HOME_BLOCKS = ("greeting", "pinned", "slider", "quicklinks", "upcoming", "news", "people", "photos", "recent", "poll", "board")
+HOME_BLOCKS = ("greeting", "slider", "quicklinks", "upcoming", "news", "people", "photos", "recent", "poll", "board")
 DEFAULT_LAYOUT = [
-    {"id": "greeting", "show": True, "width": "full"}, {"id": "pinned", "show": True, "width": "full"},
+    {"id": "greeting", "show": True, "width": "full"},
     {"id": "slider", "show": True, "width": "full"}, {"id": "quicklinks", "show": True, "width": "full"},
     {"id": "upcoming", "show": True, "width": "full"}, {"id": "news", "show": True, "width": "full"},
     {"id": "people", "show": True, "width": "full"}, {"id": "photos", "show": True, "width": "full"},
@@ -135,7 +140,9 @@ def home(viewer: User | None = Depends(reader), db: Session = Depends(get_db)):
     counts = dict(published.with_entities(Article.category, func.count()).group_by(Article.category).all())
     return {
         "slides": newest.filter(Article.featured.is_(True)).limit(6).all(),
-        "news": newest.filter(Article.category.in_(["news", "products"])).limit(5).all(),
+        # pinned posts (any category, e.g. the annual plan) stand first in "Was gibt's Neues"
+        "news": published.filter(or_(Article.category.in_(["news", "products"]), pinned_now()))
+                         .order_by(pinned_first(), Article.published_at.desc()).limit(6).all(),
         "layout": home_layout(db),
         "events": with_rsvps(db, published.filter(Article.category == "events", Article.event_date >= datetime.now()
                                    - timedelta(hours=12)).order_by(Article.event_date).limit(3).all(), viewer),
@@ -146,8 +153,6 @@ def home(viewer: User | None = Depends(reader), db: Session = Depends(get_db)):
         "classifieds": db.query(Classified).options(joinedload(Classified.author))
                          .order_by(Classified.created_at.desc()).limit(4).all(),
         "photos": latest_photos(db, 9, viewer),
-        "pinned": published.filter(Article.pinned.is_(True), or_(Article.pinned_until.is_(None), Article.pinned_until >= date.today()))
-                           .order_by(Article.published_at.desc()).limit(6).all(),
         "counts": counts,
     }
 
@@ -181,12 +186,14 @@ def list_articles(
     q: str = "",
     limit: int = Query(50, ge=1, le=200),
     offset: int = Query(0, ge=0),
+    with_pinned: bool = False,
     user: User | None = Depends(reader),
     db: Session = Depends(get_db),
 ):
     query = _visible(db.query(Article), user)
     if category:
-        query = query.filter(Article.category.in_(category))
+        cond = Article.category.in_(category)
+        query = query.filter(or_(cond, pinned_now()) if with_pinned else cond)
     if q.strip():
         like = f"%{q.strip()}%"
         query = query.filter(or_(Article.title_de.ilike(like), Article.title_en.ilike(like),

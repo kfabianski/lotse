@@ -97,7 +97,8 @@ export default function Articles({ group, titleKey }) {
   const [params, setParams] = useSearchParams();
   const selected = params.get('category');
   const categories = selected && group.includes(selected) ? [selected] : group;
-  const { data, loading, error } = useFetch('/articles', { params: { category: categories } }, categories.join());
+  const withPinned = titleKey === 'nav_news' && !selected; // Aktuelles: pinned posts of any category on top
+  const { data, loading, error } = useFetch('/articles', { params: { category: categories, with_pinned: withPinned } }, `${categories.join()}-${withPinned}`);
 
   return (
     <div>

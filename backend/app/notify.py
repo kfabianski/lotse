@@ -20,6 +20,7 @@ from datetime import datetime, timedelta
 from email.message import EmailMessage
 from email.utils import formataddr, make_msgid
 
+from app import mail_templates
 from app.config import settings
 from app.db import SessionLocal
 from app.models import Article, Idea, User
@@ -116,7 +117,12 @@ def _html(title: str, lead: str, url: str, button: str, footer: str) -> str:
             f'<p style="color:#889;font-size:12px;margin-top:28px">{e(footer)}</p></div>')
 
 
-FOOTER = "Sie erhalten diese Nachricht, weil Benachrichtigungen in Ihrem Profil eingeschaltet sind. Abbestellen: Intranet → Profil → Benachrichtigungen."
+FOOTER = mail_templates.FOOTER
+
+
+def _person(u: User) -> dict:
+    name = u.full_name or u.username
+    return {"name": name, "first_name": name.split()[0] if name.split() else name}
 
 
 # --- new articles ----------------------------------------------------------------------------------------
@@ -136,10 +142,15 @@ def announce(db, article: Article) -> dict:
     if mail_ready():
         people = db.query(User).filter(User.is_active.is_(True), User.notify_articles.is_(True), User.email.isnot(None),
                                        User.email != "").all()
-        text = f"{kind}: {title}\n\n{lead}\n" + (f"\nWann: {when}\nWo: {article.event_location}\n" if when else "") + f"\n{url}\n\n{FOOTER}\n"
-        msgs = [_message(u.email, f"{kind}: {title}", text,
-                         _html(title, lead + (f" – {when}, {article.event_location}" if when else ""), url, "Weiterlesen", FOOTER))
-                for u in people if may_see(u, article)]
+        tpl = mail_templates.load(db)["article"]
+        values = {"article": title, "summary": lead, "category": kind,
+                  "when": f"Wann: {when}" + (f" · Wo: {article.event_location}" if article.event_location else "") if when else "",
+                  "author": article.author.full_name if article.author else ""}
+        msgs = []
+        for u in people:
+            if may_see(u, article):
+                subject, page, text = mail_templates.render("article", tpl, {**values, **_person(u)}, url)
+                msgs.append(_message(u.email, subject, text, page))
         result["mails"] = send_mails(msgs)
     if teams_ready() and article_is_public_to_all(article):
         facts = [("Wann", when), ("Wo", article.event_location)] if when else None
@@ -185,10 +196,9 @@ def idea_changed(idea_id: int) -> None:
             return
         status = STATUS_DE.get(idea.status, idea.status)
         url = portal(f"/ideas#idea-{idea.id}")
-        answer = f"\n\nAntwort: {idea.response}" if idea.response else ""
-        text = f"Ihre Idee „{idea.title}“ hat den Status: {status}.{answer}\n\n{url}\n\n{FOOTER}\n"
-        lead = f"Neuer Status: {status}." + (f" Antwort: {idea.response}" if idea.response else "")
-        send_mails([_message(u.email, f"Ihre Idee: {status}", text, _html(f"„{idea.title}“", lead, url, "Zur Idee", FOOTER))])
+        values = {"idea": idea.title, "status": status, "answer": f"Antwort: {idea.response}" if idea.response else "", **_person(u)}
+        subject, page, text = mail_templates.render("idea", mail_templates.load(db)["idea"], values, url)
+        send_mails([_message(u.email, subject, text, page)])
     finally:
         db.close()
 

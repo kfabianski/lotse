@@ -286,7 +286,6 @@ class HomeOut(BaseModel):
     new_people: list[PersonBrief]
     classifieds: list[ClassifiedOut]
     photos: list[PhotoOut] = []
-    pinned: list[ArticleCard] = []
     layout: list[dict] = []
     counts: dict[str, int]
 
