@@ -18,5 +18,75 @@ Die Fotos unter `backend/demo/photos/` werden nur für die Demodaten (`backend/s
 Grafiken (Banner, Grundrisse, PDFs der Demodaten) erzeugt `seed.py` selbst; sie stehen unter der Lizenz dieses
 Projekts.
 
+## Fotos von Pexels
+
+Diese Fotos stammen von [Pexels](https://www.pexels.com) und stehen unter der [Pexels-Lizenz](https://www.pexels.com/license/)
+(kostenlos, auch kommerziell; Namensnennung freiwillig). Wo kein Name steht, nennt die verlinkte Seite die Urheber:in.
+Alle liegen unter `backend/demo/photos/` und werden nur für die Demodaten verwendet (`seed.py`, `seed.py --photos`).
+
+| Datei | Motiv | Urheber | Quelle |
+|---|---|---|---|
+| `versand-stapler.jpg` | Gabelstapler mit Paletten in der Halle | Léster Lau | [Pexels](https://www.pexels.com/photo/17229385/) |
+| `versand-halle.jpg` | Lagerhalle mit Mitarbeitenden und Stapler | GB The Green Brand | [Pexels](https://www.pexels.com/photo/30824313/) |
+| `versand-gabelstapler.jpg` | Gabelstapler hebt Kartons | ELEVATE | [Pexels](https://www.pexels.com/photo/1267324/) |
+| `versand-tor.jpg` | Stapler an der Hallentür | Mandiri Abadi | [Pexels](https://www.pexels.com/photo/15016531/) |
+| `versand-hof.jpg` | Zwei Lagermitarbeitende auf dem Hof | Tiger Lily | [Pexels](https://www.pexels.com/photo/4487445/) |
+| `lager-fahrweg.jpg` | Staplerfahrer mit Warnweste | ELEVATE | [Pexels](https://www.pexels.com/photo/1267338/) |
+| `kantine.jpg` | Kolleg:innen beim Mittagessen in der Büroküche | Mikhail Nilov | [Pexels](https://www.pexels.com/photo/8102212/) |
+| `erste-hilfe-1.jpg` | Herzdruckmassage an der Übungspuppe | – | [Pexels](https://www.pexels.com/photo/33862096/) |
+| `erste-hilfe-2.jpg` | Erste-Hilfe-Übung | – | [Pexels](https://www.pexels.com/photo/34104785/) |
+| `laufgruppe-1.jpg` | Laufgruppe | – | [Pexels](https://www.pexels.com/photo/8381747/) |
+| `laufgruppe-2.jpg` | Drei Läufer:innen im Park | – | [Pexels](https://www.pexels.com/photo/4148937/) |
+| `laufgruppe-3.jpg` | Gruppe läuft über eine Wiese | – | [Pexels](https://www.pexels.com/photo/8598318/) |
+| `mobiles-arbeiten.jpg` | Arbeiten am Küchentisch | Vitaly Gariev | [Pexels](https://www.pexels.com/photo/36765412/) |
+| `urlaubsplanung.jpg` | Offener Kalender | Natalia S | [Pexels](https://www.pexels.com/photo/28353121/) |
+| `ergonomie.jpg` | Arbeitsplatz mit ergonomischem Stuhl | – | [Pexels](https://www.pexels.com/photo/31726673/) |
+| `phishing.jpg` | Laptop mit Code im Dunkeln | Sora Shimazaki | [Pexels](https://www.pexels.com/photo/5935787/) |
+| `passwoerter.jpg` | Person vor mehreren Bildschirmen im Dunkeln | – | [Pexels](https://www.pexels.com/photo/5240541/) |
+| `drucker.jpg` | Kopierer im Büro | Mikhail Nilov | [Pexels](https://www.pexels.com/photo/9301887/) |
+| `wareneingang.jpg` | Wareneingang mit Scanner und Tablet | Tiger Lily | [Pexels](https://www.pexels.com/photo/4483942/) |
+| `jahresplanung.jpg` | Wandkalender | – | [Pexels](https://www.pexels.com/photo/11706725/) |
+| `inventur.jpg` | Inventur mit Scanner | Tiger Lily | [Pexels](https://www.pexels.com/photo/4484151/) |
+| `parkplatz.jpg` | Parkplatz von oben | – | [Pexels](https://www.pexels.com/photo/17051849/) |
+| `neujahr-1.jpg` | Feier mit Sekt und Konfetti | Pavel Danilyuk | [Pexels](https://www.pexels.com/photo/6405773/) |
+| `neujahr-2.jpg` | Anstoßen mit Sekt | Pavel Danilyuk | [Pexels](https://www.pexels.com/photo/6405781/) |
+| `neujahr-3.jpg` | Gläser beim Anstoßen | cottonbro studio | [Pexels](https://www.pexels.com/photo/3171736/) |
+| `neujahr-4.jpg` | Empfang im Büro | – | [Pexels](https://www.pexels.com/photo/6405675/) |
+| `neujahr-5.jpg` | Empfang im Büro | – | [Pexels](https://www.pexels.com/photo/6405679/) |
+| `versandbox.jpg` | Versandkarton | – | [Pexels](https://www.pexels.com/photo/9594419/) |
+| `ausflug-teamspiel.jpg` | Team auf der Wiese | RDNE Stock project | [Pexels](https://www.pexels.com/photo/7551392/) |
+| `ausflug-jubel.jpg` | Team jubelt im Park | RDNE Stock project | [Pexels](https://www.pexels.com/photo/7551762/) |
+| `ausflug-handschlag.jpg` | Handschlag beim Teamspiel | RDNE Stock project | [Pexels](https://www.pexels.com/photo/7551178/) |
+| `workshop-laptop.jpg` | Team am Laptop | MART PRODUCTION | [Pexels](https://www.pexels.com/photo/7643742/) |
+| `workshop-runde.jpg` | Besprechung am Laptop | Yan Krukau | [Pexels](https://www.pexels.com/photo/7698825/) |
+| `workshop-team.jpg` | Team mit Laptops | Antoni Shkraba | [Pexels](https://www.pexels.com/photo/5466236/) |
+| `anzeige-kinderfahrrad.jpg` | Kind auf blauem Fahrrad | Jessica Lewis | [Pexels](https://www.pexels.com/photo/1118414/) |
+| `anzeige-fahrgemeinschaft.jpg` | Freund:innen im Auto | – | [Pexels](https://www.pexels.com/photo/7464537/) |
+| `anzeige-monstera.jpg` | Monstera am Fenster | Elena Golovchenko | [Pexels](https://www.pexels.com/photo/12210125/) |
+
+**Porträts** der Demo-Personen (Profilfoto, quadratisch zugeschnitten). Die abgebildeten Personen sind Fotomodelle,
+die Namen in Lotse sind erfunden.
+
+| Datei | Urheber | Quelle |
+|---|---|---|
+| `avatar-anna.becker.jpg` | – | [Pexels](https://www.pexels.com/photo/23496907/) |
+| `avatar-sophie.schulz.jpg` | Glennese Patterson | [Pexels](https://www.pexels.com/photo/40062811/) |
+| `avatar-lea.hoffmann.jpg` | – | [Pexels](https://www.pexels.com/photo/30004322/) |
+| `avatar-elena.richter.jpg` | Luan Albarracin | [Pexels](https://www.pexels.com/photo/30781747/) |
+| `avatar-katrin.lange.jpg` | Zoe Galarza | [Pexels](https://www.pexels.com/photo/34381970/) |
+| `avatar-clara.braun.jpg` | Christina Morillo | [Pexels](https://www.pexels.com/photo/1181686/) |
+| `avatar-hannah.wolf.jpg` | Mizuno K | [Pexels](https://www.pexels.com/photo/12903030/) |
+| `avatar-nina.krueger.jpg` | Polina Zimmerman | [Pexels](https://www.pexels.com/photo/3747444/) |
+| `avatar-marta.kowalska.jpg` | Los Muertos Crew | [Pexels](https://www.pexels.com/photo/10041257/) |
+| `avatar-jana.peters.jpg` | – | [Pexels](https://www.pexels.com/photo/8487370/) |
+| `avatar-tim.neumann.jpg` | Christoph Sixt | [Pexels](https://www.pexels.com/photo/29856511/) |
+| `avatar-jonas.weber.jpg` | Uiliam Nörnberg | [Pexels](https://www.pexels.com/photo/30767572/) |
+| `avatar-david.klein.jpg` | – | [Pexels](https://www.pexels.com/photo/7681371/) |
+| `avatar-mehmet.yilmaz.jpg` | Lubomir Satko | [Pexels](https://www.pexels.com/photo/12437056/) |
+| `avatar-lukas.fischer.jpg` | – | [Pexels](https://www.pexels.com/photo/7792811/) |
+| `avatar-paul.schroeder.jpg` | Lagos Food Bank Initiative | [Pexels](https://www.pexels.com/photo/8069547/) |
+| `avatar-ahmed.haddad.jpg` | – | [Pexels](https://www.pexels.com/photo/8990559/) |
+| `avatar-felix.zimmermann.jpg` | – | [Pexels](https://www.pexels.com/photo/7163352/) |
+
 Das Bild auf der Anmeldeseite lässt sich unter **Verwaltung → Einstellungen → Allgemein** durch ein eigenes
 Teamfoto ersetzen.

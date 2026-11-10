@@ -67,7 +67,7 @@ function PersonCard({ seat, room, color, onBack, s }) {
     <div className="space-y-4">
       <button type="button" onClick={onBack} className="inline-flex items-center gap-1.5 text-sm text-muted hover:text-ink"><ArrowLeft size={15} />{s.back}</button>
       <div className="flex items-center gap-4">
-        <span className="rounded-sm p-[3px]" style={{ boxShadow: `0 0 0 3px ${color}` }}><Avatar person={p} size={64} /></span>
+        <Avatar person={p} size={64} />
         <div className="min-w-0">
           <p className="font-display text-lg font-semibold leading-tight">{p.full_name}</p>
           <p className="text-sm text-muted">{p.position}</p>
@@ -116,7 +116,7 @@ function RoomCard({ room, seats, colors, lang, s, onBack, onPerson }) {
             {people.map((x) => (
               <li key={x.id}>
                 <button type="button" onClick={() => onPerson(x)} className="flex w-full items-center gap-3 rounded-lg px-2 py-1.5 text-left hover:bg-surface-2">
-                  <span className="rounded-sm p-[2px]" style={{ boxShadow: `0 0 0 2px ${colors[x.occupant.department] || 'var(--muted)'}` }}><Avatar person={x.occupant} size={30} /></span>
+                  <Avatar person={x.occupant} size={30} />
                   <span className="min-w-0"><span className="block truncate text-sm font-medium">{x.occupant.full_name}</span>
                     <span className="block truncate text-xs text-muted">{x.occupant.position}</span></span>
                 </button>
@@ -436,7 +436,6 @@ export default function FloorPlanV2({ locations, deptColors = {}, focusPersonId 
         )}
         {p ? (
           <g>
-            <circle r="17" fill="var(--surface)" stroke={color} strokeWidth="3.5" />
             {p.avatar_url
               ? <image href={p.avatar_url} x="-14" y="-14" width="28" height="28" clipPath="url(#lp2-avatar)" preserveAspectRatio="xMidYMid slice" />
               : <><circle r="14" fill={tone(p.full_name)} /><text y="4.5" textAnchor="middle" fontSize="12" fontWeight="600" fill="#fff">{initials(p.full_name)}</text></>}

@@ -123,7 +123,7 @@ export default function App() {
           <Route path="/profile" element={<Guard role="user"><Profile /></Guard>} />
           <Route path="/trainings" element={<Guard role="user"><Trainings /></Guard>} />
           <Route path="/trainings/:id" element={<Guard role="user"><TrainingView /></Guard>} />
-          <Route path="/admin" element={<Guard perm="trainings,quicklinks,locations,people,content_all"><Admin /></Guard>} />
+          <Route path="/admin" element={<Guard perm="trainings,quicklinks,locations,people,content_all,mails"><Admin /></Guard>} />
           <Route path="*" element={<Empty>{t('not_found')}</Empty>} />
         </Routes>
       </main>

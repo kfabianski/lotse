@@ -1,10 +1,11 @@
 import { useEffect, useRef, useState } from 'react';
-import { Bold, Eye, Heading2, Italic, Link2, List, ListOrdered, RemoveFormatting, RotateCcw, Send, Underline } from 'lucide-react';
+import { AlertTriangle, Bold, Eye, Heading2, Italic, Link2, List, ListOrdered, RemoveFormatting, RotateCcw, Send, Underline } from 'lucide-react';
 import { Button, Field, Modal, inputClass } from './ui';
 import { useI18n } from '../lib/i18n';
 import { api } from '../lib/api';
+import { useAuth } from '../lib/auth';
 
-const KINDS = ['article', 'idea'];
+const KINDS = ['article', 'idea', 'training'];
 
 /** Small WYSIWYG editor (contentEditable) – bold, italic, heading, lists, links. The server cleans the HTML. */
 function RichEditor({ value, onChange, editorRef, onFocus }) {
@@ -49,6 +50,8 @@ export default function MailTemplates({ onClose }) {
   const [tpl, setTpl] = useState(null);
   const [preview, setPreview] = useState(null);
   const [to, setTo] = useState('');
+  const { can } = useAuth();
+  const isAdmin = can('admin');
   const [status, setStatus] = useState(null);
   const [busy, setBusy] = useState(false);
   const editorRef = useRef(null);
@@ -121,6 +124,9 @@ export default function MailTemplates({ onClose }) {
             ))}
           </div>
           <p className="text-sm text-muted">{t(`mt_kind_${kind}_hint`)}</p>
+          <p className="flex items-start gap-2 rounded-xl bg-signal/10 px-3 py-2 text-sm text-ink">
+            <AlertTriangle size={16} className="mt-0.5 shrink-0 text-signal" aria-hidden />{t('nt_texts_global')}
+          </p>
 
           <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_16rem]">
             <div className="space-y-4">
@@ -163,8 +169,10 @@ export default function MailTemplates({ onClose }) {
             <Button variant="outline" onClick={showPreview}><Eye size={16} />{t('hl_preview')}</Button>
             <Button variant="ghost" onClick={() => set({ ...data.defaults[kind] })}><RotateCcw size={16} />{t('mt_reset')}</Button>
             <span className="flex-1" />
-            <input type="email" className={`${inputClass} w-56`} placeholder={t('nt_test_to')} value={to} onChange={(e) => setTo(e.target.value)} />
-            <Button variant="outline" disabled={busy || !to} onClick={sendTest}><Send size={16} />{t('mt_send_test')}</Button>
+            {isAdmin
+              ? <input type="email" className={`${inputClass} w-56`} placeholder={t('nt_test_to')} value={to} onChange={(e) => setTo(e.target.value)} />
+              : <span className="text-sm text-muted">{t('nt_texts_self')}</span>}
+            <Button variant="outline" disabled={busy || (isAdmin && !to)} onClick={sendTest}><Send size={16} />{t('mt_send_test')}</Button>
           </div>
           {status && <p role="status" className={`text-sm ${status.ok ? 'text-safe' : 'text-alert'}`}>{status.text}</p>}
         </div>

@@ -78,10 +78,10 @@ Alle Funktionen im Detail: **[docs/FUNKTIONEN.md](docs/FUNKTIONEN.md)** · Bildn
 - **Oben anheften**: wichtige Beiträge (optional bis zu einem Datum) stehen ganz oben in *Aktuelles* und in *Was gibt’s Neues* – z. B. Jahresplanung, Inventur.
 - **Niederlassungen**: Artikel und Termine nur für bestimmte Standorte; Personen gehören zu einer Niederlassung
   (von Hand oder aus LDAP), Schulungen lassen sich einer Niederlassung zuweisen.
-- **Benachrichtigungen** per **E-Mail** (neue Artikel und Termine, Antworten auf eigene Ideen) und als Karte in
+- **Benachrichtigungen** per **E-Mail** (neue Artikel und Termine, Antworten auf eigene Ideen, **zugewiesene Pflichtschulungen**) und als Karte in
   einem **Teams-Kanal**; jede Person kann sie im Profil abschalten. Betreff und Text der Mails gestaltet der Admin
   selbst (**Mail anpassen**: Editor mit Platzhaltern wie `{article}`, Vorschau, Test-Mail).
-- **Kleinanzeigen**: Biete, Suche, Zu verschenken, Fahrgemeinschaften – mit Foto, Preis und Kontakt.
+- **Kleinanzeigen**: Biete, Suche, Zu verschenken, Fahrgemeinschaften – mit Foto, Preis und Kontakt; verschwinden nach 90 Tagen automatisch.
 - **Ideenbox**: Ideen einreichen (auf Wunsch **wirklich anonym** – der Name wird dann gar nicht gespeichert),
   mit **1–5 Sternen** bewerten, Sortierung *Beste Bewertung* oder *Neueste*, Status von *Neu* bis *Umgesetzt*
   mit Antwort der Redaktion.
@@ -137,6 +137,7 @@ Rolle und bei Bedarf **zusätzliche Rechte** (z. B. *Etagen, Räume & Plätze* o
 | Besucher (nicht angemeldet) | lesen – nur wenn *Lesen ohne Anmeldung* eingeschaltet ist (keine Schulungen) |
 | Mitarbeitende | zusätzlich Anzeigen, Ideen, Sternebewertung, Zusagen, eigene Schulungen bestätigen, Profil |
 | Autor:in | zusätzlich **eigene** Artikel und Veranstaltungen |
+| Personal (HR) | wie Autor:in, dazu Mitarbeitenden-Karten, Schulungen verwalten und **E-Mail-Texte** anpassen (ohne Postfach-Zugangsdaten) |
 | Moderator:in | wie Autor:in, dazu Schulungen verwalten, Ideen & Kleinanzeigen moderieren, Schnellzugriff, Umfragen |
 | Redaktion | wie Moderator:in, dazu **alle** Artikel, Entwürfe, Slider, Versionen wiederherstellen |
 | Administrator | alles – nur Administratoren ändern **Einstellungen, LDAP, Windows-Anmeldung, Rollen & Rechte** und starten den **LDAP-Abgleich** |
@@ -200,6 +201,7 @@ cd frontend && npm run dev                           # Oberfläche auf :5173 mit
 | `python seed.py` | legt alle Demodaten in einer **leeren** Datenbank an |
 | `python seed.py --reset` | löscht alles und legt die Demodaten neu an |
 | `python seed.py --iso` | ergänzt Beispiel-Dokumente (ISO, Datenschutz, Aktenvernichtung, Mülltrennung, KI-Richtlinie, Anleitungen Raumbuchung und IT-Support) |
+| `python seed.py --photos` | ergänzt echte Fotos: Profilfotos aller Demo-Personen, Titelbilder, Fotogalerien und Bilder bei Kleinanzeigen – nur dort, wo noch nichts gesetzt ist |
 | `python seed.py --rooms` | ergänzt die Demo-Räume für Etagen, die noch keine Räume haben |
 | `python seed.py --trainings` | ergänzt Schnellzugriff-Kacheln und Beispiel-Schulungen mit Gruppen, wenn noch keine vorhanden sind |
 

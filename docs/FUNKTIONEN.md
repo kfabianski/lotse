@@ -26,6 +26,7 @@ Diese Beschreibung erklärt, was Lotse kann und wer was darf. Installation und K
 19. [Beiträge oben anheften](#19-beiträge-oben-anheften)
 20. [Aussehen, Sprache und Navigation](#20-aussehen-sprache-und-navigation)
 21. [Personal (HR) und neue Kolleg:innen](#21-personal-hr-und-neue-kolleginnen)
+22. [Browser und Geräte](#22-browser-und-geräte)
 
 ---
 
@@ -39,13 +40,14 @@ eine Rolle und – zusätzlich zur Rolle – einzelne Rechte.
 | **Besucher** (nicht angemeldet) | nur lesen – wenn *Lesen ohne Anmeldung* eingeschaltet ist; keine Schulungen |
 | **Mitarbeitende** | Anzeigen und Ideen (auch anonym), Sterne vergeben, bei Veranstaltungen zusagen, eigene Schulungen bestätigen, Profil |
 | **Autor:in** | zusätzlich **eigene** Artikel und Veranstaltungen schreiben, bearbeiten, löschen (eigene Entwürfe) |
+| **Personal (HR)** | wie Autor:in, dazu **Mitarbeitenden-Karten** anlegen und bearbeiten, **Schulungen verwalten** und **E-Mail-Texte** ändern (siehe Kapitel 16 und 21) |
 | **Moderator:in** | wie Autor:in, dazu **Schulungen verwalten**, **Ideen & Kleinanzeigen moderieren**, **Schnellzugriff** pflegen, **Umfragen** erstellen |
 | **Redaktion** | wie Moderator:in, dazu **alle** Artikel bearbeiten, alle Entwürfe sehen, Slider, Versionen wiederherstellen |
 | **Administrator** | alles, auch die **Systemeinstellungen** |
 
 **Einzelne Rechte**, die der Administrator pro Person zusätzlich einschalten kann: *Eigene Artikel &
 Veranstaltungen*, *Alle Artikel & Veranstaltungen*, *Schulungen verwalten*, *Ideen & Kleinanzeigen moderieren*,
-*Schnellzugriff pflegen*, *Umfragen erstellen*, *Etagen, Räume & Plätze*, *Personen & Abteilungen* (nur Konten **ohne** besondere
+*Schnellzugriff pflegen*, *Umfragen erstellen*, *Etagen, Räume & Plätze*, *E-Mail-Texte*, *Personen & Abteilungen* (nur Konten **ohne** besondere
 Rechte; keine Rollen- oder Rechtevergabe).
 
 **Nie übertragbar** – nur Administratoren: allgemeine Einstellungen, **LDAP**, Windows-Anmeldung,
@@ -53,9 +55,12 @@ Rechte; keine Rollen- oder Rechtevergabe).
 Die Verwaltung zeigt jeder Person nur die Bereiche, für die sie Rechte hat.
 
 - **Anmeldung**: oben rechts über *Anmelden*. Lokale Konten oder Windows-Konto (LDAP).
-- **Windows-Anmeldung (SSO)**: Ist sie eingerichtet, werden Mitarbeitende mit LDAP-Konto am Firmen-PC
-  **automatisch erkannt** – ohne Passwort (siehe Kapitel 12). Nach *Abmelden* geschieht das erst wieder,
-  wenn man auf *Mit Windows-Konto anmelden* klickt.
+- **Windows-Anmeldung (SSO)**: Ist sie eingerichtet, prüft Lotse **bei jedem Öffnen der Seite**, wer am
+  Firmen-PC angemeldet ist, sucht die Person im LDAP/AD und meldet sie **ohne Passwort** an (siehe Kapitel 12).
+  Ist im Browser noch die Sitzung einer anderen Person gespeichert (gemeinsam genutzter PC), wird sie ersetzt.
+  Klappt die Windows-Anmeldung nicht (z. B. privates Gerät), bleibt eine bestehende Sitzung erhalten.
+  Ausnahmen: Nach *Abmelden* bleibt man in diesem Tab abgemeldet, bis man auf *Mit Windows-Konto anmelden*
+  klickt; wer sich mit einem **lokalen Konto** per Passwort angemeldet hat, wird nicht ersetzt.
 - **Schutz vor Passwort-Raten**: Nach **5 falschen Passwörtern** für einen Benutzernamen muss man
   **30 Sekunden** warten; nach 20 Fehlversuchen von einem Rechner gilt dasselbe für diesen Rechner.
 - Wer ohne Anmeldung etwas schreiben möchte (z. B. *Anzeige aufgeben*), wird zur Anmeldung geführt und
@@ -200,6 +205,9 @@ Drei Ansichten unter **Veranstaltungen**:
 - Anzeige mit Titel, Beschreibung, optionalem Preis und Foto; Kontakt über E-Mail oder Durchwahl der
   Person.
 - Erstellen nur nach Anmeldung; löschen dürfen die Person selbst und die Redaktion.
+- **Laufzeit 90 Tage**: Eine Anzeige ist 90 Tage sichtbar und verschwindet danach automatisch – aus der Liste,
+  von der Startseite und aus der Suche. Das Formular *Anzeige aufgeben* weist darauf hin; bei den eigenen Anzeigen
+  steht *sichtbar bis …*. Vorher lässt sich eine Anzeige jederzeit selbst löschen.
 
 ## 10. Ideenbox
 
@@ -222,6 +230,17 @@ Nur für Administratoren, über **Verwaltung** in der Navigation:
   Eintrittsdatum, Platz, aktiv / im Verzeichnis sichtbar, Foto hochladen (Klick auf das Bild), löschen.
   Jede **E-Mail-Adresse** darf nur einmal vorkommen. Bei LDAP-Konten sind Name, E-Mail, Abteilung,
   Position und Durchwahl gesperrt (*aus LDAP*) – sie werden im Verzeichnis gepflegt.
+  Die Liste zeigt je Person Abteilung, Rolle, Herkunft (lokal/LDAP) und **Niederlassung**.
+- **Filter wie in Excel**: In den Spaltenköpfen *Abteilung*, *Rolle*, *Herkunft* und *Niederlassung* öffnet der Trichter
+  eine Liste der vorkommenden Werte mit Anzahl und Häkchen (*(Alle auswählen)*, Suche bei langen Listen, *(Leer)* für
+  Personen ohne Wert, *OK* / *Filter löschen*). Filter mehrerer Spalten wirken zusammen, jede Liste zeigt nur die Werte,
+  die nach den anderen Filtern übrig sind; ein gefilterter Spaltenkopf ist farbig. Dazu das Suchfeld (Name, Benutzername,
+  E-Mail, Abteilung, Position, Niederlassung), die Anzeige *x von y* und *Filter zurücksetzen*.
+- **Mehrere Personen auf einmal ändern**: Häkchen setzen (oder *alle angezeigten* auswählen). Ab **zwei** ausgewählten
+  Personen erscheint eine Leiste, um **Niederlassung**, **Abteilung** und – nur Administratoren – **Rolle** für alle
+  zugleich zu setzen (*nicht ändern* lässt ein Feld unverändert). Es gelten dieselben Regeln wie beim Bearbeiten einer
+  Person; wer nicht geändert werden kann, wird übersprungen und mit Grund genannt: Feld kommt aus LDAP, Konto mit
+  besonderen Rechten (nur Administratoren), eigene Administrator-Rolle.
 - **Rollen & Rechte** (nur Administrator): Übersicht, welche Rolle welche Rechte hat; darunter alle Personen mit
   Rolle und zusätzlichen Rechten zum Anklicken (Filter *Nur Personen mit Rechten*).
 - **Abteilungen**: Name, Farbe und Reihenfolge; neue Abteilungen anlegen; Umbenennen nimmt alle Personen
@@ -284,11 +303,19 @@ Unter **Verwaltung → Einstellungen → LDAP / Active Directory**:
   an ist – so entsteht keine Mischung aus Verzeichnis- und Handpflege.
 - Eine Rolle, die der Administrator in Lotse vergeben hat, bleibt beim Anmelden erhalten. Rollen aus den
   LDAP-Gruppen (Administratoren, Redaktion) werden bei jeder Anmeldung neu geprüft und auch wieder entzogen.
-- **Windows-Anmeldung (SSO)** – *Verwaltung → Einstellungen → Windows-Anmeldung*: Lotse läuft hinter einem
-  Webserver mit Windows-Authentifizierung (z. B. **IIS**), der den angemeldeten Windows-Benutzer in einem Header
-  (Standard `X-Remote-User`) weitergibt. Lotse glaubt diesem Header **nur** von den eingetragenen Adressen
-  (*Vertrauenswürdige Webserver*, z. B. `127.0.0.1`). Nur LDAP-Konten melden sich so an; lokale Konten
-  (z. B. der Notfall-Administrator) immer mit Passwort. Einrichtung: siehe README.
+- **Windows-Anmeldung (SSO)** – *Verwaltung → Einstellungen → Windows-Anmeldung*, zwei Arten:
+  - **Kerberos direkt (ohne IIS)** – Standard: Lotse prüft das Kerberos-Ticket des Browsers selbst
+    (*Negotiate*; fällt der Browser auf NTLM zurück, klappt das ebenfalls). Kein Webserver davor, ein Prozess.
+    Felder: *Adresse des Portals* (wie im SPN, z. B. `intranet.firma.local`) und *Keytab-Datei* (nur Linux).
+    Voraussetzung: SPN `HTTP/<Adresse>` im AD. Einrichtung mit Skript: [`deploy/kerberos/`](../deploy/kerberos/README.md).
+  - **Über einen Webserver**: ein vorgeschalteter Webserver mit Windows-Authentifizierung (z. B. **IIS**) gibt den
+    angemeldeten Windows-Benutzer in einem Header (Standard `X-Remote-User`) weiter. Lotse glaubt diesem Header
+    **nur** von den eingetragenen Adressen (*Vertrauenswürdige Webserver*, z. B. `127.0.0.1`). Einrichtung: README.
+  In beiden Fällen: aus `FIRMA\m.mustermann` bzw. `m.mustermann@FIRMA.LOCAL` wird der Benutzername, die Person wird
+  im LDAP gesucht und ihre Daten aktualisiert. Nur LDAP-Konten melden sich so an; lokale Konten (z. B. der
+  Notfall-Administrator) immer mit Passwort. Damit Browser das Windows-Konto ohne Rückfrage weitergeben, wird die
+  Adresse per Gruppenrichtlinie freigegeben (Edge/Chrome: Zone *Lokales Intranet*; Firefox: SPNEGO-Richtlinie;
+  Safari: Mac in der Domäne).
 - Bei einer **IP-Adresse** muss das Zertifikat des Servers diese IP enthalten – sonst den Hostnamen eintragen.
 - Lokale Konten (z. B. ein Notfall-Administrator) funktionieren weiterhin.
 
@@ -308,6 +335,7 @@ allgemeine Anleitungen. Es gibt zwei Arten der Sichtbarkeit, frei kombinierbar:
   Schulungen sind rot markiert. Der Hinweis auf der Startseite zählt nur Pflichtschulungen.
 - Eine Schulung enthält eine Beschreibung und **Unterlagen**: PDFs (öffnen im Portal), **Videos** (MP4/WebM,
   direkt abspielbar), Bilder und Links.
+- **E-Mail**: Wer einer Pflichtschulung zugewiesen wird, bekommt automatisch eine E-Mail (siehe Kapitel 16).
 - Am Ende: **„Ich habe die Schulung durchgearbeitet und verstanden“** – die Bestätigung wird mit Datum und
   Uhrzeit gespeichert.
 - Startet die Verwaltung eine **neue Runde** (z. B. jährliche Unterweisung), steht die Schulung wieder unter
@@ -363,7 +391,8 @@ allgemeine Anleitungen. Es gibt zwei Arten der Sichtbarkeit, frei kombinierbar:
 
 ## 16. Benachrichtigungen (E-Mail, Teams)
 
-- **Einschalten** (nur Administratoren): *Verwaltung → Einstellungen → Benachrichtigungen* – Adresse des Intranets
+- **Verwaltung → Benachrichtigungen** (eigener Reiter, direkt nach *Einstellungen*, die ganz links stehen).
+- **Einschalten** (nur Administratoren): Adresse des Intranets
   (für Links), SMTP-Server, Port, Verschlüsselung (STARTTLS, SSL/TLS oder keine), Benutzer, Passwort, Absender.
   **Test-Mail senden** prüft die Einstellungen sofort. Passwort und Teams-Adresse werden nie angezeigt.
 - **Neue Artikel und Termine**: sobald ein Beitrag sichtbar wird (auch geplante Beiträge zur geplanten Zeit) bekommen
@@ -371,9 +400,21 @@ allgemeine Anleitungen. Es gibt zwei Arten der Sichtbarkeit, frei kombinierbar:
   Einschalten erschienen sind, werden nicht nachträglich verschickt.
 - **Ideen**: Ändert die Redaktion Status oder Antwort, bekommt die Einreicherin / der Einreicher eine E-Mail
   (bei anonymen Ideen nicht – dort ist niemand gespeichert).
-- **Mail anpassen**: Betreff und Text beider Mails frei gestalten – kleiner Editor (fett, kursiv, Überschrift, Listen,
+- **Schulungen**: Jede Person, der eine **Pflichtschulung** zugewiesen ist – einzeln, über Gruppe, Abteilung,
+  Niederlassung, Position, *Neue Kolleg:innen* oder *Alle* – bekommt **eine E-Mail**, dass die Schulung auf sie wartet
+  (mit Fälligkeit und Knopf *Zur Schulung*). Lotse prüft das jede Minute: Wer später in eine Gruppe oder Abteilung kommt,
+  bekommt die Mail dann auch; bei einer **neuen Runde** alle, die erneut bestätigen müssen (mit Hinweis *Neue Runde*).
+  Keine Mail für freiwillige Schulungen, für inaktive Schulungen oder an Personen, die diese Runde schon bestätigt haben;
+  jede Person bekommt pro Schulung und Runde höchstens eine Mail. Pflicht – daher **nicht abbestellbar**. Beim ersten
+  Einschalten der E-Mail-Benachrichtigungen werden alle bereits offenen Pflichtschulungen einmal gemeldet.
+- **Wer darf die Texte ändern?** Administratoren und alle mit dem Recht **E-Mail-Texte** – die Rolle *Personal (HR)*
+  hat es automatisch, anderen kann der Administrator es einzeln geben. Sie sehen unter *Benachrichtigungen* nur eine
+  verkleinerte Seite mit *Mail anpassen* – **keine** Postfach-Zugangsdaten, keinen Absender, kein Teams. Test-Mails gehen bei
+  ihnen immer an die eigene Adresse. Hinweis im Editor: Änderungen gelten sofort **für das ganze Portal**.
+- **Mail anpassen**: Betreff und Text der drei Mails (*Neuer Beitrag / Termin*, *Idee: neuer Status*,
+  *Schulung zugewiesen*) frei gestalten – kleiner Editor (fett, kursiv, Überschrift, Listen,
   Links) mit **Platzhaltern**, die per Klick eingefügt werden: `{article}` (Titel), `{summary}`, `{category}`, `{when}`
-  (Datum/Ort bei Terminen), `{author}`, `{idea}`, `{status}`, `{answer}`, `{name}`, `{first_name}`, `{company}`, `{link}`,
+  (Datum/Ort bei Terminen), `{author}`, `{idea}`, `{status}`, `{answer}`, `{training}`, `{due}` (Fälligkeit), `{round}` (Hinweis bei neuer Runde), `{name}`, `{first_name}`, `{company}`, `{link}`,
   `{button}`. **Vorschau** mit Beispieldaten, **Test senden**, **Standardtext** stellt das Original wieder her.
   Kopfzeile und Abbestell-Hinweis werden immer ergänzt; Skripte und fremde Formatierungen werden entfernt.
 - **Microsoft Teams**: Webhook-Adresse eines Kanals (in Teams: Kanal → *Workflows* → *Bei Empfang einer
@@ -438,8 +479,8 @@ allgemeine Anleitungen. Es gibt zwei Arten der Sichtbarkeit, frei kombinierbar:
 
 ## 21. Personal (HR) und neue Kolleg:innen
 
-- **Rolle Personal (HR)**: darf Mitarbeitenden-Karten bearbeiten und anlegen, Schulungen erstellen und zuweisen und
-  eigene Beiträge schreiben. Rollen, Rechte und Einstellungen (LDAP, SMTP …) bleiben dem Administrator vorbehalten.
+- **Rolle Personal (HR)**: darf Mitarbeitenden-Karten bearbeiten und anlegen, Schulungen erstellen und zuweisen,
+  eigene Beiträge schreiben und die **E-Mail-Texte** anpassen (z. B. die Mail zu zugewiesenen Schulungen). Rollen, Rechte und Einstellungen (LDAP, SMTP …) bleiben dem Administrator vorbehalten.
 - **Neue Kolleg:innen** erkennt Lotse am **Eintrittsdatum** (Mitarbeitenden-Karte). Bei LDAP wird es beim ersten
   Abgleich gefüllt: aus dem Attribut *Eintrittsdatum* (Standard `whenCreated`, einstellbar, z. B. ein eigenes
   Feld für das Einstellungsdatum), sonst mit dem Tag, an dem das Konto in Lotse erscheint. Ein gesetztes Datum wird
@@ -451,3 +492,14 @@ allgemeine Anleitungen. Es gibt zwei Arten der Sichtbarkeit, frei kombinierbar:
   ihren ersten 90 Tagen ab Eintrittsdatum, auch für alle, die später dazukommen. Erscheint in der Glocke und unter
   *Schulungen*.
 
+## 22. Browser und Geräte
+
+- Lotse läuft in **Microsoft Edge**, **Google Chrome**, **Mozilla Firefox** und **Safari** (macOS, iPhone, iPad) –
+  jeweils ab Chrome/Edge 111, Firefox 128 und Safari 16.4 (Grenze der verwendeten Gestaltung, Tailwind CSS 4).
+  Ältere Browser werden nicht unterstützt.
+- Alles funktioniert in allen vier Browsern gleich: Ziehen der Startseiten-Blöcke, Lageplan mit Zoom, Fenster,
+  Suche, Kalender, Datums- und Farbfelder, Videos.
+- **Bekannte Grenzen**: Auf iPhone/iPad zeigt Safari PDFs im eingebauten Betrachter nur die erste Seite – *Download*
+  öffnet das ganze Dokument. Schulungsvideos als **MP4** hochladen; `.mov` vom iPhone spielen Chrome und Firefox
+  nicht immer ab. Firefox zeigt schmalere, systemeigene Bildlaufleisten.
+- **Handy**: Menü als ausklappbare Leiste, alle Seiten ohne seitliches Scrollen.

@@ -13,7 +13,7 @@ from app.config import settings
 from app.models import AppSetting
 
 KEY = "mail_templates"
-KINDS = ("article", "idea")
+KINDS = ("article", "idea", "training")
 
 DEFAULTS = {
     "article": {
@@ -24,6 +24,12 @@ DEFAULTS = {
         "subject": "Ihre Idee: {status}",
         "body": "<h2>„{idea}“</h2><p>Hallo {first_name}, Ihre Idee hat einen neuen Status: <b>{status}</b>.</p>"
                 "<p>{answer}</p><p>{button}</p>",
+    },
+    "training": {
+        "subject": "Schulung für Sie: {training}",
+        "body": "<h2>{training}</h2><p>Hallo {first_name}, im Intranet wartet eine Schulung auf Sie. Bitte arbeiten Sie "
+                "sie durch und bestätigen Sie am Ende mit „durchgearbeitet und verstanden“.</p><p>{round}</p>"
+                "<p>{due}</p><p>{button}</p>",
     },
 }
 
@@ -41,6 +47,11 @@ SHORTCODES = {
         "status": ("Neuer Status", "New status"),
         "answer": ("Antwort der Redaktion", "Answer of the editors"),
     },
+    "training": {
+        "training": ("Titel der Schulung", "Title of the training"),
+        "due": ("Fälligkeit, z. B. „Bitte erledigen bis 31.12.2026.“", "Due date, e.g. “Please complete by …”"),
+        "round": ("Hinweis bei neuer Runde", "Note for a new round"),
+    },
 }
 COMMON = {
     "name": ("Name der Empfänger:in", "Recipient's name"),
@@ -56,11 +67,15 @@ SAMPLE = {
                 "path": "/news"},
     "idea": {"idea": "Fahrradständer am Lager", "status": "Geplant", "answer": "Antwort: Wird im Frühjahr umgesetzt.",
              "path": "/ideas"},
+    "training": {"training": "Unterweisung Brandschutz 2027", "due": "Bitte erledigen bis 31.03.2027.",
+                 "round": "Neue Runde – bitte erneut bestätigen.", "path": "/trainings"},
 }
-BUTTON_LABEL = {"article": "Weiterlesen", "idea": "Zur Idee"}
+BUTTON_LABEL = {"article": "Weiterlesen", "idea": "Zur Idee", "training": "Zur Schulung"}
 
 FOOTER = ("Sie erhalten diese Nachricht, weil Benachrichtigungen in Ihrem Profil eingeschaltet sind. "
           "Abbestellen: Intranet → Profil → Benachrichtigungen.")
+# Assigned trainings are mandatory, so this mail cannot be unsubscribed.
+FOOTERS = {"training": "Sie erhalten diese Nachricht, weil Ihnen im Intranet eine Schulung zugewiesen wurde."}
 
 
 # --- sanitising ------------------------------------------------------------------------------------------
@@ -221,9 +236,10 @@ def render(kind: str, template: dict, values: dict, url: str) -> tuple[str, str,
     subject = clean_subject(_fill(template["subject"], vals, escape=False))
     body = _fill(sanitize(template["body"]), vals, escape=True)
     body = re.sub(r"<(p|div|h2|h3|li)>\s*</\1>", "", body)  # shortcodes that were empty
+    footer = FOOTERS.get(kind, FOOTER)
     e = html.escape
     page = (f'<div style="font-family:Segoe UI,Arial,sans-serif;max-width:560px;color:#111;font-size:15px;line-height:1.5">'
             f'<p style="color:#667;font-size:13px;margin:0">{e(settings.company_name)} · Intranet</p>'
-            f'{body}<p style="color:#889;font-size:12px;margin-top:28px">{e(FOOTER)}</p></div>')
-    text = to_text(body.replace(vals["button"], "")) + (f"\n\n{url}" if url.startswith("http") else "") + f"\n\n{FOOTER}\n"
+            f'{body}<p style="color:#889;font-size:12px;margin-top:28px">{e(footer)}</p></div>')
+    text = to_text(body.replace(vals["button"], "")) + (f"\n\n{url}" if url.startswith("http") else "") + f"\n\n{footer}\n"
     return subject, page, text

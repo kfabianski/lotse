@@ -7,7 +7,7 @@ from app import ldap_auth
 from app.config import settings
 from app.db import get_db
 from app.models import Branch, Seat, User
-from app.schemas import UserCreate, UserOut, UserUpdate
+from app.schemas import Role, UserCreate, UserOut, UserUpdate
 import json
 
 from app.security import has_perm, hash_password, reader, require, require_perm
@@ -171,6 +171,57 @@ def update_user(user_id: int, body: UserUpdate, admin: User = Depends(require_pe
     db.commit()
     db.refresh(user)
     return user_out(user, full=True)
+
+
+class BulkIn(BaseModel):
+    ids: list[int]
+    branch_id: int | None = None  # 0 = no branch
+    department: str | None = None
+    role: Role | None = None
+
+
+@router.post("/bulk")
+def bulk_update(body: BulkIn, actor: User = Depends(require_perm("people")), db: Session = Depends(get_db)):
+    """Set branch, department and/or role for several people at once. Same rules as editing one person;
+    people that cannot be changed are skipped and reported (directory-managed field, special rights, own account)."""
+    if not body.ids or len(body.ids) > 2000:
+        raise HTTPException(422, "Choose between 1 and 2000 people")
+    if body.branch_id is None and body.department is None and body.role is None:
+        raise HTTPException(422, "Nothing to change")
+    if body.role is not None and actor.role != "admin":
+        raise HTTPException(403, "Only administrators can grant roles and permissions")
+    if body.department is not None:
+        _check_department(db, body.department)
+    if body.branch_id and db.get(Branch, body.branch_id) is None:
+        raise HTTPException(404, "Branch not found")
+    ldap_on = settings.ldap_enabled
+    changed, skipped = 0, []
+    for user in db.query(User).filter(User.id.in_(body.ids)).all():
+        reasons = []
+        if actor.role != "admin" and _special(user):
+            skipped.append({"id": user.id, "name": user.full_name, "reason": "rights"})
+            continue
+        did = False
+        if body.branch_id is not None:
+            if user.auth_source == "ldap" and ldap_on and settings.ldap_attr_branch:
+                reasons.append("ldap_branch")
+            elif user.branch_id != (body.branch_id or None):
+                user.branch_id, did = body.branch_id or None, True
+        if body.department is not None:
+            if user.auth_source == "ldap" and ldap_on:
+                reasons.append("ldap_department")
+            elif user.department != body.department:
+                user.department, did = body.department, True
+        if body.role is not None:
+            if user.id == actor.id and body.role != "admin":
+                reasons.append("self")
+            elif user.role != body.role:
+                user.role, user.role_source, user.role_local, did = body.role, "local", None, True
+        changed += did
+        if reasons:
+            skipped.append({"id": user.id, "name": user.full_name, "reason": ",".join(reasons)})
+    db.commit()
+    return {"changed": changed, "skipped": skipped}
 
 
 @router.delete("/{user_id}", status_code=204)

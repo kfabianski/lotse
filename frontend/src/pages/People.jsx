@@ -7,11 +7,11 @@ import { Avatar, Empty, inputClass } from '../components/ui';
 import { useI18n } from '../lib/i18n';
 import { useFetch } from '../lib/useFetch';
 
-function PersonTile({ p, color, onShowOnPlan }) {
+function PersonTile({ p, onShowOnPlan }) {
   const { t, fmtDate } = useI18n();
   return (
     <li className="card flex gap-4 p-4">
-      <span className="h-fit rounded-sm p-0.5" style={{ boxShadow: `0 0 0 2px ${color}` }}><Avatar person={p} size={56} /></span>
+      <Avatar person={p} size={56} />
       <div className="min-w-0 flex-1">
         <p className="font-display font-semibold leading-tight text-ink">{p.full_name}</p>
         <p className="text-sm text-muted">{p.position}</p>
@@ -123,7 +123,7 @@ export default function People() {
                   <span className="text-sm font-normal text-muted">{t('people_count', { n: g.people.length })}</span>
                 </h2>
                 <ul className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
-                  {g.people.map((p) => <PersonTile key={p.id} p={p} color={colors[p.department] || 'var(--line)'} onShowOnPlan={showOnPlan} />)}
+                  {g.people.map((p) => <PersonTile key={p.id} p={p} onShowOnPlan={showOnPlan} />)}
                 </ul>
               </section>
             ))}

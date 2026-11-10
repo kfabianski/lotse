@@ -149,7 +149,7 @@ def home(viewer: User | None = Depends(reader), db: Session = Depends(get_db)):
         "new_people": db.query(User).filter(User.is_active.is_(True), User.show_in_directory.is_(True),
                                             User.start_date >= since)
                         .order_by(User.start_date.desc()).limit(12).all(),
-        "classifieds": db.query(Classified).options(joinedload(Classified.author))
+        "classifieds": db.query(Classified).options(joinedload(Classified.author)).filter(Classified.live())
                          .order_by(Classified.created_at.desc()).limit(4).all(),
         "photos": latest_photos(db, 9, viewer),
         "counts": counts,
@@ -308,7 +308,7 @@ async def upload_image(file: UploadFile = File(...), _: User = Depends(current_u
 
 @router.get("/classifieds", response_model=list[ClassifiedOut])
 def list_classifieds(kind: str = "", _: User | None = Depends(reader), db: Session = Depends(get_db)):
-    query = db.query(Classified).options(joinedload(Classified.author))
+    query = db.query(Classified).options(joinedload(Classified.author)).filter(Classified.live())
     if kind:
         query = query.filter(Classified.kind == kind)
     return query.order_by(Classified.created_at.desc()).limit(200).all()

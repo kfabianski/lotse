@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Mail, Phone, Plus, Trash2 } from 'lucide-react';
+import { Clock, Mail, Phone, Plus, Trash2 } from 'lucide-react';
 import { Avatar, Button, Empty, Field, Modal, inputClass, relativeDay } from '../components/ui';
 import { ImagePicker } from './ArticleEdit';
 import { useI18n } from '../lib/i18n';
@@ -11,6 +11,7 @@ import { useViewer } from '../lib/viewer';
 import { useHashFocus } from '../lib/hashFocus';
 
 const KINDS = ['offer', 'search', 'give', 'carpool', 'other'];
+const NOTICE_DAYS = 90; // must match CLASSIFIED_DAYS in backend/app/models.py
 const KIND_COLOR = { offer: 'var(--brand)', search: '#8a5cc7', give: 'var(--safe)', carpool: 'var(--signal)', other: 'var(--muted)' };
 
 function NoticeForm({ onDone }) {
@@ -44,6 +45,9 @@ function NoticeForm({ onDone }) {
         </div>
         <ImagePicker tall value={form.image_url} onChange={(url) => setForm({ ...form, image_url: url })} />
       </div>
+      <p className="flex items-start gap-2 rounded-xl bg-surface-2 px-3 py-2.5 text-sm text-muted">
+        <Clock size={16} className="mt-0.5 shrink-0" aria-hidden />{t('board_expiry_note', { days: NOTICE_DAYS })}
+      </p>
       {error && <p className="text-alert">{t('error_generic', { msg: error })}</p>}
       <div className="flex justify-end gap-2">
         <Button variant="ghost" onClick={onDone}>{t('cancel')}</Button>
@@ -54,7 +58,7 @@ function NoticeForm({ onDone }) {
 }
 
 export default function Board() {
-  const { t } = useI18n();
+  const { t, fmtDate } = useI18n();
   const { user, has } = useAuth();
   const [kind, setKind] = useState('');
   const [open, setOpen] = useState(false);
@@ -112,6 +116,9 @@ export default function Board() {
                   <Avatar person={c.author} size={34} />
                   <div className="min-w-0 flex-1 text-sm">
                     <p className="font-medium">{c.author.full_name}</p>
+                    {user && c.author.id === user.id && (
+                      <p className="text-xs text-muted">{t('board_visible_until', { date: fmtDate(c.expires_at, { day: 'numeric', month: 'long' }) })}</p>
+                    )}
                     <div className="flex gap-3 text-brand-text">
                       {c.author.email && <a href={`mailto:${c.author.email}?subject=${encodeURIComponent(c.title)}`} aria-label={t('email')}><Mail size={15} /></a>}
                       {c.author.phone_ext && <a href={`tel:${c.author.phone_ext}`} className="inline-flex items-center gap-1"><Phone size={15} />{c.author.phone_ext}</a>}

@@ -1,4 +1,4 @@
-from datetime import date, datetime
+from datetime import date, datetime, timedelta
 
 from sqlalchemy import Boolean, Column, Date, DateTime, Float, ForeignKey, Integer, String, Table, Text
 from sqlalchemy.orm import Mapped, mapped_column, relationship
@@ -176,8 +176,11 @@ class Article(Base):
         return sum(1 for a in self.attachments if a.kind == "image")
 
 
+CLASSIFIED_DAYS = 90  # a notice disappears on its own after this many days
+
+
 class Classified(Base):
-    """A notice on the employee board (Kleinanzeigen)."""
+    """A notice on the employee board (Kleinanzeigen). Visible for CLASSIFIED_DAYS, then hidden everywhere."""
 
     __tablename__ = "classifieds"
 
@@ -191,6 +194,15 @@ class Classified(Base):
     created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow, index=True)
 
     author: Mapped[User] = relationship()
+
+    @property
+    def expires_at(self) -> datetime:
+        return self.created_at + timedelta(days=CLASSIFIED_DAYS)
+
+    @staticmethod
+    def live():
+        """Filter for notices that are still visible (younger than CLASSIFIED_DAYS)."""
+        return Classified.created_at >= datetime.utcnow() - timedelta(days=CLASSIFIED_DAYS)
 
 
 IDEA_TOPICS = ("process", "workplace", "it", "safety", "sustainability", "other")
@@ -398,6 +410,18 @@ class TrainingCompletion(Base):
     user_id: Mapped[int] = mapped_column(ForeignKey("users.id", ondelete="CASCADE"), primary_key=True)
     version: Mapped[int] = mapped_column(Integer, default=1)
     completed_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.now)
+
+
+class TrainingNotice(Base):
+    """A person was e-mailed that training ``training_id`` (round ``version``) is waiting for them - so nobody
+    gets the same mail twice. A new round (higher version) mails everyone who still has to confirm again."""
+
+    __tablename__ = "training_notices"
+
+    training_id: Mapped[int] = mapped_column(ForeignKey("trainings.id", ondelete="CASCADE"), primary_key=True)
+    user_id: Mapped[int] = mapped_column(ForeignKey("users.id", ondelete="CASCADE"), primary_key=True)
+    version: Mapped[int] = mapped_column(Integer, default=1)
+    sent_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.now)
 
 
 class Poll(Base):

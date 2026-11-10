@@ -4,7 +4,7 @@ from typing import Literal
 from pydantic import BaseModel, ConfigDict, EmailStr, Field
 
 Role = Literal["admin", "editor", "moderator", "hr", "author", "user"]
-Permission = Literal["content_own", "content_all", "trainings", "moderate", "quicklinks", "locations", "people"]
+Permission = Literal["content_own", "content_all", "trainings", "moderate", "quicklinks", "polls", "locations", "people", "mails"]
 Category = Literal["news", "events", "people", "products", "rules", "safety", "cyber", "knowhow"]
 ClassifiedKind = Literal["offer", "search", "give", "carpool", "other"]
 
@@ -212,6 +212,7 @@ class ClassifiedIn(BaseModel):
 class ClassifiedOut(ClassifiedIn, ORM):
     id: int
     created_at: datetime
+    expires_at: datetime
     author: PersonBrief
 
 

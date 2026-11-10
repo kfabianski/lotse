@@ -63,7 +63,27 @@ function HolidaySettings({ value, onChange }) {
   );
 }
 
-export default function AdminSettings() {
+/** Reduced notifications page for people with the "mails" permission (e.g. HR): only the mail texts. */
+export function MailTexts() {
+  const { t } = useI18n();
+  const [open, setOpen] = useState(false);
+  return (
+    <div className="space-y-5">
+      <Section title={t('nt_texts_title')} description={t('nt_texts_hint')}>
+        <p className="flex items-start gap-2 rounded-xl bg-signal/10 px-3 py-2 text-sm">
+          <ShieldAlert size={16} className="mt-0.5 shrink-0 text-signal" aria-hidden />{t('nt_texts_global')}
+        </p>
+        <p className="text-sm text-muted">{t('nt_texts_admin_only')}</p>
+        <div><Button onClick={() => setOpen(true)}><MailPlus size={16} />{t('mt_open')}</Button></div>
+        {open && <MailTemplates onClose={() => setOpen(false)} />}
+      </Section>
+    </div>
+  );
+}
+
+/** part="general": everything except notifications; part="notify": mailbox, Teams and mail texts (admins). */
+export default function AdminSettings({ part = 'general' }) {
+  const general = part === 'general';
   const { user: me } = useAuth();
   const { t } = useI18n();
   const [form, setForm] = useState(null);
@@ -135,6 +155,7 @@ export default function AdminSettings() {
 
   return (
     <form onSubmit={save} className="space-y-5">
+      {general && (<>
       <Section title={t('settings_general')} description={t('settings_general_hint')}>
         <Field label={t('settings_company')}><input required className={inputClass} value={form.company_name} onChange={set('company_name')} /></Field>
         <Field label={t('settings_footer')} hint={t('settings_footer_hint')}><input maxLength={300} className={inputClass} value={form.footer_text || ''} onChange={set('footer_text')} /></Field>
@@ -171,7 +192,9 @@ export default function AdminSettings() {
       </Section>
 
       <HolidaySettings value={form.holiday_regions || []} onChange={set('holiday_regions')} />
+      </>)}
 
+      {!general && (
       <Section title={t('nt_title')} description={t('nt_hint')}>
         <Field label={t('nt_portal_url')} hint={t('nt_portal_url_hint')}>
           <input className={inputClass} placeholder="https://intranet.firma.local" value={form.portal_url || ''} onChange={set('portal_url')} />
@@ -220,7 +243,9 @@ export default function AdminSettings() {
           </p>
         )}
       </Section>
+      )}
 
+      {general && (<>
       <Section title={t('sso_title')} description={t('sso_hint')}>
         <Toggle checked={form.sso_enabled} onChange={set('sso_enabled')} label={t('sso_enabled')} hint={t('sso_enabled_hint')} />
         <div className="grid gap-2 sm:grid-cols-2">
@@ -343,6 +368,7 @@ export default function AdminSettings() {
           )}
         </div>
       </Section>
+      </>)}
 
       <div className="sticky bottom-4 flex items-center justify-end gap-3">
         {status && <p role="status" className={`rounded-xl bg-surface px-3 py-2 text-sm shadow ${status.kind === 'ok' ? 'text-safe' : 'text-alert'}`}>{status.text}</p>}

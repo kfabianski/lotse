@@ -1,9 +1,9 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
-import { RefreshCw, Trash2, Upload, UserPlus, Plus } from 'lucide-react';
+import { ListFilter, RefreshCw, Trash2, Upload, UserPlus, Plus } from 'lucide-react';
 import FloorPlan from '../components/FloorPlan';
 import RoomEditor from '../components/RoomEditor';
-import AdminSettings from './AdminSettings';
+import AdminSettings, { MailTexts } from './AdminSettings';
 import AdminDepartments from './AdminDepartments';
 import AdminBranches from './AdminBranches';
 import AdminHomeLayout from './AdminHomeLayout';
@@ -123,6 +123,85 @@ function UserForm({ user, locations, onDone }) {
   );
 }
 
+/** Excel-style filter in a column header: funnel next to the title, list of the column values with checkboxes. */
+function ColumnFilter({ label, options, selected, onChange }) {
+  const { t } = useI18n();
+  const btn = useRef(null);
+  const pop = useRef(null);
+  const [pos, setPos] = useState(null);
+  const [draft, setDraft] = useState(() => new Set());
+  const [q, setQ] = useState('');
+  const active = Boolean(selected);
+  const open = () => {
+    const r = btn.current.getBoundingClientRect();
+    setPos({ top: r.bottom + 4, left: Math.max(8, Math.min(r.left, window.innerWidth - 272)) });
+    setDraft(new Set(selected || options.map((o) => o.value)));
+    setQ('');
+  };
+  const close = () => setPos(null);
+  useEffect(() => {
+    if (!pos) return undefined;
+    const outside = (e) => { if (!pop.current?.contains(e.target) && !btn.current?.contains(e.target)) close(); };
+    const key = (e) => { if (e.key === 'Escape') close(); };
+    const scroll = (e) => { if (!pop.current?.contains(e.target)) close(); };
+    document.addEventListener('mousedown', outside);
+    document.addEventListener('keydown', key);
+    window.addEventListener('scroll', scroll, true);
+    window.addEventListener('resize', close);
+    return () => {
+      document.removeEventListener('mousedown', outside);
+      document.removeEventListener('keydown', key);
+      window.removeEventListener('scroll', scroll, true);
+      window.removeEventListener('resize', close);
+    };
+  }, [pos]);
+  const shown = options.filter((o) => !q || o.label.toLowerCase().includes(q.toLowerCase()));
+  const allOn = shown.length > 0 && shown.every((o) => draft.has(o.value));
+  const flip = (v) => setDraft((d) => { const n = new Set(d); if (n.has(v)) n.delete(v); else n.add(v); return n; });
+  const flipAll = () => setDraft((d) => { const n = new Set(d); shown.forEach((o) => (allOn ? n.delete(o.value) : n.add(o.value))); return n; });
+  const apply = () => {
+    onChange(options.every((o) => draft.has(o.value)) ? undefined : new Set(draft));
+    close();
+  };
+  return (
+    <>
+      <button ref={btn} type="button" onClick={() => (pos ? close() : open())} aria-haspopup="dialog" aria-expanded={Boolean(pos)}
+        className={`-mx-1.5 inline-flex items-center gap-1.5 rounded px-1.5 py-0.5 font-medium hover:bg-surface-2 ${active ? 'text-brand-text' : ''}`}>
+        {label}
+        <ListFilter size={14} className={active ? '' : 'opacity-50'} aria-hidden />
+        {active && <span className="sr-only">({t('uf_filtered')})</span>}
+      </button>
+      {pos && (
+        <div ref={pop} role="dialog" aria-label={label} style={{ position: 'fixed', top: pos.top, left: pos.left }}
+          className="z-50 w-64 rounded-xl border border-line bg-surface p-2 text-sm font-normal text-ink shadow-lg">
+          {options.length > 6 && (
+            <input autoFocus value={q} onChange={(e) => setQ(e.target.value)} placeholder={t('search')} className={`${inputClass} mb-2 py-1.5`} />
+          )}
+          <label className="flex cursor-pointer items-center gap-2 border-b border-line px-1.5 pb-2 font-medium">
+            <input type="checkbox" checked={allOn} onChange={flipAll} className="h-4 w-4 accent-[var(--brand)]" />{t('uf_select_all_values')}
+          </label>
+          <ul className="thin-scroll max-h-60 overflow-y-auto py-1">
+            {shown.map((o) => (
+              <li key={o.value}>
+                <label className="flex cursor-pointer items-center gap-2 rounded px-1.5 py-1 hover:bg-surface-2">
+                  <input type="checkbox" checked={draft.has(o.value)} onChange={() => flip(o.value)} className="h-4 w-4 accent-[var(--brand)]" />
+                  <span className="min-w-0 flex-1 truncate">{o.label}</span><span className="text-xs text-muted">{o.count}</span>
+                </label>
+              </li>
+            ))}
+          </ul>
+          <div className="flex items-center justify-between gap-2 border-t border-line pt-2">
+            <button type="button" disabled={!active} onClick={() => { onChange(undefined); close(); }} className="px-1.5 text-brand-text underline disabled:no-underline disabled:opacity-40">
+              {t('uf_clear_filter')}
+            </button>
+            <Button className="px-3 py-1" disabled={draft.size === 0} onClick={apply}>OK</Button>
+          </div>
+        </div>
+      )}
+    </>
+  );
+}
+
 function UsersTab({ locations, reloadLocations }) {
   const { t } = useI18n();
   const { user: me, can } = useAuth();
@@ -130,7 +209,62 @@ function UsersTab({ locations, reloadLocations }) {
   const [editing, setEditing] = useState(undefined); // undefined = closed, null = new
   const [note, setNote] = useState('');
   const [filter, setFilter] = useState('');
-  const rows = (data || []).filter((u) => !filter || `${u.full_name} ${u.username} ${u.department}`.toLowerCase().includes(filter.toLowerCase()));
+  const departments = useFetch('/departments');
+  const branches = useFetch('/branches', undefined, 'branches');
+  // Excel-style column filters: per column the set of values that stay visible (missing key = no filter).
+  const [cf, setCf] = useState({});
+  const COLS = {
+    department: { get: (u) => u.department || '', label: (v) => v },
+    role: { get: (u) => u.role, label: (v) => t(`role_${v}`) },
+    source: { get: (u) => u.auth_source, label: (v) => (v === 'ldap' ? 'LDAP' : t('local_account')) },
+    branch: { get: (u) => u.branch || '', label: (v) => v },
+  };
+  const needle = filter.trim().toLowerCase();
+  const matchesSearch = (u) => !needle || `${u.full_name} ${u.username} ${u.email || ''} ${u.department} ${u.position || ''} ${u.branch || ''}`.toLowerCase().includes(needle);
+  const passes = (u, except) => Object.entries(cf).every(([k, set]) => k === except || set.has(COLS[k].get(u)));
+  const rows = (data || []).filter((u) => matchesSearch(u) && passes(u));
+  const optionsFor = (key) => { // like Excel: the values left after the filters of the other columns
+    const counts = new Map();
+    (data || []).filter((u) => matchesSearch(u) && passes(u, key)).forEach((u) => {
+      const v = COLS[key].get(u);
+      counts.set(v, (counts.get(v) || 0) + 1);
+    });
+    return [...counts].map(([value, count]) => ({ value, count, label: value === '' ? t('uf_empty') : COLS[key].label(value) }))
+      .sort((a, b) => (a.value === '') - (b.value === '') || a.label.localeCompare(b.label));
+  };
+  const setCol = (key) => (set) => setCf((x) => { const n = { ...x }; if (set) n[key] = set; else delete n[key]; return n; });
+  const filtering = Boolean(needle || Object.keys(cf).length);
+  const head = (key, label) => <ColumnFilter label={label} options={optionsFor(key)} selected={cf[key]} onChange={setCol(key)} />;
+
+  // Several people at once: tick them, then set branch, department and/or role in one go.
+  const [picked, setPicked] = useState(() => new Set());
+  const [bulk, setBulk] = useState({ branch_id: '', department: '', role: '' });
+  const [bulkResult, setBulkResult] = useState(null);
+  const selectable = (u) => can('admin') || u.role === 'user';
+  const visibleIds = rows.filter(selectable).map((u) => u.id);
+  const allPicked = visibleIds.length > 0 && visibleIds.every((id) => picked.has(id));
+  const toggle = (id) => setPicked((s) => { const n = new Set(s); if (n.has(id)) n.delete(id); else n.add(id); return n; });
+  const toggleAll = () => setPicked((s) => {
+    const n = new Set(s);
+    if (allPicked) visibleIds.forEach((id) => n.delete(id)); else visibleIds.forEach((id) => n.add(id));
+    return n;
+  });
+  const applyBulk = async () => {
+    const body = { ids: [...picked] };
+    if (bulk.branch_id !== '') body.branch_id = Number(bulk.branch_id);
+    if (bulk.department) body.department = bulk.department;
+    if (bulk.role) body.role = bulk.role;
+    try {
+      const r = await api('/users/bulk', { method: 'POST', body });
+      setBulkResult(r);
+      setPicked(new Set());
+      setBulk({ branch_id: '', department: '', role: '' });
+      reload();
+    } catch (err) {
+      setBulkResult({ error: err.message });
+    }
+  };
+  const bulkReady = bulk.branch_id !== '' || bulk.department || bulk.role;
 
   const done = () => { setEditing(undefined); reload(); reloadLocations(); };
   const [syncOpen, setSyncOpen] = useState(false);
@@ -146,22 +280,71 @@ function UsersTab({ locations, reloadLocations }) {
     <div>
       <div className="flex flex-wrap items-center gap-2">
         <input value={filter} onChange={(e) => setFilter(e.target.value)} placeholder={t('search')} className={`${inputClass} max-w-xs`} />
+        <span className="text-sm text-muted">{t('uf_count', { n: rows.length, total: (data || []).length })}</span>
+        {filtering && (
+          <button type="button" className="text-sm text-brand-text underline" onClick={() => { setFilter(''); setCf({}); }}>{t('uf_reset')}</button>
+        )}
         <div className="ml-auto flex gap-2">
           {can('admin') && <Button variant="outline" onClick={sync}><RefreshCw size={17} />{t('ldap_sync')}</Button>}
           <Button onClick={() => setEditing(null)}><UserPlus size={17} />{t('new_user')}</Button>
         </div>
       </div>
       {note && <p role="status" className="mt-3">{note}</p>}
+
+      {picked.size >= 2 && (
+        <div className="mt-3 flex flex-wrap items-center gap-2 rounded-xl border border-brand bg-brand-soft px-3 py-2 text-sm">
+          <p className="mr-1 font-medium">{t('uf_selected', { n: picked.size })}</p>
+          {(branches.data || []).length > 0 && (
+            <select aria-label={t('branch')} className={`${inputClass} w-auto py-1.5`} value={bulk.branch_id} onChange={(e) => setBulk({ ...bulk, branch_id: e.target.value })}>
+                <option value="">{t('branch')}: {t('uf_keep')}</option>
+                <option value="0">{t('branch_none')}</option>
+                {branches.data.map((b) => <option key={b.id} value={b.id}>{b.name}</option>)}
+            </select>
+          )}
+          <select aria-label={t('department')} className={`${inputClass} w-auto py-1.5`} value={bulk.department} onChange={(e) => setBulk({ ...bulk, department: e.target.value })}>
+            <option value="">{t('department')}: {t('uf_keep')}</option>
+            {(departments.data || []).map((d) => <option key={d.id} value={d.name}>{d.name}</option>)}
+          </select>
+          {can('admin') && (
+            <select aria-label={t('role')} className={`${inputClass} w-auto py-1.5`} value={bulk.role} onChange={(e) => setBulk({ ...bulk, role: e.target.value })}>
+              <option value="">{t('role')}: {t('uf_keep')}</option>
+              {ROLES.map((r) => <option key={r} value={r}>{t(`role_${r}`)}</option>)}
+            </select>
+          )}
+          <div className="ml-auto flex gap-2">
+            <Button variant="ghost" className="py-1.5" onClick={() => setPicked(new Set())}>{t('uf_clear')}</Button>
+            <Button className="py-1.5" disabled={!bulkReady} onClick={applyBulk}>{t('uf_apply', { n: picked.size })}</Button>
+          </div>
+        </div>
+      )}
+      {picked.size === 1 && <p className="mt-3 text-sm text-muted">{t('uf_pick_more')}</p>}
+      {bulkResult && (
+        <div role="status" className={`mt-3 rounded-xl px-3 py-2 text-sm ${bulkResult.error ? 'bg-alert/10 text-alert' : 'bg-safe/10 text-safe'}`}>
+          {bulkResult.error ? t('error_generic', { msg: bulkResult.error }) : t('uf_done', { n: bulkResult.changed })}
+          {bulkResult.skipped?.length > 0 && (
+            <ul className="mt-1 list-disc pl-5 text-muted">
+              {bulkResult.skipped.map((s) => <li key={s.id}>{s.name}: {s.reason.split(',').map((r) => t(`uf_skip_${r}`)).join(', ')}</li>)}
+            </ul>
+          )}
+        </div>
+      )}
+
       <div className="mt-4 overflow-x-auto card">
         <table className="w-full min-w-[760px] text-left">
           <thead className="border-b border-line text-sm text-muted">
-            <tr><th className="px-4 py-3 font-medium">{t('nav_people')}</th><th className="px-4 py-3 font-medium">{t('department')}</th>
-              <th className="px-4 py-3 font-medium">{t('role')}</th><th className="px-4 py-3 font-medium">{t('source')}</th>
-              <th className="px-4 py-3 font-medium">{t('seat')}</th><th /></tr>
+            <tr><th className="w-10 py-3 pl-4"><input type="checkbox" aria-label={t('uf_select_all')} checked={allPicked} onChange={toggleAll} className="h-4 w-4 accent-[var(--brand)]" /></th>
+              <th className="px-4 py-3 font-medium">{t('nav_people')}</th>
+              <th className="px-4 py-3">{head('department', t('department'))}</th>
+              <th className="px-4 py-3">{head('role', t('role'))}</th>
+              <th className="px-4 py-3">{head('source', t('source'))}</th>
+              <th className="px-4 py-3">{head('branch', t('branch'))}</th><th /></tr>
           </thead>
           <tbody className="divide-y divide-line">
             {rows.map((u) => (
-              <tr key={u.id} className={u.is_active ? '' : 'opacity-50'}>
+              <tr key={u.id} className={`${u.is_active ? '' : 'opacity-50'} ${picked.has(u.id) ? 'bg-brand-soft' : ''}`}>
+                <td className="py-2.5 pl-4">
+                  {selectable(u) && <input type="checkbox" aria-label={u.full_name} checked={picked.has(u.id)} onChange={() => toggle(u.id)} className="h-4 w-4 accent-[var(--brand)]" />}
+                </td>
                 <td className="px-4 py-2.5">
                   <div className="flex items-center gap-3">
                     <label className="cursor-pointer" title={t('change_photo')}>
@@ -174,7 +357,7 @@ function UsersTab({ locations, reloadLocations }) {
                 <td className="px-4 py-2.5">{u.department}</td>
                 <td className="px-4 py-2.5">{t(`role_${u.role}`)}</td>
                 <td className="px-4 py-2.5 text-sm text-muted">{u.auth_source === 'ldap' ? 'LDAP' : t('local_account')}</td>
-                <td className="px-4 py-2.5 text-sm">{u.seat ? `${u.seat.location_code}, ${u.seat.label}` : '–'}</td>
+                <td className="px-4 py-2.5 text-sm">{u.branch || '–'}</td>
                 <td className="px-4 py-2.5 text-right">
                   {(can('admin') || u.role === 'user') && <Button variant="ghost" className="px-3 py-1" onClick={() => setEditing(u)}>{t('edit')}</Button>}
                   {u.id !== me.id && (can('admin') || u.role === 'user') && <button type="button" onClick={() => remove(u)} aria-label={t('delete')} className="rounded p-1.5 text-muted hover:text-alert"><Trash2 size={16} /></button>}
@@ -333,11 +516,12 @@ export default function Admin() {
   const { t } = useI18n();
   const [params] = useSearchParams();
   const { can, has } = useAuth();
-  const tabs = [['users', t('admin_users'), has('people')], ['departments', t('admin_departments'), has('people')], ['branches', t('admin_branches'), has('people')],
+  const tabs = [['settings', t('admin_settings'), can('admin')], ['notify', t('admin_notify'), can('admin') || has('mails')],
+    ['users', t('admin_users'), has('people')], ['departments', t('admin_departments'), has('people')], ['branches', t('admin_branches'), has('people')],
     ['locations', t('admin_locations'), has('locations')], ['trainings', t('admin_trainings'), has('trainings')],
     ['home', t('admin_home'), has('content_all')], ['quicklinks', t('admin_quicklinks'), has('quicklinks')], ['permissions', t('admin_permissions'), can('admin')],
-    ['settings', t('admin_settings'), can('admin')]].filter((x) => x[2]);
-  const [wanted, setTab] = useState(() => params.get('tab') || 'users');
+  ].filter((x) => x[2]);
+  const [wanted, setTab] = useState(() => params.get('tab') || '');
   const tab = tabs.some((x) => x[0] === wanted) ? wanted : tabs[0]?.[0];
   useEffect(() => { if (params.get('tab')) setTab(params.get('tab')); }, [params]);
   const locations = useFetch('/locations');
@@ -355,7 +539,8 @@ export default function Admin() {
       <div className="mt-6">
         {locations.data && tab === 'users' && <UsersTab locations={locations.data} reloadLocations={locations.reload} />}
         {locations.data && tab === 'locations' && <LocationsTab locations={locations.data} reload={locations.reload} />}
-        {tab === 'settings' && <AdminSettings />}
+        {tab === 'settings' && <AdminSettings part="general" />}
+        {tab === 'notify' && (can('admin') ? <AdminSettings part="notify" /> : <MailTexts />)}
         {tab === 'departments' && <AdminDepartments />}
         {tab === 'branches' && <AdminBranches />}
         {tab === 'home' && <AdminHomeLayout />}

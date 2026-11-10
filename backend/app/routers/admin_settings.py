@@ -12,7 +12,7 @@ from app import ldap_auth
 from app.config import EDITABLE, SECRET, settings
 from app.db import SessionLocal, get_db
 from app.models import AppSetting, User
-from app.security import require
+from app.security import require, require_perm
 from app.uploads import save_image
 
 router = APIRouter(prefix="/api/admin/settings", tags=["admin"])
@@ -224,10 +224,11 @@ class TemplateIn(BaseModel):
 class TemplatesIn(BaseModel):
     article: TemplateIn
     idea: TemplateIn
+    training: TemplateIn
 
 
 class PreviewIn(BaseModel):
-    kind: Literal["article", "idea"]
+    kind: Literal["article", "idea", "training"]
     subject: str = Field("", max_length=300)
     body: str = Field("", max_length=30000)
     to: str = Field("", max_length=200)
@@ -239,13 +240,15 @@ def _templates_view(db: Session) -> dict:
             "shortcodes": {k: {**v, **mt.COMMON} for k, v in mt.SHORTCODES.items()}}
 
 
+# Mail texts: admins and people with the "mails" permission (e.g. HR). They change the texts for the whole
+# portal, but never see or change the mailbox (SMTP) or Teams settings.
 @router.get("/mail-templates")
-def get_mail_templates(_: User = Depends(require("admin")), db: Session = Depends(get_db)):
+def get_mail_templates(_: User = Depends(require_perm("mails")), db: Session = Depends(get_db)):
     return _templates_view(db)
 
 
 @router.put("/mail-templates")
-def save_mail_templates(body: TemplatesIn, _: User = Depends(require("admin")), db: Session = Depends(get_db)):
+def save_mail_templates(body: TemplatesIn, _: User = Depends(require_perm("mails")), db: Session = Depends(get_db)):
     from app import mail_templates as mt
     mt.save(db, body.model_dump())
     return _templates_view(db)
@@ -263,17 +266,19 @@ def _sample(body: PreviewIn, me: User):
 
 
 @router.post("/mail-templates/preview")
-def preview_mail_template(body: PreviewIn, me: User = Depends(require("admin"))):
+def preview_mail_template(body: PreviewIn, me: User = Depends(require_perm("mails"))):
     """Renders the (unsaved) template with example data."""
     subject, page, _ = _sample(body, me)
     return {"subject": subject, "html": page}
 
 
 @router.post("/mail-templates/test")
-def test_mail_template(body: PreviewIn, me: User = Depends(require("admin"))):
+def test_mail_template(body: PreviewIn, me: User = Depends(require_perm("mails"))):
     import smtplib
 
     from app import notify
+    if me.role != "admin":
+        body.to = me.email or ""  # non-admins can only send the test to themselves
     if not re.match(r"^[^@\s]+@[^@\s]+$", body.to or ""):
         raise HTTPException(422, "E-Mail-Adresse fehlt")
     if not (settings.smtp_host and settings.smtp_from):

@@ -6,6 +6,10 @@
   articles are announced when they go live.
 * Ideas: the author gets an e-mail when the status or the answer of their idea changes (never for anonymous
   ideas - they have no author).
+* Trainings: everyone a mandatory training is assigned to (person, group, department, branch, position, new
+  colleagues, all) gets one e-mail that it is waiting for them - also people who join a group or department
+  later, and everyone again when a new round starts. Not for voluntary trainings, not for people who already
+  confirmed this round. Mandatory, so it ignores the profile switches.
 
 Everything is off until an administrator enables it in Verwaltung -> Einstellungen."""
 import html
@@ -23,7 +27,7 @@ from email.utils import formataddr, make_msgid
 from app import mail_templates
 from app.config import settings
 from app.db import SessionLocal
-from app.models import Article, Idea, User
+from app.models import Article, Idea, Training, TrainingCompletion, TrainingNotice, User
 
 log = logging.getLogger("lotse.notify")
 CHECK_SECONDS = 60
@@ -203,6 +207,46 @@ def idea_changed(idea_id: int) -> None:
         db.close()
 
 
+# --- trainings -------------------------------------------------------------------------------------------
+def check_training_assignments() -> int:
+    """Mail people a mandatory training is waiting for (once per training round). Returns the number of mails."""
+    if not mail_ready():
+        return 0
+    from app.routers.trainings import assigned_ids
+    db = SessionLocal()
+    try:
+        tpl = mail_templates.load(db)["training"]
+        msgs = []
+        for t in db.query(Training).filter(Training.active.is_(True)).all():
+            todo = assigned_ids(db, t)
+            if not todo:
+                continue
+            completions = {c.user_id: c.version for c in
+                           db.query(TrainingCompletion).filter(TrainingCompletion.training_id == t.id)}
+            notices = {n.user_id: n for n in db.query(TrainingNotice).filter(TrainingNotice.training_id == t.id)}
+            for u in db.query(User).filter(User.id.in_(todo), User.email.isnot(None), User.email != "").all():
+                if completions.get(u.id) == t.version:
+                    continue  # already confirmed this round
+                n = notices.get(u.id)
+                if n is not None and n.version >= t.version:
+                    continue  # already told about this round
+                again = u.id in completions or n is not None
+                if n is None:
+                    db.add(TrainingNotice(training_id=t.id, user_id=u.id, version=t.version, sent_at=datetime.now()))
+                else:
+                    n.version, n.sent_at = t.version, datetime.now()
+                values = {"training": t.title_de,
+                          "due": f"Bitte erledigen bis {t.due_date.strftime('%d.%m.%Y')}." if t.due_date else "",
+                          "round": "Neue Runde – bitte erneut bestätigen." if again and t.version > 1 else "",
+                          **_person(u)}
+                subject, page, text = mail_templates.render("training", tpl, values, portal(f"/trainings/{t.id}"))
+                msgs.append(_message(u.email, subject, text, page))
+        db.commit()  # mark first: never mail twice, even if sending fails half-way
+        return send_mails(msgs) if msgs else 0
+    finally:
+        db.close()
+
+
 def in_background(fn, *args) -> None:
     threading.Thread(target=fn, args=args, daemon=True).start()
 
@@ -219,10 +263,11 @@ def start_loop() -> None:
 
     def run():
         while True:
-            try:
-                check_new_articles()
-            except Exception:  # noqa: BLE001 - keep the loop alive
-                log.exception("notification check failed")
+            for check in (check_new_articles, check_training_assignments):
+                try:
+                    check()
+                except Exception:  # noqa: BLE001 - keep the loop alive
+                    log.exception("notification check failed: %s", check.__name__)
             time.sleep(CHECK_SECONDS)
 
     threading.Thread(target=run, name="lotse-notify", daemon=True).start()

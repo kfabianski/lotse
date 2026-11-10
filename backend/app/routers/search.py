@@ -84,7 +84,7 @@ def search(q: str = Query("", max_length=200), limit: int = Query(30, ge=1, le=1
                          "article_title_de": art.title_de, "article_title_en": art.title_en, "category": art.category}
                         for d, art in docs.all() if _matches(words, d.name, art.title_de, art.title_en)][:limit]
 
-    for c in db.query(Classified).options(joinedload(Classified.author)).order_by(Classified.created_at.desc()):
+    for c in db.query(Classified).options(joinedload(Classified.author)).filter(Classified.live()).order_by(Classified.created_at.desc()):
         if _matches(words, c.title, plain(c.body), c.price, c.author.full_name if c.author else ""):
             out["classifieds"].append({"id": c.id, "kind": c.kind, "title": c.title, "price": c.price,
                                        "image_url": c.image_url, "snippet": _snippet(words, c.body),

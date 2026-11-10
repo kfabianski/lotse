@@ -68,4 +68,5 @@ if settings.frontend_dist.is_dir():
         candidate = (settings.frontend_dist / path).resolve()
         if path and candidate.is_file() and settings.frontend_dist.resolve() in candidate.parents:
             return FileResponse(candidate)
-        return FileResponse(settings.frontend_dist / "index.html")
+        # Always revalidate the page: after an update it must point to the new asset files, not deleted old ones.
+        return FileResponse(settings.frontend_dist / "index.html", headers={"Cache-Control": "no-cache"})

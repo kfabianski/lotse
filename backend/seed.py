@@ -160,6 +160,73 @@ def gallery(*items: tuple[str, str]) -> list[dict]:
             for file, caption in items]
 
 
+# Real photos for the demo (docs/CREDITS.md): title image and extra gallery photos per article (by German title),
+# photos for classifieds (by title) and a portrait per person (demo/photos/avatar-<username>.jpg).
+ARTICLE_PHOTOS: dict[str, tuple[str | None, list[tuple[str, str]]]] = {
+    "Rekordquartal im Versand": ("versand-stapler.jpg", [
+        ("versand-halle.jpg", "Hochbetrieb in der Halle"), ("versand-gabelstapler.jpg", "Nachschub für die Packplätze"),
+        ("versand-tor.jpg", "Verladung am Tor 3"), ("versand-hof.jpg", "Feierabend nach der Rekordwoche")]),
+    "Neue Fahrwege im Lager Süd": ("lager-fahrweg.jpg", []),
+    "Phishing-Welle: Gefälschte Paketbenachrichtigungen": ("phishing.jpg", []),
+    "Neu im Sortiment: Mehrweg-Versandbox M": ("versandbox.jpg", []),
+    "Kantine: neue Öffnungszeiten": ("kantine.jpg", []),
+    "Erste-Hilfe-Auffrischung": ("erste-hilfe-1.jpg", [
+        ("erste-hilfe-1.jpg", "Herzdruckmassage üben"), ("erste-hilfe-2.jpg", "Ablauf mit dem Trainer")]),
+    "Laufgruppe: Firmenlauf-Training": ("laufgruppe-1.jpg", [
+        ("laufgruppe-1.jpg", "Dienstagsrunde"), ("laufgruppe-2.jpg", "Tempo-Training im Park"),
+        ("laufgruppe-3.jpg", "Die letzten Meter")]),
+    "Mobiles Arbeiten – Richtlinie 2026": ("mobiles-arbeiten.jpg", []),
+    "Urlaubsplanung und Vertretung": ("urlaubsplanung.jpg", []),
+    "Ergonomie am Bildschirmarbeitsplatz": ("ergonomie.jpg", []),
+    "Passwörter und Passkeys": ("passwoerter.jpg", []),
+    "Drucker im 1. OG einrichten": ("drucker.jpg", []),
+    "Wareneingang richtig buchen": ("wareneingang.jpg", []),
+    "Inventur 2026: Ablauf und Zeiten": ("inventur.jpg", []),
+    "Jahresplanung 2027: Inventur, Audit, Betriebsferien": ("jahresplanung.jpg", []),
+    "Entwurf: Neues Parkkonzept": ("parkplatz.jpg", []),
+    "Neujahrsempfang 2027": ("neujahr-1.jpg", [
+        ("neujahr-1.jpg", "Anstoßen um Mitternacht"), ("neujahr-2.jpg", "Prost auf 2027"),
+        ("neujahr-3.jpg", "Sekt im Foyer"), ("neujahr-4.jpg", "Empfang im Showroom"), ("neujahr-5.jpg", "Gute Gespräche")]),
+    "Betriebsausflug an die Elbe": (None, [
+        ("ausflug-teamspiel.jpg", "Pause auf der Wiese"), ("ausflug-jubel.jpg", "Das Siegerteam"),
+        ("ausflug-handschlag.jpg", "Fair geht vor")]),
+    "Team-Workshop Vertrieb & Einkauf": (None, [
+        ("workshop-laptop.jpg", "Zahlen live am Laptop"), ("workshop-runde.jpg", "Abschlussrunde"),
+        ("workshop-team.jpg", "Nächste Schritte")]),
+}
+CLASSIFIED_PHOTOS = {"Kinderfahrrad 20 Zoll": "anzeige-kinderfahrrad.jpg",
+                     "Fahrgemeinschaft aus Lüneburg": "anzeige-fahrgemeinschaft.jpg",
+                     "Zimmerpflanzen zu verschenken": "anzeige-monstera.jpg"}
+
+
+def add_demo_photos(db) -> int:
+    """Real photos for staff, articles, galleries and classifieds. Fills only what is empty (generated SVG banners
+    count as empty), so it is safe on an existing database: `seed.py --photos`."""
+    n = 0
+    for u in db.query(User).filter(User.avatar_url.is_(None)).all():
+        if (DEMO_PHOTOS / f"avatar-{u.username}.jpg").exists():
+            u.avatar_url = photo(f"avatar-{u.username}.jpg")
+            n += 1
+    for title, (cover, items) in ARTICLE_PHOTOS.items():
+        article = db.query(Article).filter(Article.title_de == title).first()
+        if article is None:
+            continue
+        if cover and (not article.image_url or article.image_url.endswith(".svg")):
+            article.image_url = photo(cover)
+            n += 1
+        present = db.query(Attachment).filter(Attachment.article_id == article.id).all()
+        urls, sort = {a.url for a in present}, len(present)
+        for item in gallery(*[(f, c) for f, c in items if f"/uploads/{f}" not in urls]):
+            db.add(Attachment(article_id=article.id, sort=sort, **item))
+            sort += 1
+            n += 1
+    for c in db.query(Classified).filter(Classified.image_url.is_(None)).all():
+        if c.title in CLASSIFIED_PHOTOS:
+            c.image_url = photo(CLASSIFIED_PHOTOS[c.title])
+            n += 1
+    return n
+
+
 def write_pdf(name: str, title: str, lines: list[str]) -> dict:
     data = make_pdf(title, lines)
     (UP / name).write_bytes(data)
@@ -1107,6 +1174,8 @@ def seed(reset: bool):
     add_demo_org(db)
     add_demo_branches(db)
     add_demo_pinned(db)
+    db.flush()
+    add_demo_photos(db)
     db.commit()
     print("Demo data created. Passwords are shown only now - note them down:")
     print(f"  admin            {admin_pw}   (administrator)")
@@ -1233,7 +1302,11 @@ def add_demo_polls(db) -> int:
 
 
 if __name__ == "__main__":
-    if "--pinned" in sys.argv:
+    if "--photos" in sys.argv:  # real photos for an existing database (only where nothing is set)
+        db = SessionLocal()
+        print(f"{add_demo_photos(db)} photos added.")
+        db.commit()
+    elif "--pinned" in sys.argv:
         db = SessionLocal()
         print(f"{add_demo_pinned(db)} pinned article added.")
         db.commit()

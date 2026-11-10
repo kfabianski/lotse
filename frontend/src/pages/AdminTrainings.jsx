@@ -3,7 +3,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import {
   BarChart3, CheckCircle2, Download, FileText, GraduationCap, Image as ImageIcon, Link2, PenLine, PlayCircle, Plus,
-  RotateCcw, Search, Trash2, Upload, Users, X, Eye, Clock3,
+  RotateCcw, Search, Trash2, Upload, Users, X, Eye, Clock3, Mail,
 } from 'lucide-react';
 import RichTextEditor from '../components/RichText';
 import { Avatar, Button, Field, Modal, inputClass } from '../components/ui';
@@ -244,6 +244,7 @@ function TrainingEditor({ initial, departments, groups, people, onClose, onSaved
             </label>
             <p className="mb-1 text-xs text-muted">{t('tr_mandatory_for')}</p>
             <TargetPicker value={edit.targets} onChange={(targets) => set('targets', targets)} departments={departments} groups={groups} people={people} positions={positions || []} />
+            <p className="mt-2 flex items-start gap-1.5 text-xs text-muted"><Mail size={13} className="mt-0.5 shrink-0" aria-hidden />{t('tr_mail_hint')}</p>
           </section>
           <section>
             <p className="mb-1.5 text-sm font-semibold">{t('tr_materials')}</p>
