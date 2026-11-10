@@ -1,6 +1,6 @@
 # Lotse – das Intranet für Mitarbeiter
 
-Lotse ist ein schlankes Mitarbeiterportal für Firmen mit Büroetagen und Lagerhallen: Neuigkeiten und Wissen,
+Lotse ist ein schlankes Intranet für alle Mitarbeiter – im Büro, im Lager und unterwegs: Neuigkeiten und Wissen,
 Veranstaltungen mit Zusagen, Dokumente mit Versionshistorie, Schulungen mit Lesebestätigung,
 Mitarbeiterverzeichnis mit interaktivem Lageplan, Kleinanzeigen, Ideenbox und Schnellzugriff auf die
 Firmenprogramme – zweisprachig (Deutsch/Englisch), mit hellem und dunklem Design.
