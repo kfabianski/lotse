@@ -8,3 +8,4 @@ bcrypt>=4.1
 python-multipart>=0.0.9
 ldap3>=2.9
 holidays==0.107
+pyspnego>=0.12  # Windows sign-in (Kerberos) without IIS; on Linux also: pyspnego[kerberos]

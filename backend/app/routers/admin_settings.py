@@ -24,6 +24,9 @@ class SettingsIn(BaseModel):
     color_scheme: Literal["hafen", "signal", "meer", "indigo", "nordsee", "fjord", "azur", "marine"] = "hafen"
     holiday_regions: list[str] = Field(default=["DE", "AT", "CH"], max_length=12)
     sso_enabled: bool = False
+    sso_mode: Literal["kerberos", "proxy"] = "kerberos"
+    sso_kerberos_hostname: str = Field(default="", max_length=255, pattern=r"^[A-Za-z0-9.\-]*$")
+    sso_kerberos_keytab: str = Field(default="", max_length=500)
     sso_header: str = Field(default="X-Remote-User", pattern=r"^[A-Za-z][A-Za-z0-9-]{1,60}$")
     trusted_proxies: list[str] = Field(default=["127.0.0.1", "::1"], max_length=10)
     ldap_enabled: bool
@@ -70,9 +73,12 @@ class TestIn(BaseModel):
 
 def apply_overrides(db: Session) -> None:
     """Copy stored admin settings onto the in-process settings object."""
-    for row in db.query(AppSetting).all():
+    rows = db.query(AppSetting).all()
+    for row in rows:
         if row.key in EDITABLE:
             setattr(settings, row.key, json.loads(row.value))
+    if settings.sso_enabled and "sso_mode" not in {row.key for row in rows}:
+        settings.sso_mode = "proxy"  # saved before Kerberos existed: that Windows sign-in ran through a web server
 
 
 def load_overrides_at_startup() -> None:
@@ -108,8 +114,14 @@ def save_settings(body: SettingsIn, _: User = Depends(require("admin")), db: Ses
         body.trusted_proxies = [str(ipaddress.ip_address(x.strip())) for x in body.trusted_proxies if x.strip()]
     except ValueError:
         raise HTTPException(422, "Trusted proxies must be IP addresses")
-    if body.sso_enabled and not (body.ldap_enabled and body.trusted_proxies):
-        raise HTTPException(422, "Windows sign-in needs LDAP and at least one trusted proxy address")
+    if body.sso_enabled and not body.ldap_enabled:
+        raise HTTPException(422, "Windows sign-in needs LDAP")
+    if body.sso_enabled and body.sso_mode == "proxy" and not body.trusted_proxies:
+        raise HTTPException(422, "Windows sign-in via a web server needs at least one trusted proxy address")
+    if body.sso_enabled and body.sso_mode == "kerberos":
+        from app import sso_kerberos
+        if not sso_kerberos.available():
+            raise HTTPException(422, "Kerberos sign-in needs the pyspnego package - see deploy/kerberos/README.md")
     if "{username}" not in body.ldap_user_filter:
         raise HTTPException(422, "The user filter must contain {username}")
     if body.ldap_ca_pem.strip() and "BEGIN CERTIFICATE" not in body.ldap_ca_pem:

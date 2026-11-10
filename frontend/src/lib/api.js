@@ -27,7 +27,7 @@ export class ApiError extends Error {
 let onUnauthorized = () => {};
 export const setUnauthorizedHandler = (fn) => { onUnauthorized = fn; };
 
-export async function api(path, { method = 'GET', body, form, params } = {}) {
+export async function api(path, { method = 'GET', body, form, params, keepSession = false, anonymous = false } = {}) {
   const url = new URL(`/api${path}`, window.location.origin);
   if (params) {
     Object.entries(params).forEach(([k, v]) => {
@@ -36,7 +36,7 @@ export async function api(path, { method = 'GET', body, form, params } = {}) {
     });
   }
   const headers = {};
-  const token = getToken();
+  const token = anonymous ? null : getToken();
   if (token) headers.Authorization = `Bearer ${token}`;
   let payload;
   if (form) payload = form;
@@ -45,7 +45,7 @@ export async function api(path, { method = 'GET', body, form, params } = {}) {
     payload = JSON.stringify(body);
   }
   const res = await fetch(url, { method, headers, body: payload });
-  if (res.status === 401 && token) onUnauthorized();
+  if (res.status === 401 && token && !keepSession) onUnauthorized();
   if (!res.ok) {
     let detail = res.statusText;
     try {
@@ -54,7 +54,13 @@ export async function api(path, { method = 'GET', body, form, params } = {}) {
     } catch { /* not JSON */ }
     throw new ApiError(res.status, detail);
   }
-  return res.status === 204 ? null : res.json();
+  return res.status === 204 ? null : JSON.parse(await res.text(), trimFraction);
+}
+
+// The API sends microseconds ("…T23:43:53.099682"); trim to milliseconds so every browser's Date parses it.
+const ISO_MICRO = /^(\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3})\d+/;
+function trimFraction(_key, value) {
+  return typeof value === 'string' && ISO_MICRO.test(value) ? value.replace(ISO_MICRO, '$1') : value;
 }
 
 export async function uploadImage(file, path = '/images') {

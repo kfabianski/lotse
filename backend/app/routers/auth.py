@@ -1,7 +1,7 @@
-from fastapi import APIRouter, Depends, File, HTTPException, Request, UploadFile, status
+from fastapi import APIRouter, Depends, File, HTTPException, Request, Response, UploadFile, status
 from sqlalchemy.orm import Session
 
-from app import ldap_auth, ratelimit
+from app import ldap_auth, ratelimit, sso_kerberos
 from app.config import settings
 from app.db import get_db
 from app.models import User
@@ -20,7 +20,7 @@ def public_config():
             "public_read": settings.public_read, "login_image_url": settings.login_image_url or None,
             "ldap_departments_auto": settings.ldap_enabled and settings.ldap_departments_auto,
             "ldap_branch_attr": bool(settings.ldap_enabled and settings.ldap_attr_branch),
-            "sso_enabled": settings.sso_enabled and settings.ldap_enabled}
+            "sso_enabled": settings.sso_enabled and settings.ldap_enabled, "sso_mode": settings.sso_mode}
 
 
 @router.post("/login", response_model=TokenOut)
@@ -59,13 +59,21 @@ def _windows_name(raw: str) -> str:
 
 
 @router.get("/sso")
-def windows_sign_in(request: Request, db: Session = Depends(get_db)):
-    """Windows sign-in: trusted only from the configured reverse proxy, which has verified the Windows account."""
+def windows_sign_in(request: Request, response: Response, db: Session = Depends(get_db)):
+    """Windows sign-in. "kerberos": Lotse verifies the browser's Kerberos ticket itself. "proxy": trusted only
+    from the configured reverse proxy, which has verified the Windows account."""
     if not (settings.sso_enabled and settings.ldap_enabled):
         raise HTTPException(404, "Windows sign-in is not enabled")
-    if not request.client or request.client.host not in settings.trusted_proxies:
-        raise HTTPException(403, "Windows sign-in only via the company web server")
-    username = _windows_name(request.headers.get(settings.sso_header, ""))
+    response.headers["Cache-Control"] = "no-store"
+    if settings.sso_mode == "kerberos":
+        principal, final_token = sso_kerberos.authenticate(request)
+        if final_token:
+            response.headers["WWW-Authenticate"] = f"Negotiate {final_token}"  # mutual authentication
+    else:
+        if not request.client or request.client.host not in settings.trusted_proxies:
+            raise HTTPException(403, "Windows sign-in only via the company web server")
+        principal = request.headers.get(settings.sso_header, "")
+    username = _windows_name(principal)
     if not username:
         raise HTTPException(401, "No Windows account was passed on")
     user = db.query(User).filter(User.username == username).first()

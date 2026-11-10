@@ -147,7 +147,7 @@ Rolle und bei Bedarf **zusätzliche Rechte** (z. B. *Etagen, Räume & Plätze* o
 |---|---|
 | Backend | Python 3.11+, FastAPI, SQLAlchemy, **SQLite** (eine Datei, kein Datenbankserver), `holidays` (Feiertage, offline) |
 | Frontend | React 19, Vite, Tailwind CSS 4, TipTap (Texteditor), Schrift Geist, Icons Lucide |
-| Anmeldung | lokal (bcrypt + JWT) oder LDAP/AD über LDAPS bzw. STARTTLS (ldap3) |
+| Anmeldung | lokal (bcrypt + JWT) oder LDAP/AD über LDAPS bzw. STARTTLS (ldap3); Windows-Anmeldung per Kerberos (pyspnego) |
 | Betrieb | ein Prozess (uvicorn) liefert API, Uploads und die gebaute Oberfläche aus |
 
 Neue Datenbankfelder und Tabellen werden beim Start automatisch ergänzt (`backend/app/migrate.py`);
@@ -258,8 +258,17 @@ Einstellungen erst nach einem Neustart sehen.
 
 ## Windows-Anmeldung (SSO) einrichten
 
-Damit Mitarbeitende mit ihrem Windows-Profil ohne Passwort erkannt werden, läuft Lotse hinter **IIS** mit
-Windows-Authentifizierung (Kerberos):
+Mitarbeitende, die am Firmen-PC angemeldet sind, werden ohne Passwort erkannt. Zwei Wege, umschaltbar unter
+**Verwaltung → Einstellungen → Windows-Anmeldung**:
+
+| Art | Wann | Anleitung |
+|---|---|---|
+| **Kerberos direkt** (Standard) | Lotse prüft das Windows-Ticket selbst – kein IIS, ein Prozess. Windows-Server in der Domäne oder Linux mit Keytab. | [`deploy/kerberos/`](deploy/kerberos/README.md) |
+| **Über einen Webserver** | Es gibt schon einen IIS (oder anderen Webserver mit Windows-Authentifizierung), der den Benutzer im Header weitergibt. | unten |
+
+### Variante: hinter IIS
+
+Lotse läuft hinter **IIS** mit Windows-Authentifizierung (Kerberos):
 
 1. Lotse wie gewohnt starten, aber nur lokal erreichbar: in `start.ps1` `--host 0.0.0.0` durch `--host 127.0.0.1` ersetzen.
 2. Auf dem Server IIS mit **Windows-Authentifizierung**, **URL Rewrite** und **Application Request Routing**
@@ -269,11 +278,25 @@ Windows-Authentifizierung (Kerberos):
 4. Für Kerberos den SPN `HTTP/intranet.firma.local` auf das Konto des Servers bzw. App-Pools eintragen und
    die Adresse per Gruppenrichtlinie zur **Lokales Intranet**-Zone hinzufügen (Edge/Chrome melden dann
    automatisch an).
-5. In Lotse unter **Verwaltung → Einstellungen → Windows-Anmeldung** einschalten; Header `X-Remote-User`,
+5. In Lotse unter **Verwaltung → Einstellungen → Windows-Anmeldung** einschalten, Art *Über einen Webserver*; Header `X-Remote-User`,
    vertrauenswürdige Webserver `127.0.0.1`.
 
 Lotse akzeptiert den Header nur von den eingetragenen Adressen und nur für LDAP-Konten. Lokale Konten (z. B. ein
 Notfall-Administrator) melden sich weiter mit Passwort an.
+
+**Bei jedem Öffnen der Seite** fragt Lotse den Webserver, wer am PC angemeldet ist, sucht die Person im LDAP/AD und
+meldet sie ohne Passwort an. Ist im Browser noch die Sitzung einer anderen Person gespeichert (gemeinsam genutzter
+PC), wird sie ersetzt. Ausnahmen: nach *Abmelden* bleibt man in diesem Tab abgemeldet, und wer sich mit einem
+lokalen Konto per Passwort angemeldet hat, bleibt angemeldet. Klappt die Windows-Anmeldung nicht (z. B. privates
+Gerät), bleibt die Anmeldung mit Benutzername und Passwort.
+
+Damit die Browser das Windows-Konto ohne Rückfrage weitergeben (sonst erscheint ein Anmeldefenster):
+
+| Browser | Einstellung (per Gruppenrichtlinie verteilen) |
+|---|---|
+| Edge, Chrome | Adresse in der Zone **Lokales Intranet** (Schritt 4) – oder Richtlinie `AuthServerAllowlist` = `intranet.firma.local` |
+| Firefox | Richtlinie *Authentication → SPNEGO* = `intranet.firma.local` (Firefox-ADMX bzw. `policies.json`); von Hand: `about:config` → `network.negotiate-auth.trusted-uris` |
+| Safari (macOS) | Mac in der Domäne oder Kerberos-SSO-Erweiterung (MDM); dann meldet Safari automatisch an, sonst fragt es nach dem Passwort |
 
 ## Screenshots aktualisieren
 

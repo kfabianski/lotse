@@ -18,7 +18,9 @@ export function AuthProvider({ children }) {
 
   /** Windows sign-in (SSO) through the company web server; returns the user or throws. */
   const ssoLogin = useCallback(async () => {
-    const res = await api('/auth/sso');
+    // Sent without the stored token: the browser only adds its Kerberos ticket to a request that carries no
+    // Authorization header of its own. A failed check must not end a session that is otherwise valid.
+    const res = await api('/auth/sso', { keepSession: true, anonymous: true });
     try { sessionStorage.removeItem('lotse-sso-off'); } catch { /* ignore */ }
     setToken(res.access_token);
     setUser(res.user);

@@ -71,15 +71,17 @@ export default function App() {
   const toggleCollapsed = () => setCollapsed((c) => { try { localStorage.setItem('lotse-menu', c ? 'wide' : 'small'); } catch { /* ignore */ } return !c; });
   const { t } = useI18n();
   const [config, setConfig] = useState(null);
-  const [ssoPending, setSsoPending] = useState(false);
+  const [ssoChecked, setSsoChecked] = useState(false);
   const { ssoLogin } = useAuth();
   useEffect(() => {
-    // Windows sign-in: people signed in to their company PC are recognised without typing a password.
+    // Windows sign-in, checked on every page open: the person signed in to this PC is looked up in
+    // LDAP/AD and signed in without a password. A stored session of someone else (shared PC) is replaced.
+    // Skipped after an explicit sign-out in this tab and for local accounts that signed in with a password.
+    if (!ready || !config) return;
     let off = false;
     try { off = sessionStorage.getItem('lotse-sso-off') === '1'; } catch { /* ignore */ }
-    if (!config?.sso_enabled || user || off || !ready) return;
-    setSsoPending(true);
-    ssoLogin().catch(() => {}).finally(() => setSsoPending(false));
+    if (!config.sso_enabled || off || user?.auth_source === 'local') { setSsoChecked(true); return; }
+    ssoLogin().catch(() => {}).finally(() => setSsoChecked(true));
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [config, ready]);
   const [drawer, setDrawer] = useState(false);
@@ -91,7 +93,7 @@ export default function App() {
   useEffect(() => { if (config) applyScheme(user?.color_scheme || config.color_scheme); }, [config, user?.color_scheme]);
   useScrollMemory();
 
-  if (!ready || !config || ssoPending) return null;
+  if (!ready || !config || !ssoChecked) return null;
   // Everyone may read when public_read is on; signing in is only needed to post or edit.
   if (pathname === '/login' || (!user && !config.public_read)) return <Login config={config} />;
 

@@ -69,7 +69,7 @@ export default function AdminHomeLayout() {
       <div className="mt-6 grid gap-8 lg:grid-cols-[minmax(0,1fr)_minmax(0,0.9fr)]">
         <ol className="space-y-2" aria-label={t('hl_blocks')}>
           {layout.map((b, i) => (
-            <li key={b.id} draggable onDragStart={() => setDrag(i)} onDragEnd={() => setDrag(null)}
+            <li key={b.id} draggable onDragStart={(e) => { e.dataTransfer.effectAllowed = 'move'; e.dataTransfer.setData('text/plain', b.id); setDrag(i); }} onDragEnd={() => setDrag(null)}
               onDragOver={(e) => { e.preventDefault(); if (drag !== null && drag !== i) { move(drag, i); setDrag(i); } }}
               className={`flex items-center gap-2 rounded-xl border bg-surface px-2.5 py-2 ${drag === i ? 'border-brand shadow-lg' : 'border-line'} ${b.show ? '' : 'opacity-55'}`}>
               <GripVertical size={18} className="shrink-0 cursor-grab text-muted" aria-hidden />

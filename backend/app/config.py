@@ -27,9 +27,14 @@ class Settings(BaseSettings):
     public_read: bool = True
     # Public holidays shown in the calendar: country ("DE") or country-region ("DE-NI", "AT-9", "CH-ZH").
     holiday_regions: list[str] = ["DE", "AT", "CH"]
-    # Windows sign-in (SSO): a reverse proxy with Windows authentication (e.g. IIS) passes the signed-in
-    # Windows user in a header. Only requests from the trusted proxy addresses are believed.
+    # Windows sign-in (SSO) for people signed in to their company PC. Two ways (deploy/kerberos/README.md):
+    #   "kerberos": Lotse checks the browser's Kerberos ticket itself (no IIS; needs pyspnego and an SPN).
+    #   "proxy":    a web server with Windows authentication passes the user in a header; only requests
+    #               from the trusted proxy addresses are believed.
     sso_enabled: bool = False
+    sso_mode: str = "kerberos"
+    sso_kerberos_hostname: str = ""  # address of the portal as in the SPN, e.g. intranet.firma.local; empty = any
+    sso_kerberos_keytab: str = ""  # Linux only: path to the keytab with HTTP/<address>
     sso_header: str = "X-Remote-User"
     trusted_proxies: list[str] = ["127.0.0.1", "::1"]
 
@@ -78,7 +83,7 @@ class Settings(BaseSettings):
 # Settings an administrator may change in the web UI; stored in the app_settings table and applied
 # on top of the .env values at startup and on every save.
 EDITABLE = {
-    "company_name", "public_read", "color_scheme", "login_image_url", "holiday_regions", "sso_enabled", "sso_header", "trusted_proxies", "ldap_enabled", "ldap_host", "ldap_port", "ldap_mode", "ldap_ca_pem",
+    "company_name", "public_read", "color_scheme", "login_image_url", "holiday_regions", "sso_enabled", "sso_mode", "sso_kerberos_hostname", "sso_kerberos_keytab", "sso_header", "trusted_proxies", "ldap_enabled", "ldap_host", "ldap_port", "ldap_mode", "ldap_ca_pem",
     "ldap_verify_cert", "ldap_bind_dn", "ldap_bind_password", "ldap_base_dn", "ldap_user_filter",
     "ldap_sync_filter", "ldap_admin_group", "ldap_departments_auto", "ldap_editor_group", "ldap_attr_username", "ldap_attr_first_name",
     "ldap_attr_last_name", "ldap_attr_email", "ldap_attr_department", "ldap_attr_title", "ldap_attr_phone",

@@ -397,7 +397,7 @@ export default function FloorPlanV2({ locations, deptColors = {}, focusPersonId 
           </g>
         )}
         <g pointerEvents="none">
-          {Icon && big && <foreignObject x={r.x + 14} y={r.y + 14} width="22" height="22"><Icon size={20} color={color === 'var(--muted)' ? 'var(--muted)' : color} /></foreignObject>}
+          {Icon && big && <Icon x={r.x + 15} y={r.y + 15} size={20} color={color === 'var(--muted)' ? 'var(--muted)' : color} />}
           {r.type === 'rack' || r.type === 'dock'
             ? <text x={r.x + r.w / 2} y={r.type === 'rack' ? r.y - 10 : r.y + r.h / 2 + 5} textAnchor="middle" fontSize="14" fontWeight="600" fill="var(--ink)">{r.label[lang]}</text>
             : <text x={r.x + (Icon && big ? 42 : 14)} y={r.y + 31} fontSize="17" fontWeight="600" fill="var(--ink)">{r.label[lang]}</text>}

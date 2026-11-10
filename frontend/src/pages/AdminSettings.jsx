@@ -223,6 +223,25 @@ export default function AdminSettings() {
 
       <Section title={t('sso_title')} description={t('sso_hint')}>
         <Toggle checked={form.sso_enabled} onChange={set('sso_enabled')} label={t('sso_enabled')} hint={t('sso_enabled_hint')} />
+        <div className="grid gap-2 sm:grid-cols-2">
+          {[['kerberos', t('sso_mode_kerberos'), t('sso_mode_kerberos_hint')], ['proxy', t('sso_mode_proxy'), t('sso_mode_proxy_hint')]].map(([mode, label, hint]) => (
+            <label key={mode} className={`cursor-pointer rounded-xl border p-3 transition-colors ${(form.sso_mode || 'kerberos') === mode ? 'border-brand bg-brand-soft' : 'border-line hover:border-muted'}`}>
+              <input type="radio" name="sso_mode" className="sr-only" checked={(form.sso_mode || 'kerberos') === mode} onChange={() => setForm((f) => ({ ...f, sso_mode: mode }))} />
+              <span className="block font-medium">{label}</span>
+              <span className="block text-sm text-muted">{hint}</span>
+            </label>
+          ))}
+        </div>
+        {(form.sso_mode || 'kerberos') === 'kerberos' ? (
+        <div className="grid gap-4 sm:grid-cols-2">
+          <Field label={t('sso_krb_host')} hint={t('sso_krb_host_hint')}>
+            <input className={inputClass} value={form.sso_kerberos_hostname || ''} onChange={set('sso_kerberos_hostname')} placeholder="intranet.firma.local" />
+          </Field>
+          <Field label={t('sso_krb_keytab')} hint={t('sso_krb_keytab_hint')}>
+            <input className={inputClass} value={form.sso_kerberos_keytab || ''} onChange={set('sso_kerberos_keytab')} placeholder="/etc/lotse/http.keytab" />
+          </Field>
+        </div>
+        ) : (
         <div className="grid gap-4 sm:grid-cols-2">
           <Field label={t('sso_header')} hint={t('sso_header_hint')}>
             <input className={inputClass} value={form.sso_header || ''} onChange={set('sso_header')} />
@@ -232,6 +251,7 @@ export default function AdminSettings() {
               onChange={(e) => setForm((f) => ({ ...f, trusted_proxies: e.target.value.split(',').map((x) => x.trim()).filter(Boolean) }))} />
           </Field>
         </div>
+        )}
       </Section>
 
       <Section title={t('settings_ldap')} description={t('settings_ldap_hint')}>
