@@ -1,4 +1,4 @@
-# Lotse – das Intranet für Büro und Lager
+# Lotse – das Intranet für Mitarbeiter
 
 Lotse ist ein schlankes Mitarbeiterportal für Firmen mit Büroetagen und Lagerhallen: Neuigkeiten und Wissen,
 Veranstaltungen mit Zusagen, Dokumente mit Versionshistorie, Schulungen mit Lesebestätigung,
@@ -81,6 +81,7 @@ Alle Funktionen im Detail: **[docs/FUNKTIONEN.md](docs/FUNKTIONEN.md)** · Bildn
 - **Benachrichtigungen** per **E-Mail** (neue Artikel und Termine, Antworten auf eigene Ideen, **zugewiesene Pflichtschulungen**) und als Karte in
   einem **Teams-Kanal**; jede Person kann sie im Profil abschalten. Betreff und Text der Mails gestaltet der Admin
   selbst (**Mail anpassen**: Editor mit Platzhaltern wie `{article}`, Vorschau, Test-Mail).
+- **Social Media**: Facebook-, LinkedIn- und Instagram-Seite der Firma als Links auf der Startseite und in der Fußzeile.
 - **Kleinanzeigen**: Biete, Suche, Zu verschenken, Fahrgemeinschaften – mit Foto, Preis und Kontakt; verschwinden nach 90 Tagen automatisch.
 - **Ideenbox**: Ideen einreichen (auf Wunsch **wirklich anonym** – der Name wird dann gar nicht gespeichert),
   mit **1–5 Sternen** bewerten, Sortierung *Beste Bewertung* oder *Neueste*, Status von *Neu* bis *Umgesetzt*

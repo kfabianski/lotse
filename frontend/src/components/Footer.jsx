@@ -1,8 +1,9 @@
 import { Link } from 'react-router-dom';
 import { useI18n } from '../lib/i18n';
+import { SocialIcons } from './Social';
 
 /** Page footer: copyright line, the admin's own text (e.g. address), a few useful links. */
-export default function Footer({ company, text }) {
+export default function Footer({ company, text, config }) {
   const { t } = useI18n();
   const year = new Date().getFullYear();
   return (
@@ -17,6 +18,7 @@ export default function Footer({ company, text }) {
           <Link to="/people" className="hover:text-ink hover:underline">{t('nav_people')}</Link>
           <Link to="/ideas" className="hover:text-ink hover:underline">{t('nav_ideas')}</Link>
           <Link to="/profile" className="hover:text-ink hover:underline">{t('profile')}</Link>
+          <SocialIcons config={config} />
         </nav>
       </div>
     </footer>

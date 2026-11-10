@@ -20,7 +20,9 @@ def public_config():
             "public_read": settings.public_read, "login_image_url": settings.login_image_url or None,
             "ldap_departments_auto": settings.ldap_enabled and settings.ldap_departments_auto,
             "ldap_branch_attr": bool(settings.ldap_enabled and settings.ldap_attr_branch),
-            "sso_enabled": settings.sso_enabled and settings.ldap_enabled, "sso_mode": settings.sso_mode}
+            "sso_enabled": settings.sso_enabled and settings.ldap_enabled, "sso_mode": settings.sso_mode,
+            "social_facebook": settings.social_facebook, "social_linkedin": settings.social_linkedin,
+            "social_instagram": settings.social_instagram}
 
 
 @router.post("/login", response_model=TokenOut)

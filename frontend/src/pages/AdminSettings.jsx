@@ -186,6 +186,14 @@ export default function AdminSettings({ part = 'general' }) {
         </div>
       </Section>
 
+      <Section title={t('social_title')} description={t('social_hint')}>
+        <div className="grid gap-4 sm:grid-cols-3">
+          <Field label={t('social_facebook')}><input className={inputClass} placeholder="https://www.facebook.com/…" value={form.social_facebook || ''} onChange={set('social_facebook')} /></Field>
+          <Field label={t('social_linkedin')}><input className={inputClass} placeholder="https://www.linkedin.com/company/…" value={form.social_linkedin || ''} onChange={set('social_linkedin')} /></Field>
+          <Field label={t('social_instagram')}><input className={inputClass} placeholder="https://www.instagram.com/…" value={form.social_instagram || ''} onChange={set('social_instagram')} /></Field>
+        </div>
+      </Section>
+
       <Section title={t('cs_title')} description={t('cs_hint')}>
         <SchemePicker value={form.color_scheme || 'hafen'} onChange={(id) => { set('color_scheme')(id); applyScheme(id, { cache: false }); }} />
         <p className="text-sm text-muted">{t('cs_note')}</p>
@@ -370,9 +378,10 @@ export default function AdminSettings({ part = 'general' }) {
       </Section>
       </>)}
 
-      <div className="sticky bottom-4 flex items-center justify-end gap-3">
-        {status && <p role="status" className={`rounded-xl bg-surface px-3 py-2 text-sm shadow ${status.kind === 'ok' ? 'text-safe' : 'text-alert'}`}>{status.text}</p>}
-        <Button type="submit" disabled={busy} className="shadow-lg">{t('save')}</Button>
+      {/* Save bar: its own strip that stays at the bottom while scrolling, separated from the sections above. */}
+      <div className="sticky bottom-3 z-20 mt-2 flex items-center gap-3 rounded-xl border border-line bg-surface/95 px-4 py-3 shadow-lg backdrop-blur">
+        <p role="status" className={`min-w-0 flex-1 truncate text-sm ${status?.kind === 'error' ? 'text-alert' : 'text-safe'}`}>{status?.text || ''}</p>
+        <Button type="submit" disabled={busy}>{t('save')}</Button>
       </div>
     </form>
   );

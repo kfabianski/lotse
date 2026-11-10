@@ -79,13 +79,13 @@ def _may_edit(user: User, article: Article) -> bool:
     return has_perm(user, "content_all") or (has_perm(user, "content_own") and article.author_id == user.id)
 
 
-HOME_BLOCKS = ("slider", "quicklinks", "upcoming", "news", "people", "photos", "recent", "poll", "board")
+HOME_BLOCKS = ("slider", "quicklinks", "upcoming", "news", "people", "photos", "recent", "poll", "board", "social")
 DEFAULT_LAYOUT = [
     {"id": "slider", "show": True, "width": "full"}, {"id": "quicklinks", "show": True, "width": "full"},
     {"id": "upcoming", "show": True, "width": "full"}, {"id": "news", "show": True, "width": "full"},
     {"id": "people", "show": True, "width": "full"}, {"id": "photos", "show": True, "width": "full"},
     {"id": "poll", "show": True, "width": "half"}, {"id": "board", "show": True, "width": "half"},
-    {"id": "recent", "show": False, "width": "full"},
+    {"id": "social", "show": True, "width": "full"}, {"id": "recent", "show": False, "width": "full"},
 ]
 
 
@@ -105,7 +105,9 @@ def home_layout(db: Session) -> list[dict]:
         saved = DEFAULT_LAYOUT
     ids = [b["id"] for b in saved if b.get("id") in HOME_BLOCKS]
     out = [b for b in saved if b.get("id") in HOME_BLOCKS]
-    out += [{"id": b, "show": False, "width": "full"} for b in HOME_BLOCKS if b not in ids]
+    # new blocks appear as in the default layout (empty blocks are skipped on the page anyway)
+    defaults = {b["id"]: b for b in DEFAULT_LAYOUT}
+    out += [dict(defaults.get(b, {"id": b, "show": False, "width": "full"})) for b in HOME_BLOCKS if b not in ids]
     return out
 
 

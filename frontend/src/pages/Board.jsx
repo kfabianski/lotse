@@ -43,7 +43,8 @@ function NoticeForm({ onDone }) {
           <Field label={t('description')}><textarea rows={6} className={`${inputClass} resize-y`} value={form.body} onChange={(e) => setForm({ ...form, body: e.target.value })} /></Field>
           <Field label={t('price')}><input className={inputClass} value={form.price} onChange={(e) => setForm({ ...form, price: e.target.value })} /></Field>
         </div>
-        <ImagePicker tall value={form.image_url} onChange={(url) => setForm({ ...form, image_url: url })} />
+        <div><span className="mb-1 block text-sm font-medium text-muted">{t('title_image')}</span>
+          <ImagePicker tall size="notice" value={form.image_url} onChange={(url) => setForm({ ...form, image_url: url })} /></div>
       </div>
       <p className="flex items-start gap-2 rounded-xl bg-surface-2 px-3 py-2.5 text-sm text-muted">
         <Clock size={16} className="mt-0.5 shrink-0" aria-hidden />{t('board_expiry_note', { days: NOTICE_DAYS })}

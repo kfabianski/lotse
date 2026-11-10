@@ -55,6 +55,9 @@ class SettingsIn(BaseModel):
     ldap_attr_branch: str = "physicalDeliveryOfficeName"
     ldap_attr_start_date: str = Field(default="whenCreated", max_length=60)
     footer_text: str = Field(default="", max_length=300)
+    social_facebook: str = Field(default="", max_length=300)
+    social_linkedin: str = Field(default="", max_length=300)
+    social_instagram: str = Field(default="", max_length=300)
     portal_url: str = Field(default="", max_length=200, pattern=r"^(https?://[^\s]+)?$")
     notify_email: bool = False
     smtp_host: str = Field(default="", max_length=255, pattern=r"^[A-Za-z0-9.\-:\[\]]*$")
@@ -122,6 +125,11 @@ def save_settings(body: SettingsIn, _: User = Depends(require("admin")), db: Ses
         from app import sso_kerberos
         if not sso_kerberos.available():
             raise HTTPException(422, "Kerberos sign-in needs the pyspnego package - see deploy/kerberos/README.md")
+    for field, host in (("social_facebook", "facebook.com"), ("social_linkedin", "linkedin.com"), ("social_instagram", "instagram.com")):
+        url = getattr(body, field).strip()
+        if url and not re.match(rf"^https://([a-z0-9-]+\.)?{re.escape(host)}/\S+$", url, re.I):
+            raise HTTPException(422, f"Bitte die vollständige Adresse der Seite eintragen, z. B. https://www.{host}/…")
+        setattr(body, field, url)
     if "{username}" not in body.ldap_user_filter:
         raise HTTPException(422, "The user filter must contain {username}")
     if body.ldap_ca_pem.strip() and "BEGIN CERTIFICATE" not in body.ldap_ca_pem:

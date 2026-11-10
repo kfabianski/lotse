@@ -27,6 +27,7 @@ Diese Beschreibung erklärt, was Lotse kann und wer was darf. Installation und K
 20. [Aussehen, Sprache und Navigation](#20-aussehen-sprache-und-navigation)
 21. [Personal (HR) und neue Kolleg:innen](#21-personal-hr-und-neue-kolleginnen)
 22. [Browser und Geräte](#22-browser-und-geräte)
+23. [Social Media](#23-social-media)
 
 ---
 
@@ -124,6 +125,9 @@ Die Verwaltung zeigt jeder Person nur die Bereiche, für die sie Rechte hat.
 - **Artikel schreiben** (Redaktion): Bereich, Titel, Kurztext und Text in **Deutsch und Englisch**
   (Text in Markdown mit Vorschau), Titelbild, Fotos und PDFs, *Veröffentlicht* oder *Entwurf*,
   *Im Slider zeigen*. Bei Veranstaltungen zusätzlich Datum, Uhrzeit und Ort.
+- **Titelbild** (das Hauptbild des Beitrags, nicht die Fotos im Text): empfohlen **1920 × 1080 px (16:9)**, mindestens
+  1600 × 900 px; Wichtiges in die Bildmitte, weil Slider und Kacheln die Ränder abschneiden. Nach dem Hochladen prüft
+  Lotse die Größe: *passt*, *zu klein – wirkt unscharf* oder *anderes Seitenverhältnis – wird zugeschnitten*.
 - **Veröffentlichen am** (Datum und Uhrzeit): leer = sofort. Ein Datum in der Zukunft **plant** den Artikel – er
   erscheint automatisch zu diesem Zeitpunkt (auch auf der Startseite, im Kalender, bei den Dokumenten und im
   Kalender-Abo). Bis dahin sieht ihn nur die Redaktion, markiert mit *Geplant für …*. Der Knopf heißt dann
@@ -202,8 +206,8 @@ Drei Ansichten unter **Veranstaltungen**:
 ## 9. Kleinanzeigen
 
 - Arten: **Biete, Suche, Zu verschenken, Fahrgemeinschaft, Sonstiges** – mit Filter.
-- Anzeige mit Titel, Beschreibung, optionalem Preis und Foto; Kontakt über E-Mail oder Durchwahl der
-  Person.
+- Anzeige mit Titel, Beschreibung, optionalem Preis und **Titelbild** (empfohlen 1200 × 900 px, 4:3, mindestens
+  800 × 600 px – mit derselben Größenprüfung); Kontakt über E-Mail oder Durchwahl der Person.
 - Erstellen nur nach Anmeldung; löschen dürfen die Person selbst und die Redaktion.
 - **Laufzeit 90 Tage**: Eine Anzeige ist 90 Tage sichtbar und verschwindet danach automatisch – aus der Liste,
   von der Startseite und aus der Suche. Das Formular *Anzeige aufgeben* weist darauf hin; bei den eigenen Anzeigen
@@ -426,7 +430,7 @@ allgemeine Anleitungen. Es gibt zwei Arten der Sichtbarkeit, frei kombinierbar:
 
 - **Verwaltung → Startseite** (Redaktion und Administratoren). Die Startseite besteht aus Blöcken: *Begrüßung*,
   *Slider*, *Schnellzugriff*, *Was kommt*, *Was gibt’s Neues*, *Neu im Team*, *So war’s*,
-  *Frisch erschienen*, *Umfrage*, *Kleinanzeigen*.
+  *Frisch erschienen*, *Umfrage*, *Kleinanzeigen*, *Social Media*.
 - Blöcke **ziehen** (oder mit den Pfeilen verschieben), mit dem Auge **ein-/ausblenden**, Breite **Breit** oder
   **Halb** wählen. Zwei halbe Blöcke stehen nebeneinander; ein einzelner halber Block wird automatisch breit – so
   bleibt die Seite ohne Lücken. Rechts zeigt die **Vorschau** die Anordnung.
@@ -469,7 +473,10 @@ allgemeine Anleitungen. Es gibt zwei Arten der Sichtbarkeit, frei kombinierbar:
   Antworten auf eigene Ideen, Termine von heute. Die Zahl zeigt, wie viele Punkte offen sind.
 - **Menü links** lässt sich unten mit dem Pfeil **einklappen** (nur Symbole) und wieder ausklappen; das bleibt gespeichert.
 - **Fußzeile**: © Jahr und Firmenname, ein freier Text aus *Verwaltung → Einstellungen* (z. B. Anschrift,
-  Handelsregister, Datenschutzhinweis) und Links zu Dokumenten, Mitarbeitenden, Ideen und Profil.
+  Handelsregister, Datenschutzhinweis), Links zu Dokumenten, Mitarbeitenden, Ideen und Profil sowie die Symbole der
+  Social-Media-Seiten.
+- **Empfohlene Bildgrößen** stehen an jedem Upload: Titelbild 1920 × 1080 px, Kleinanzeige 1200 × 900 px, Profilfoto
+  quadratisch ab 400 × 400 px, Anmeldebild 1920 × 1080 px, Grundriss als SVG oder ab 2000 px Breite.
 - **Farbschema**: siehe Abschnitt 17 – für alle (Admin) oder pro Person im Profil.
 - **Sprache**: Die Umschaltung betrifft die **Oberfläche** (Menüs, Knöpfe, Hinweise). **Inhalte bleiben in der
   Sprache, in der sie geschrieben wurden** – niemand muss Artikel oder Dokumente übersetzen. Wer möchte, kann im
@@ -503,3 +510,13 @@ allgemeine Anleitungen. Es gibt zwei Arten der Sichtbarkeit, frei kombinierbar:
   öffnet das ganze Dokument. Schulungsvideos als **MP4** hochladen; `.mov` vom iPhone spielen Chrome und Firefox
   nicht immer ab. Firefox zeigt schmalere, systemeigene Bildlaufleisten.
 - **Handy**: Menü als ausklappbare Leiste, alle Seiten ohne seitliches Scrollen.
+
+## 23. Social Media
+
+- **Einrichten** (Administrator): *Verwaltung → Einstellungen → Social Media* – Adressen der Firmenseiten bei
+  **Facebook**, **LinkedIn** und **Instagram** (vollständige Adresse, z. B. `https://www.linkedin.com/company/…`; andere
+  Adressen werden abgelehnt).
+- **Startseite**: Block *Folgen Sie uns* mit je einer Karte pro Netzwerk (öffnet die Seite in einem neuen Tab). Der Block
+  erscheint, sobald mindestens eine Adresse eingetragen ist, und lässt sich unter *Startseite gestalten* verschieben oder
+  ausblenden. In der **Fußzeile** stehen die Symbole.
+- Es werden nur **Links** gezeigt, keine eingebetteten Beitragslisten.

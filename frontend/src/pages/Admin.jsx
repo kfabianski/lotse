@@ -347,7 +347,7 @@ function UsersTab({ locations, reloadLocations }) {
                 </td>
                 <td className="px-4 py-2.5">
                   <div className="flex items-center gap-3">
-                    <label className="cursor-pointer" title={t('change_photo')}>
+                    <label className="cursor-pointer" title={`${t('change_photo')} – ${t('img_hint_avatar')}`}>
                       <Avatar person={u} size={36} />
                       <input type="file" accept="image/png,image/jpeg,image/webp" className="sr-only" onChange={(e) => e.target.files?.[0] && avatar(u, e.target.files[0])} />
                     </label>

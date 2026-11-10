@@ -42,6 +42,7 @@ export default function Profile() {
           <p className="text-muted">{user.position}{user.department && `, ${user.department}`}</p>
           <p className="text-muted">{user.email}</p>
           {user.seat && <p className="mt-1 text-sm">{t('seat')}: {user.seat.location_code}, {user.seat.label}</p>}
+          <p className="mt-2 text-xs text-muted">{t('img_hint_avatar')}</p>
         </div>
       </div>
 

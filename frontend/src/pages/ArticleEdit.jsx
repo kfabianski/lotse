@@ -59,15 +59,38 @@ function Attachments({ value, onChange }) {
 }
 
 /** Image upload with preview. `tall`: fills a side column (square preview, tall drop zone). */
-export function ImagePicker({ value, onChange, tall = false }) {
+/** Suggested sizes per use, so pictures look sharp and are not cropped awkwardly. */
+export const IMAGE_SIZES = {
+  title: { w: 1920, h: 1080, min: [1600, 900], hint: 'img_hint_title' },
+  notice: { w: 1200, h: 900, min: [800, 600], hint: 'img_hint_notice' },
+};
+
+function imageSize(file) {
+  return new Promise((resolve) => {
+    const url = URL.createObjectURL(file);
+    const img = new Image();
+    img.onload = () => { resolve({ w: img.naturalWidth, h: img.naturalHeight }); URL.revokeObjectURL(url); };
+    img.onerror = () => { resolve(null); URL.revokeObjectURL(url); };
+    img.src = url;
+  });
+}
+
+export function ImagePicker({ value, onChange, tall = false, size = 'title' }) {
   const { t } = useI18n();
   const [error, setError] = useState('');
+  const [check, setCheck] = useState(null);
+  const spec = IMAGE_SIZES[size];
   const pick = async (e) => {
     const file = e.target.files?.[0];
     if (!file) return;
     try {
       setError('');
+      const dims = await imageSize(file);
       onChange((await uploadImage(file)).url);
+      if (!dims || !spec) setCheck(null);
+      else if (dims.w < spec.min[0] || dims.h < spec.min[1]) setCheck({ warn: true, text: t('img_too_small', { w: dims.w, h: dims.h, mw: spec.min[0], mh: spec.min[1] }) });
+      else if (Math.abs(dims.w / dims.h - spec.w / spec.h) / (spec.w / spec.h) > 0.15) setCheck({ warn: true, text: t('img_cropped', { w: dims.w, h: dims.h }) });
+      else setCheck({ warn: false, text: t('img_size_ok', { w: dims.w, h: dims.h }) });
     } catch (err) {
       setError(err.message);
     }
@@ -76,8 +99,8 @@ export function ImagePicker({ value, onChange, tall = false }) {
     <div className={tall ? 'flex h-full flex-col' : ''}>
       {value ? (
         <div className="relative">
-          <img src={value} alt="" className={`${tall ? 'aspect-square' : 'aspect-[16/7]'} w-full rounded-xl object-cover`} />
-          <button type="button" onClick={() => onChange(null)} aria-label={t('remove_image')}
+          <img src={value} alt="" className={`${tall ? 'aspect-[4/3]' : 'aspect-[16/7]'} w-full rounded-xl object-cover`} />
+          <button type="button" onClick={() => { onChange(null); setCheck(null); }} aria-label={t('remove_image')}
             className="absolute right-2 top-2 rounded-sm bg-surface p-1.5 shadow"><X size={16} /></button>
         </div>
       ) : (
@@ -86,6 +109,8 @@ export function ImagePicker({ value, onChange, tall = false }) {
           <input type="file" accept="image/png,image/jpeg,image/webp,image/gif" className="sr-only" onChange={pick} />
         </label>
       )}
+      {check && <p className={`mt-2 text-sm ${check.warn ? 'text-signal' : 'text-safe'}`}>{check.text}</p>}
+      {spec && <p className="mt-1.5 text-xs text-muted">{t(spec.hint)}</p>}
       {error && <p className="mt-2 text-sm text-alert">{error}</p>}
     </div>
   );
@@ -196,7 +221,7 @@ export default function ArticleEdit() {
         )}
       </div>
 
-      <div className="mt-6"><span className="mb-1 block text-sm font-medium text-muted">{t('image')}</span>
+      <div className="mt-6"><span className="mb-1 block text-sm font-medium text-muted">{t('title_image')}</span>
         <ImagePicker value={form.image_url} onChange={set('image_url')} />
       </div>
       <div className="mt-6"><Attachments value={form.attachments || []} onChange={(v) => setForm((f) => ({ ...f, attachments: v }))} /></div>

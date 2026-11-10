@@ -9,6 +9,7 @@ import { useViewer } from '../lib/viewer';
 import MiniCalendar from '../components/MiniCalendar';
 import QuickLinks from '../components/QuickLinks';
 import { PollCard } from './Polls';
+import { SocialBlock, socialLinks } from '../components/Social';
 
 function ShowAll({ to, label }) {
   const { t } = useI18n();
@@ -248,6 +249,7 @@ export default function Home() {
   const { t } = useI18n();
   const { data, error, loading } = useFetch('/home');
   const polls = useFetch('/polls', { params: { state: 'open', limit: 1 } }, 'home-poll');
+  const config = useFetch('/auth/config', undefined, 'auth-config');
   const [poll, setPoll] = useState(null);
 
   if (loading && !data) return <p className="py-20 text-center text-muted">{t('loading')}</p>;
@@ -259,6 +261,7 @@ export default function Home() {
     slider: data.slides.length > 0, quicklinks: true,
     upcoming: true, news: data.news.length > 0, people: data.new_people.length > 0, photos: (data.photos || []).length > 0,
     recent: data.recent.length > 0, poll: Boolean(currentPoll), board: data.classifieds.length > 0,
+    social: socialLinks(config.data).length > 0,
   };
   const blocks = (data.layout || []).filter((b) => b.show && has[b.id]);
 
@@ -273,6 +276,7 @@ export default function Home() {
       case 'recent': return <RecentBlock items={data.recent} />;
       case 'poll': return <PollBlock poll={currentPoll} onChange={setPoll} />;
       case 'board': return <BoardBlock items={data.classifieds} half={half} />;
+      case 'social': return <SocialBlock config={config.data} />;
       default: return null;
     }
   };

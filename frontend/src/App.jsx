@@ -127,7 +127,7 @@ export default function App() {
           <Route path="*" element={<Empty>{t('not_found')}</Empty>} />
         </Routes>
       </main>
-      <Footer company={config?.company_name} text={config?.footer_text} />
+      <Footer company={config?.company_name} text={config?.footer_text} config={config} />
       </div>
     </>
   );
