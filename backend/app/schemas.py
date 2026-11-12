@@ -4,7 +4,8 @@ from typing import Literal
 from pydantic import BaseModel, ConfigDict, EmailStr, Field
 
 Role = Literal["admin", "editor", "moderator", "hr", "author", "user"]
-Permission = Literal["content_own", "content_all", "trainings", "moderate", "quicklinks", "polls", "locations", "people", "mails"]
+Permission = Literal["content_own", "content_all", "trainings", "moderate", "quicklinks", "polls", "locations", "people", "mails",
+                     "jubilees"]
 Category = Literal["news", "events", "people", "products", "rules", "safety", "cyber", "knowhow"]
 ClassifiedKind = Literal["offer", "search", "give", "carpool", "other"]
 
@@ -138,7 +139,7 @@ class ArticleBase(BaseModel):
     summary_en: str = ""
     body_de: str = ""
     body_en: str = ""
-    image_url: str | None = None
+    image_url: str | None = Field(default=None, pattern=r"^/uploads/[A-Za-z0-9._-]+$")  # only our own uploads
     event_date: datetime | None = None
     event_location: str = ""
     featured: bool = False
@@ -148,6 +149,7 @@ class ArticleBase(BaseModel):
     branch_ids: list[int] = []  # empty = all branches
     pinned: bool = False
     pinned_until: date | None = None
+    ack_required: bool = False  # readers confirm "read and understood" (editors only)
 
 
 class ArticleIn(ArticleBase):
@@ -165,6 +167,7 @@ class ArticleOut(ArticleBase, ORM):
     attachments: list[AttachmentOut] = []
     branches: list[BranchRef] = []
     pinned_now: bool = False
+    my_ack: datetime | None = None  # when the viewer confirmed "read and understood"
 
 
 class DocumentOut(BaseModel):
@@ -199,6 +202,7 @@ class ArticleCard(ORM):
     branches: list[BranchRef] = []
     pinned: bool = False
     pinned_now: bool = False
+    ack_required: bool = False
 
 
 class ClassifiedIn(BaseModel):
@@ -206,7 +210,7 @@ class ClassifiedIn(BaseModel):
     title: str = Field(min_length=3, max_length=160)
     body: str = Field(default="", max_length=4000)
     price: str = Field(default="", max_length=40)
-    image_url: str | None = None
+    image_url: str | None = Field(default=None, pattern=r"^/uploads/[A-Za-z0-9._-]+$")
 
 
 class ClassifiedOut(ClassifiedIn, ORM):
@@ -290,6 +294,7 @@ class HomeOut(BaseModel):
     classifieds: list[ClassifiedOut]
     photos: list[PhotoOut] = []
     layout: list[dict] = []
+    jubilees: list[dict] = []
     counts: dict[str, int]
 
 

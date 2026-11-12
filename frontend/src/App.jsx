@@ -102,14 +102,15 @@ export default function App() {
       <a href="#main" className="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-50 focus:rounded focus:bg-surface focus:px-4 focus:py-2">
         {t('skip')}
       </a>
-      <Sidebar company={config?.company_name} open={drawer} onClose={() => setDrawer(false)} collapsed={collapsed} onToggle={toggleCollapsed} />
+      <Sidebar company={config?.company_name} open={drawer} onClose={() => setDrawer(false)} collapsed={collapsed} onToggle={toggleCollapsed}
+        hidden={config?.hidden_categories || []} />
       <div className={collapsed ? 'lg:pl-[4.5rem]' : 'lg:pl-60'}>
       <Header onMenu={() => setDrawer(true)} company={config?.company_name} />
       <main id="main" className="mx-auto max-w-[1240px] px-4 pb-24 pt-8 sm:px-8">
         <Routes>
           <Route path="/" element={<Home />} />
-          <Route path="/news" element={<Articles key="news" group={NEWS_GROUP} titleKey="nav_news" />} />
-          <Route path="/knowledge" element={<Articles key="knowledge" group={KNOWLEDGE_GROUP} titleKey="nav_knowledge" />} />
+          <Route path="/news" element={<Articles key="news" group={NEWS_GROUP} titleKey="nav_news" hidden={config?.hidden_categories || []} />} />
+          <Route path="/knowledge" element={<Articles key="knowledge" group={KNOWLEDGE_GROUP} titleKey="nav_knowledge" hidden={config?.hidden_categories || []} />} />
           <Route path="/articles/new" element={<Guard perm="content_own,content_all"><ArticleEdit /></Guard>} />
           <Route path="/articles/:id" element={<ArticleView />} />
           <Route path="/articles/:id/edit" element={<Guard perm="content_own,content_all"><ArticleEdit /></Guard>} />
@@ -123,7 +124,7 @@ export default function App() {
           <Route path="/profile" element={<Guard role="user"><Profile /></Guard>} />
           <Route path="/trainings" element={<Guard role="user"><Trainings /></Guard>} />
           <Route path="/trainings/:id" element={<Guard role="user"><TrainingView /></Guard>} />
-          <Route path="/admin" element={<Guard perm="trainings,quicklinks,locations,people,content_all,mails"><Admin /></Guard>} />
+          <Route path="/admin" element={<Guard perm="trainings,quicklinks,locations,people,content_all,mails,jubilees"><Admin /></Guard>} />
           <Route path="*" element={<Empty>{t('not_found')}</Empty>} />
         </Routes>
       </main>

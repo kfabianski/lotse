@@ -2,7 +2,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import {
-  BarChart3, CheckCircle2, Download, FileText, GraduationCap, Image as ImageIcon, Link2, PenLine, PlayCircle, Plus,
+  BarChart3, CheckCircle2, Download, FileDown, FileText, GraduationCap, Image as ImageIcon, Link2, PenLine, PlayCircle, Plus,
   RotateCcw, Search, Trash2, Upload, Users, X, Eye, Clock3, Mail,
 } from 'lucide-react';
 import RichTextEditor from '../components/RichText';
@@ -300,6 +300,12 @@ function Report({ training, onClose, onRenewed }) {
                       <span className="min-w-0 flex-1"><span className="block truncate font-medium">{p.full_name}</span>
                         <span className="block truncate text-xs text-muted">{k !== 'open' ? fmtDate(p.completed_at) : `${p.department}${p.earlier_round ? ` · ${t('tr_earlier')}` : ''}`}</span></span>
                       {k !== 'open' && <CheckCircle2 size={15} className="text-safe" />}
+                      {k !== 'open' && (
+                        <button type="button" aria-label={t('tr_certificate')} title={t('tr_certificate')} className="rounded p-1 text-muted hover:text-brand-text"
+                          onClick={() => downloadFile(`/trainings/${training.id}/certificate.pdf?user_id=${p.id}`, `schulungsnachweis-${training.id}-${p.id}.pdf`).catch((e) => setError(e.message))}>
+                          <FileDown size={15} />
+                        </button>
+                      )}
                     </li>
                   ))}
                 </ul>

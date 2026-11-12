@@ -11,6 +11,9 @@ class Settings(BaseSettings):
 
     company_name: str = "Muster GmbH"
     color_scheme: str = "hafen"  # colour scheme of the portal, picked by the admin
+    # Sections (article categories) the company does not use, e.g. ["products"]: not offered to editors, no filter
+    # chip, no menu entry when a whole group is off. "news" and "events" can never be hidden.
+    hidden_categories: list[str] = []
     login_image_url: str = ""  # own photo for the sign-in page; empty = bundled illustration
     database_url: str = f"sqlite:///{(BACKEND_DIR / 'data' / 'lotse.db').as_posix()}"
     upload_dir: Path = BACKEND_DIR / "data" / "uploads"
@@ -41,6 +44,10 @@ class Settings(BaseSettings):
     # Notifications (e-mail via SMTP, Microsoft Teams channel webhook)
     portal_url: str = ""  # address of the intranet for links in mails, e.g. https://intranet.firma.local
     notify_email: bool = False
+    # "immediate": one mail per new article; "weekly": one digest mail "Was war diese Woche" per week
+    notify_mode: str = "immediate"
+    digest_weekday: int = 4  # 0 = Monday ... 6 = Sunday
+    digest_hour: int = 16  # hour of the day (server time) the weekly digest goes out
     smtp_host: str = ""
     smtp_port: int = 587
     smtp_mode: str = "starttls"  # starttls | ssl | none
@@ -87,12 +94,12 @@ class Settings(BaseSettings):
 # Settings an administrator may change in the web UI; stored in the app_settings table and applied
 # on top of the .env values at startup and on every save.
 EDITABLE = {
-    "company_name", "public_read", "color_scheme", "login_image_url", "holiday_regions", "sso_enabled", "sso_mode", "sso_kerberos_hostname", "sso_kerberos_keytab", "sso_header", "trusted_proxies", "ldap_enabled", "ldap_host", "ldap_port", "ldap_mode", "ldap_ca_pem",
+    "company_name", "public_read", "color_scheme", "hidden_categories", "login_image_url", "holiday_regions", "sso_enabled", "sso_mode", "sso_kerberos_hostname", "sso_kerberos_keytab", "sso_header", "trusted_proxies", "ldap_enabled", "ldap_host", "ldap_port", "ldap_mode", "ldap_ca_pem",
     "ldap_verify_cert", "ldap_bind_dn", "ldap_bind_password", "ldap_base_dn", "ldap_user_filter",
     "ldap_sync_filter", "ldap_admin_group", "ldap_departments_auto", "ldap_editor_group", "ldap_attr_username", "ldap_attr_first_name",
     "ldap_attr_last_name", "ldap_attr_email", "ldap_attr_department", "ldap_attr_title", "ldap_attr_phone",
     "ldap_attr_photo", "ldap_attr_manager", "ldap_attr_branch", "ldap_attr_start_date", "footer_text", "social_facebook", "social_linkedin", "social_instagram", "portal_url", "notify_email", "smtp_host", "smtp_port", "smtp_mode",
-    "smtp_user", "smtp_password", "smtp_from", "notify_teams", "teams_webhook_url",
+    "smtp_user", "smtp_password", "smtp_from", "notify_teams", "teams_webhook_url", "notify_mode", "digest_weekday", "digest_hour",
 }
 SECRET = {"ldap_bind_password", "smtp_password", "teams_webhook_url"}  # never sent back to the browser
 

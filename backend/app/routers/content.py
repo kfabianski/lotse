@@ -1,13 +1,18 @@
+import csv
+import io
 from datetime import date, datetime, timedelta
 
-from fastapi import APIRouter, Depends, File, HTTPException, Query, UploadFile
+from fastapi import APIRouter, Depends, File, HTTPException, Query, Response, UploadFile
 from sqlalchemy import and_, case, false, func, or_, true
 from pydantic import BaseModel
 from typing import Literal
 from sqlalchemy.orm import Session, joinedload
 
+from app.config import settings
 from app.db import get_db
-from app.models import AppSetting, Article, Attachment, Branch, Classified, User
+from app.models import AppSetting, Article, ArticleAck, Attachment, Branch, Classified, User
+from app.routers.jubilees import upcoming as upcoming_jubilees
+from app.routers.stats import count_view
 from app.schemas import (ArticleCard, ArticleIn, ArticleOut, ClassifiedIn, ClassifiedOut, DocumentOut, HomeOut,
                          PersonBrief, PhotoOut)
 from app.security import current_user, has_perm, reader, require_perm
@@ -79,12 +84,14 @@ def _may_edit(user: User, article: Article) -> bool:
     return has_perm(user, "content_all") or (has_perm(user, "content_own") and article.author_id == user.id)
 
 
-HOME_BLOCKS = ("slider", "quicklinks", "upcoming", "news", "people", "photos", "recent", "poll", "board", "social")
+HOME_BLOCKS = ("foryou", "slider", "quicklinks", "upcoming", "news", "people", "photos", "recent", "poll", "board", "jubilees", "social")
 DEFAULT_LAYOUT = [
+    {"id": "foryou", "show": True, "width": "full"},  # the signed-in person's reminders (hidden for visitors)
     {"id": "slider", "show": True, "width": "full"}, {"id": "quicklinks", "show": True, "width": "full"},
     {"id": "upcoming", "show": True, "width": "full"}, {"id": "news", "show": True, "width": "full"},
     {"id": "people", "show": True, "width": "full"}, {"id": "photos", "show": True, "width": "full"},
     {"id": "poll", "show": True, "width": "half"}, {"id": "board", "show": True, "width": "half"},
+    {"id": "jubilees", "show": True, "width": "full"},
     {"id": "social", "show": True, "width": "full"}, {"id": "recent", "show": False, "width": "full"},
 ]
 
@@ -96,19 +103,32 @@ class LayoutBlock(BaseModel):
 
 
 def home_layout(db: Session) -> list[dict]:
-    """Saved layout; blocks added in later versions are appended (hidden) so the order stays as chosen."""
+    """Saved layout; a block added in a later version slips in where the default layout has it (after the nearest
+    earlier default block the admin kept), so the chosen order stays and nothing lands at the very end by accident."""
     import json
     row = db.get(AppSetting, "home_layout")
     try:
         saved = json.loads(row.value) if row else DEFAULT_LAYOUT
     except ValueError:
         saved = DEFAULT_LAYOUT
-    ids = [b["id"] for b in saved if b.get("id") in HOME_BLOCKS]
-    out = [b for b in saved if b.get("id") in HOME_BLOCKS]
-    # new blocks appear as in the default layout (empty blocks are skipped on the page anyway)
+    out = [dict(b) for b in saved if b.get("id") in HOME_BLOCKS]
+    ids = [b["id"] for b in out]
     defaults = {b["id"]: b for b in DEFAULT_LAYOUT}
-    out += [dict(defaults.get(b, {"id": b, "show": False, "width": "full"})) for b in HOME_BLOCKS if b not in ids]
+    order = [b["id"] for b in DEFAULT_LAYOUT]
+    for pos, block_id in enumerate(order):
+        if block_id in ids:
+            continue
+        before = [x for x in order[:pos] if x in ids]
+        at = ids.index(before[-1]) + 1 if before else 0
+        out.insert(at, dict(defaults[block_id]))
+        ids.insert(at, block_id)
     return out
+
+
+def _check_category(category: str, current: str | None = None) -> None:
+    """Sections switched off in the settings take no new articles (an existing article may keep its section)."""
+    if category in (settings.hidden_categories or []) and category != current:
+        raise HTTPException(422, "This section is switched off in the settings")
 
 
 @router.get("/home-layout")
@@ -145,6 +165,7 @@ def home(viewer: User | None = Depends(reader), db: Session = Depends(get_db)):
         "news": published.filter(or_(Article.category.in_(["news", "products"]), pinned_now()))
                          .order_by(pinned_first(), Article.published_at.desc()).limit(6).all(),
         "layout": home_layout(db),
+        "jubilees": upcoming_jubilees(db),
         "events": with_rsvps(db, published.filter(Article.category == "events", Article.event_date >= datetime.now()
                                    - timedelta(hours=12)).order_by(Article.event_date).limit(3).all(), viewer),
         "recent": newest.limit(6).all(),
@@ -203,6 +224,13 @@ def list_articles(
     return query.order_by(pinned_first(), Article.published_at.desc()).offset(offset).limit(limit).all()
 
 
+@router.get("/articles/counts")
+def article_counts(user: User | None = Depends(reader), db: Session = Depends(get_db)):
+    """Visible articles per section - the section filters only offer sections that have something in them."""
+    rows = _visible(db.query(Article), user).with_entities(Article.category, func.count()).group_by(Article.category).all()
+    return dict(rows)
+
+
 def _get_article(db: Session, article_id: int, user: User | None) -> Article:
     article = _visible(db.query(Article), user).filter(Article.id == article_id).first()
     if not article:
@@ -214,12 +242,17 @@ def article_out(db: Session, article: Article, viewer: User | None) -> dict:
     from app.routers.revisions import version_count  # local import avoids a cycle
     data = ArticleOut.model_validate(article, from_attributes=True).model_dump()
     data["version"] = version_count(db, article.id)
+    ack = db.get(ArticleAck, (article.id, viewer.id)) if (viewer and article.ack_required) else None
+    data["my_ack"] = ack.created_at if ack else None
     return data
 
 
 @router.get("/articles/{article_id}", response_model=ArticleOut)
 def get_article(article_id: int, user: User | None = Depends(reader), db: Session = Depends(get_db)):
-    return article_out(db, _get_article(db, article_id, user), user)
+    article = _get_article(db, article_id, user)
+    if article.published and article.published_at <= datetime.now():
+        count_view(db, article.id)  # statistics: one more opening today (no person is stored)
+    return article_out(db, article, user)
 
 
 def _set_attachments(article: Article, items) -> None:
@@ -231,11 +264,13 @@ def _set_attachments(article: Article, items) -> None:
 def create_article(body: ArticleIn, editor: User = Depends(require_perm("content_own", "content_all")),
                    db: Session = Depends(get_db)):
     from app.routers.revisions import record_revision
+    _check_category(body.category)
     data = body.model_dump(exclude={"attachments", "change_note", "branch_ids"})
     data["published_at"] = data["published_at"] or datetime.now()
     if not has_perm(editor, "content_all"):
         data["featured"] = False  # the home slider is chosen by the editors
         data["pinned"], data["pinned_until"] = False, None
+        data["ack_required"] = False  # mandatory reading is declared by the editors
     article = Article(**data, author_id=editor.id)
     article.branches = _branches(db, body.branch_ids)
     _set_attachments(article, body.attachments)
@@ -254,11 +289,12 @@ def update_article(article_id: int, body: ArticleIn, editor: User = Depends(requ
     article = _get_article(db, article_id, editor)
     if not _may_edit(editor, article):
         raise HTTPException(403, "Authors can only edit their own articles")
+    _check_category(body.category, article.category)
     for key, value in body.model_dump(exclude={"attachments", "change_note", "branch_ids"}).items():
         if key == "published_at" and value is None:
             continue  # keep the existing date
-        if key in ("featured", "pinned", "pinned_until") and not has_perm(editor, "content_all"):
-            continue  # slider and pins stay as the editors set them
+        if key in ("featured", "pinned", "pinned_until", "ack_required") and not has_perm(editor, "content_all"):
+            continue  # slider, pins and mandatory reading stay as the editors set them
         setattr(article, key, value)
     article.branches = _branches(db, body.branch_ids)
     _set_attachments(article, body.attachments)
@@ -277,6 +313,63 @@ def delete_article(article_id: int, editor: User = Depends(require_perm("content
         raise HTTPException(403, "Authors can only delete their own articles")
     db.delete(article)
     db.commit()
+
+
+# --- Lesebestätigung: "read and understood" for articles that ask for it ---------------------------------
+
+
+@router.post("/articles/{article_id}/ack")
+def ack_article(article_id: int, user: User = Depends(current_user), db: Session = Depends(get_db)):
+    """The signed-in person confirms that they read and understood the article."""
+    article = _get_article(db, article_id, user)
+    if not article.ack_required:
+        raise HTTPException(400, "This article does not ask for a confirmation")
+    row = db.get(ArticleAck, (article.id, user.id))
+    if row is None:
+        row = ArticleAck(article_id=article.id, user_id=user.id)
+        db.add(row)
+    row.created_at = datetime.now()
+    db.commit()
+    return {"acked_at": row.created_at}
+
+
+def _brief(u: User) -> dict:
+    return {"id": u.id, "full_name": u.full_name, "department": u.department, "position": u.position, "avatar_url": u.avatar_url}
+
+
+def ack_report(db: Session, article: Article) -> dict:
+    """Who confirmed when, and who among the people who may see the article has not yet."""
+    people = (db.query(User).filter(User.is_active.is_(True), User.show_in_directory.is_(True))
+              .order_by(User.last_name, User.first_name).all())
+    expected = [u for u in people if visible_to(u, article)]
+    acks = {a.user_id: a for a in db.query(ArticleAck).filter(ArticleAck.article_id == article.id)}
+    done = sorted(({**_brief(u), "acked_at": acks[u.id].created_at} for u in expected if u.id in acks),
+                  key=lambda x: x["acked_at"], reverse=True)
+    return {"done": done, "open": [_brief(u) for u in expected if u.id not in acks]}
+
+
+@router.get("/articles/{article_id}/acks")
+def get_acks(article_id: int, editor: User = Depends(require_perm("content_all")), db: Session = Depends(get_db)):
+    return ack_report(db, _get_article(db, article_id, editor))
+
+
+@router.get("/articles/{article_id}/acks.csv")
+def get_acks_csv(article_id: int, editor: User = Depends(require_perm("content_all")), db: Session = Depends(get_db)):
+    """Proof for audits: who confirmed the article when, and who is still open."""
+    article = _get_article(db, article_id, editor)
+    r = ack_report(db, article)
+    out = io.StringIO()
+    w = csv.writer(out, delimiter=";")
+    w.writerow(["Beitrag", article.title_de])
+    w.writerow(["Stand", datetime.now().strftime("%d.%m.%Y %H:%M")])
+    w.writerow([])
+    w.writerow(["Name", "Abteilung", "Position", "Status", "Bestätigt am"])
+    for p in r["done"]:
+        w.writerow([p["full_name"], p["department"], p["position"], "bestätigt", p["acked_at"].strftime("%d.%m.%Y %H:%M")])
+    for p in r["open"]:
+        w.writerow([p["full_name"], p["department"], p["position"], "offen", ""])
+    return Response("﻿" + out.getvalue(), media_type="text/csv; charset=utf-8",
+                    headers={"Content-Disposition": f'attachment; filename="lesebestaetigung-{article.id}.csv"'})
 
 
 @router.post("/files")

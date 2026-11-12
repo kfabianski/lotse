@@ -5,7 +5,7 @@ import { useI18n } from '../lib/i18n';
 import { api } from '../lib/api';
 import { useAuth } from '../lib/auth';
 
-const KINDS = ['article', 'idea', 'training'];
+const KINDS = ['article', 'idea', 'training', 'digest'];
 
 /** Small WYSIWYG editor (contentEditable) – bold, italic, heading, lists, links. The server cleans the HTML. */
 function RichEditor({ value, onChange, editorRef, onFocus }) {

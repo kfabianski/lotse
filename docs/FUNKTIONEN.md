@@ -28,6 +28,10 @@ Diese Beschreibung erklärt, was Lotse kann und wer was darf. Installation und K
 21. [Personal (HR) und neue Kolleg:innen](#21-personal-hr-und-neue-kolleginnen)
 22. [Browser und Geräte](#22-browser-und-geräte)
 23. [Social Media](#23-social-media)
+24. [Jubiläen](#24-jubiläen)
+25. [Lesebestätigung](#25-lesebestätigung)
+26. [Statistik für die Redaktion](#26-statistik-für-die-redaktion)
+27. [Betrieb: Aufräumen und Passwörter](#27-betrieb-aufräumen-und-passwörter)
 
 ---
 
@@ -41,15 +45,15 @@ eine Rolle und – zusätzlich zur Rolle – einzelne Rechte.
 | **Besucher** (nicht angemeldet) | nur lesen – wenn *Lesen ohne Anmeldung* eingeschaltet ist; keine Schulungen |
 | **Mitarbeitende** | Anzeigen und Ideen (auch anonym), Sterne vergeben, bei Veranstaltungen zusagen, eigene Schulungen bestätigen, Profil |
 | **Autor:in** | zusätzlich **eigene** Artikel und Veranstaltungen schreiben, bearbeiten, löschen (eigene Entwürfe) |
-| **Personal (HR)** | wie Autor:in, dazu **Mitarbeitenden-Karten** anlegen und bearbeiten, **Schulungen verwalten** und **E-Mail-Texte** ändern (siehe Kapitel 16 und 21) |
+| **Personal (HR)** | wie Autor:in, dazu **Mitarbeitenden-Karten** anlegen und bearbeiten, **Schulungen verwalten**, **Jubiläen** eintragen und **E-Mail-Texte** ändern (siehe Kapitel 16, 21 und 24) |
 | **Moderator:in** | wie Autor:in, dazu **Schulungen verwalten**, **Ideen & Kleinanzeigen moderieren**, **Schnellzugriff** pflegen, **Umfragen** erstellen |
-| **Redaktion** | wie Moderator:in, dazu **alle** Artikel bearbeiten, alle Entwürfe sehen, Slider, Versionen wiederherstellen |
+| **Redaktion** | wie Moderator:in, dazu **alle** Artikel bearbeiten, alle Entwürfe sehen, Slider, Versionen wiederherstellen, **Lesebestätigungen** anfordern und auswerten, Startseite gestalten, **Statistik** |
 | **Administrator** | alles, auch die **Systemeinstellungen** |
 
 **Einzelne Rechte**, die der Administrator pro Person zusätzlich einschalten kann: *Eigene Artikel &
 Veranstaltungen*, *Alle Artikel & Veranstaltungen*, *Schulungen verwalten*, *Ideen & Kleinanzeigen moderieren*,
-*Schnellzugriff pflegen*, *Umfragen erstellen*, *Etagen, Räume & Plätze*, *E-Mail-Texte*, *Personen & Abteilungen* (nur Konten **ohne** besondere
-Rechte; keine Rollen- oder Rechtevergabe).
+*Schnellzugriff pflegen*, *Umfragen erstellen*, *Etagen, Räume & Plätze*, *E-Mail-Texte*, *Jubiläen pflegen*,
+*Personen & Abteilungen* (nur Konten **ohne** besondere Rechte; keine Rollen- oder Rechtevergabe).
 
 **Nie übertragbar** – nur Administratoren: allgemeine Einstellungen, **LDAP**, Windows-Anmeldung,
 **Rollen & Rechte**, **LDAP-Abgleich**. Wer kein Administrator ist, kann sich und anderen keine Rechte geben.
@@ -70,8 +74,9 @@ Die Verwaltung zeigt jeder Person nur die Bereiche, für die sie Rechte hat.
 
 ## 2. Oberfläche
 
-- **Navigation links**: Start, Aktuelles, Veranstaltungen, Wissen & Regeln, Dokumente, Kleinanzeigen, Ideen,
-  Mitarbeitende, Verwaltung (nur Administratoren). Auf dem Handy als ausklappbares Menü.
+- **Navigation links**: Start, Aktuelles, Veranstaltungen, Wissen & Regeln, Schulungen (angemeldet), Kleinanzeigen,
+  Ideen, Umfragen, Mitarbeitende, Dokumente, Verwaltung (für alle mit einem Verwaltungsrecht). Auf dem Handy als
+  ausklappbares Menü. Sind alle Bereiche von *Wissen & Regeln* abgeschaltet (Kapitel 11), fehlt der Eintrag.
 - **Oben rechts**: Suche (Tastenkürzel **Strg + K**), Sprache **DE/EN**, **helles/dunkles Design**,
   Avatar mit Profil und Abmelden.
 - **Zweisprachig**: Alle Bedienelemente auf Deutsch und Englisch; Artikel haben einen deutschen und einen
@@ -88,19 +93,23 @@ Die Verwaltung zeigt jeder Person nur die Bereiche, für die sie Rechte hat.
   - **Schnellzugriff**-Kacheln,
   - **Schulungen** nur für Angemeldete und nur die, die sie öffnen dürfen (zugewiesen oder für alle freiwillig).
   Groß-/Kleinschreibung und Akzente spielen keine Rolle: *yilmaz* findet *Yılmaz*, *schroeder* findet *Schröder*,
-  *strasse* findet *Straße*. Mehrere Wörter müssen alle vorkommen (z. B. „Mehmet Yılmaz“). Entwürfe sehen nur
-  Redaktion bzw. die eigenen Autor:innen.
+  *strasse* findet *Straße* – auch als Teil eines Wortes (*Gewerbestraße*). Mehrere Wörter müssen alle vorkommen
+  (z. B. „Mehmet Yılmaz“). Die Suche läuft über einen Volltextindex (SQLite FTS5), der sich nach jeder Änderung von
+  selbst erneuert; so bleibt sie auch bei vielen Beiträgen schnell. Entwürfe sehen nur Redaktion bzw. die eigenen
+  Autor:innen.
 
 ## 3. Startseite
 
-- **Persönliche Begrüßung** (nur angemeldet): Datum und *Guten Morgen / Guten Tag / Guten Abend, Mehmet*,
-  darunter nur das, was für die Person ansteht:
-  - **heutige Termine**, für die sie zugesagt hat (Uhrzeit, Titel, Ort),
+- **Begrüßung** oben links in der Kopfzeile: Datum und *Guten Morgen / Guten Tag / Guten Abend, Mehmet*.
+- **Für Sie** (nur angemeldet, ganz oben auf der Startseite): bis zu drei Karten mit dem, was für die Person
+  ansteht – dieselben Punkte wie in der Glocke (Kapitel 20):
   - **offene Pflicht-Schulungen** – rot, wenn eine Frist überschritten ist,
+  - **Beiträge mit Lesebestätigung**, die noch nicht bestätigt sind (Kapitel 25),
+  - **heutige Termine** (Uhrzeit, Titel, Ort),
+  - **neue Umfragen**, bei denen die Person noch nicht abgestimmt hat,
   - **Neues zu den eigenen Ideen** (neuer Status oder Antwort der Redaktion); nach dem Besuch der Ideenseite gilt
     es als gelesen. Anonyme Ideen tauchen hier nicht auf – sie sind niemandem zugeordnet.
-  - **neue Umfragen**, bei denen die Person noch nicht abgestimmt hat.
-  Steht nichts an, erscheint *Heute steht für Sie nichts Besonderes an.*
+  Steht nichts an, fehlt der Block; weitere Punkte zeigt die Glocke (*+2 weitere in der Glocke*).
 - **Slider** über die ganze Breite mit den Beiträgen, die die Redaktion als *Im Slider zeigen* markiert hat
   (z. B. *Weihnachtsfeier 2026*). Wechselt automatisch, hält beim Überfahren mit der Maus an, lässt sich
   pausieren und mit Pfeilen steuern. Bei „Bewegung reduzieren“ im Betriebssystem läuft er nicht von selbst.
@@ -111,6 +120,7 @@ Die Verwaltung zeigt jeder Person nur die Bereiche, für die sie Rechte hat.
 - **Nächste Termine** mit Anzahl der Zusagen.
 - **Neu im Team**: Kolleg:innen der letzten 90 Tage – ein Klick zeigt ihren Platz im Lageplan.
 - **Zuletzt veröffentlicht** und **Neue Kleinanzeigen**.
+- **Jubiläen**: Dienstjubiläen, runde Geburtstage, Ruhestand – rund um das Datum, von HR eingetragen (Kapitel 24).
 
 ## 4. Aktuelles und Wissen & Regeln
 
@@ -121,7 +131,8 @@ Die Verwaltung zeigt jeder Person nur die Bereiche, für die sie Rechte hat.
 | Neue Kolleg:innen | IT-Sicherheit |
 | Neue Produkte | Know-how |
 
-- Filter nach Bereich über die Schaltflächen oberhalb der Liste.
+- Filter nach Bereich über die Schaltflächen oberhalb der Liste – nur Bereiche, die genutzt werden (nicht
+  abgeschaltet, Kapitel 11, und nicht leer).
 - **Artikel schreiben** (Redaktion): Bereich, Titel, Kurztext und Text in **Deutsch und Englisch**
   (Text in Markdown mit Vorschau), Titelbild, Fotos und PDFs, *Veröffentlicht* oder *Entwurf*,
   *Im Slider zeigen*. Bei Veranstaltungen zusätzlich Datum, Uhrzeit und Ort.
@@ -133,6 +144,8 @@ Die Verwaltung zeigt jeder Person nur die Bereiche, für die sie Rechte hat.
   Kalender-Abo). Bis dahin sieht ihn nur die Redaktion, markiert mit *Geplant für …*. Der Knopf heißt dann
   *Einplanen* statt *Veröffentlichen*.
 - Entwürfe sieht nur die Redaktion.
+- **Lesebestätigung anfordern** (Redaktion): siehe Kapitel 25 – Angemeldete bestätigen am Ende des Beitrags, dass
+  sie ihn gelesen und verstanden haben.
 - **Versionen** (Historie): Jede Änderung eines Artikels wird als Version gespeichert – mit Datum, Person und
   optionalem **Änderungsgrund** (Feld beim Speichern). Unter dem Artikel steht die Liste der Versionen; ein Klick
   zeigt, was sich gegenüber der Vorversion geändert hat (Titel, Kurztext, Text zeilenweise, hinzugefügte und
@@ -264,8 +277,11 @@ Nur für Administratoren, über **Verwaltung** in der Navigation:
   Untertitel Deutsch/Englisch, **Link, E-Mail-Adresse oder Telefon** (`https://…`, `buchhaltung@firma.de`,
   `tel:100` oder ein Pfad im Portal wie `/documents`), Symbol und Farbe, mit Vorschau. Andere Adressarten
   (z. B. `javascript:`) werden abgelehnt.
-- **Einstellungen**: Firmenname, *Lesen ohne Anmeldung*, **Feiertage im Kalender** (je Land aus/landesweit oder
-  inklusive eines Bundeslands/Kantons, z. B. Niedersachsen oder Zürich), LDAP (siehe unten).
+- **Einstellungen**: Firmenname, *Lesen ohne Anmeldung*, **Bereiche** (welche Rubriken die Firma nutzt – ein
+  abgeschalteter Bereich wie *Neue Produkte* wird Autor:innen nicht mehr angeboten und erscheint nicht als Filter;
+  vorhandene Beiträge bleiben lesbar; *Neuigkeiten* und *Veranstaltungen* sind immer an), **Feiertage im Kalender**
+  (je Land aus/landesweit oder inklusive eines Bundeslands/Kantons, z. B. Niedersachsen oder Zürich), LDAP (siehe unten).
+- **Jubiläen**: siehe Kapitel 24. **Statistik**: siehe Kapitel 26.
 
 ## 12. LDAP / Active Directory
 
@@ -344,6 +360,11 @@ allgemeine Anleitungen. Es gibt zwei Arten der Sichtbarkeit, frei kombinierbar:
   Uhrzeit gespeichert.
 - Startet die Verwaltung eine **neue Runde** (z. B. jährliche Unterweisung), steht die Schulung wieder unter
   *Offen* mit dem Hinweis *Neue Runde – bitte erneut bestätigen*.
+- **Nachweis als PDF**: nach der Bestätigung lässt sich ein Schulungsnachweis herunterladen (eine DIN-A4-Seite) – Person, Abteilung,
+  Schulung, Runde, Unterlagen, Zeitpunkt der Bestätigung, die Erklärung „durchgearbeitet und verstanden“ und zwei
+  Unterschriftenzeilen (Mitarbeiter:in, Vorgesetzte:r aus dem Organigramm) – zum Ausdrucken, Unterschreiben und
+  Weitergeben, auf Deutsch oder Englisch je nach Oberflächensprache. In der **Auswertung** lädt die Verwaltung den
+  Nachweis jeder Person herunter.
 
 **Für die Verwaltung** (Verwaltung → **Schulungen**):
 
@@ -398,7 +419,12 @@ allgemeine Anleitungen. Es gibt zwei Arten der Sichtbarkeit, frei kombinierbar:
 - **Verwaltung → Benachrichtigungen** (eigener Reiter, direkt nach *Einstellungen*, die ganz links stehen).
 - **Einschalten** (nur Administratoren): Adresse des Intranets
   (für Links), SMTP-Server, Port, Verschlüsselung (STARTTLS, SSL/TLS oder keine), Benutzer, Passwort, Absender.
-  **Test-Mail senden** prüft die Einstellungen sofort. Passwort und Teams-Adresse werden nie angezeigt.
+  **Test-Mail senden** prüft die Einstellungen sofort. Passwort und Teams-Adresse werden nie angezeigt und liegen
+  in der Datenbank verschlüsselt.
+- **Versand**: *Sofort je Beitrag* (Standard) oder **wöchentliche Zusammenfassung** – dann geht einmal pro Woche
+  (Wochentag und Uhrzeit einstellbar) eine Mail „Was war diese Woche“ mit allen neuen Beiträgen und Terminen an alle,
+  die Mails zu neuen Beiträgen bekommen; jede Person sieht nur, was sie sehen darf. Gab es nichts Neues, kommt keine
+  Mail. Teams bekommt Beiträge weiterhin sofort; Schulungs- und Ideen-Mails bleiben unverändert.
 - **Neue Artikel und Termine**: sobald ein Beitrag sichtbar wird (auch geplante Beiträge zur geplanten Zeit) bekommen
   alle eine E-Mail, die ihn sehen dürfen und die Benachrichtigung nicht abgeschaltet haben. Beiträge, die vor dem
   Einschalten erschienen sind, werden nicht nachträglich verschickt.
@@ -415,10 +441,11 @@ allgemeine Anleitungen. Es gibt zwei Arten der Sichtbarkeit, frei kombinierbar:
   hat es automatisch, anderen kann der Administrator es einzeln geben. Sie sehen unter *Benachrichtigungen* nur eine
   verkleinerte Seite mit *Mail anpassen* – **keine** Postfach-Zugangsdaten, keinen Absender, kein Teams. Test-Mails gehen bei
   ihnen immer an die eigene Adresse. Hinweis im Editor: Änderungen gelten sofort **für das ganze Portal**.
-- **Mail anpassen**: Betreff und Text der drei Mails (*Neuer Beitrag / Termin*, *Idee: neuer Status*,
-  *Schulung zugewiesen*) frei gestalten – kleiner Editor (fett, kursiv, Überschrift, Listen,
+- **Mail anpassen**: Betreff und Text der vier Mails (*Neuer Beitrag / Termin*, *Idee: neuer Status*,
+  *Schulung zugewiesen*, *Wöchentliche Zusammenfassung*) frei gestalten – kleiner Editor (fett, kursiv, Überschrift, Listen,
   Links) mit **Platzhaltern**, die per Klick eingefügt werden: `{article}` (Titel), `{summary}`, `{category}`, `{when}`
-  (Datum/Ort bei Terminen), `{author}`, `{idea}`, `{status}`, `{answer}`, `{training}`, `{due}` (Fälligkeit), `{round}` (Hinweis bei neuer Runde), `{name}`, `{first_name}`, `{company}`, `{link}`,
+  (Datum/Ort bei Terminen), `{author}`, `{idea}`, `{status}`, `{answer}`, `{training}`, `{due}` (Fälligkeit), `{round}` (Hinweis bei neuer Runde),
+  `{articles}` (Liste der Beiträge der Woche), `{count}`, `{period}`, `{name}`, `{first_name}`, `{company}`, `{link}`,
   `{button}`. **Vorschau** mit Beispieldaten, **Test senden**, **Standardtext** stellt das Original wieder her.
   Kopfzeile und Abbestell-Hinweis werden immer ergänzt; Skripte und fremde Formatierungen werden entfernt.
 - **Microsoft Teams**: Webhook-Adresse eines Kanals (in Teams: Kanal → *Workflows* → *Bei Empfang einer
@@ -428,15 +455,17 @@ allgemeine Anleitungen. Es gibt zwei Arten der Sichtbarkeit, frei kombinierbar:
 
 ## 17. Startseite gestalten
 
-- **Verwaltung → Startseite** (Redaktion und Administratoren). Die Startseite besteht aus Blöcken: *Begrüßung*,
+- **Verwaltung → Startseite** (Redaktion und Administratoren). Die Startseite besteht aus Blöcken: *Für Sie*,
   *Slider*, *Schnellzugriff*, *Was kommt*, *Was gibt’s Neues*, *Neu im Team*, *So war’s*,
-  *Frisch erschienen*, *Umfrage*, *Kleinanzeigen*, *Social Media*.
+  *Frisch erschienen*, *Umfrage*, *Kleinanzeigen*, *Jubiläen*, *Social Media*. Ein Block, den eine neue Version
+  mitbringt, erscheint an seiner Standardstelle (z. B. *Jubiläen* vor *Social Media*), die eigene Reihenfolge bleibt.
 - Blöcke **ziehen** (oder mit den Pfeilen verschieben), mit dem Auge **ein-/ausblenden**, Breite **Breit** oder
   **Halb** wählen. Zwei halbe Blöcke stehen nebeneinander; ein einzelner halber Block wird automatisch breit – so
   bleibt die Seite ohne Lücken. Rechts zeigt die **Vorschau** die Anordnung.
 - **Vorlagen** mit einem Klick: *Standard*, *Nachrichten zuerst*, *Bilder & Termine*, *Kompakt (Werk/Lager)* –
   danach nach Belieben anpassen und speichern. *Standard wiederherstellen* setzt alles zurück.
-- Leere Blöcke (keine Umfrage, keine angehefteten Beiträge, Begrüßung für nicht Angemeldete) werden übersprungen.
+- Leere Blöcke (keine Umfrage, keine Jubiläen im Zeitraum, *Für Sie* ohne offene Punkte oder für nicht Angemeldete)
+  werden übersprungen.
 - **Zurück im Browser** führt wieder an die Stelle, an der man auf der Seite war.
 - **Farbschema** (nur Admin, *Verwaltung → Einstellungen*): *Hafen* (Marineblau, Eisblau, Rot; Standard), *Signal* (Rot-Orange),
   *Meer* (Türkis), *Indigo*, *Nordsee* (Kobalt), *Fjord* (Petrol), *Azur* (Himmelblau), *Marine* (Dunkelblau). Ein Klick zeigt
@@ -469,8 +498,9 @@ allgemeine Anleitungen. Es gibt zwei Arten der Sichtbarkeit, frei kombinierbar:
 
 - **Oben links** Datum und Begrüßung (*Guten Morgen, Mehmet*), **oben rechts** die **Suche** (Lupe oder *Strg + K*,
   ein kleines Fenster mit Treffern beim Tippen), Sprache, Hell/Dunkel, die **Glocke** und das Konto.
-- **Glocke**: alles, was die Person betrifft – offene Schulungen (überfällige rot), neue Umfragen ohne eigene Stimme,
-  Antworten auf eigene Ideen, Termine von heute. Die Zahl zeigt, wie viele Punkte offen sind.
+- **Glocke**: alles, was die Person betrifft – offene Schulungen (überfällige rot), Beiträge mit offener
+  Lesebestätigung, neue Umfragen ohne eigene Stimme, Antworten auf eigene Ideen, Termine von heute. Die Zahl zeigt,
+  wie viele Punkte offen sind; die ersten drei stehen auch im Block *Für Sie* auf der Startseite.
 - **Menü links** lässt sich unten mit dem Pfeil **einklappen** (nur Symbole) und wieder ausklappen; das bleibt gespeichert.
 - **Fußzeile**: © Jahr und Firmenname, ein freier Text aus *Verwaltung → Einstellungen* (z. B. Anschrift,
   Handelsregister, Datenschutzhinweis), Links zu Dokumenten, Mitarbeitenden, Ideen und Profil sowie die Symbole der
@@ -487,7 +517,8 @@ allgemeine Anleitungen. Es gibt zwei Arten der Sichtbarkeit, frei kombinierbar:
 ## 21. Personal (HR) und neue Kolleg:innen
 
 - **Rolle Personal (HR)**: darf Mitarbeitenden-Karten bearbeiten und anlegen, Schulungen erstellen und zuweisen,
-  eigene Beiträge schreiben und die **E-Mail-Texte** anpassen (z. B. die Mail zu zugewiesenen Schulungen). Rollen, Rechte und Einstellungen (LDAP, SMTP …) bleiben dem Administrator vorbehalten.
+  **Jubiläen** eintragen (Kapitel 24), eigene Beiträge schreiben und die **E-Mail-Texte** anpassen (z. B. die Mail zu
+  zugewiesenen Schulungen). Rollen, Rechte und Einstellungen (LDAP, SMTP …) bleiben dem Administrator vorbehalten.
 - **Neue Kolleg:innen** erkennt Lotse am **Eintrittsdatum** (Mitarbeitenden-Karte). Bei LDAP wird es beim ersten
   Abgleich gefüllt: aus dem Attribut *Eintrittsdatum* (Standard `whenCreated`, einstellbar, z. B. ein eigenes
   Feld für das Einstellungsdatum), sonst mit dem Tag, an dem das Konto in Lotse erscheint. Ein gesetztes Datum wird
@@ -510,6 +541,8 @@ allgemeine Anleitungen. Es gibt zwei Arten der Sichtbarkeit, frei kombinierbar:
   öffnet das ganze Dokument. Schulungsvideos als **MP4** hochladen; `.mov` vom iPhone spielen Chrome und Firefox
   nicht immer ab. Firefox zeigt schmalere, systemeigene Bildlaufleisten.
 - **Handy**: Menü als ausklappbare Leiste, alle Seiten ohne seitliches Scrollen.
+- **Schriften** (Hanken Grotesk, IBM Plex Mono) liefert Lotse selbst aus – beim Öffnen der Seite geht keine Anfrage
+  an Google oder einen anderen Dienst; das Portal funktioniert auch ohne Internetzugang.
 
 ## 23. Social Media
 
@@ -520,3 +553,54 @@ allgemeine Anleitungen. Es gibt zwei Arten der Sichtbarkeit, frei kombinierbar:
   erscheint, sobald mindestens eine Adresse eingetragen ist, und lässt sich unter *Startseite gestalten* verschieben oder
   ausblenden. In der **Fußzeile** stehen die Symbole.
 - Es werden nur **Links** gezeigt, keine eingebetteten Beitragslisten.
+
+## 24. Jubiläen
+
+- **Verwaltung → Jubiläen** (Recht *Jubiläen pflegen* – Personal (HR) und Administratoren): Dienstjubiläen, runde
+  Geburtstage, Ruhestand oder andere Anlässe. Jeder Eintrag wird **von Hand** angelegt – nichts wird aus
+  Eintrittsdatum oder Geburtsdatum berechnet; was öffentlich wird, entscheiden Menschen.
+- Eintrag: **Person** aus dem Verzeichnis (mit Foto und Link ins Verzeichnis) oder ein **Name** ohne Konto (z. B.
+  Ehemalige), **Anlass**, **Jahre** (10 → „10 Jahre im Unternehmen“, 50 → „50. Geburtstag“), **Datum**, optional ein
+  kurzer Text auf Deutsch und Englisch. Die Liste zeigt *Demnächst* und *Vergangene*.
+- **Startseite**: der Block *Jubiläen* (standardmäßig vor *Social Media*, unter *Startseite gestalten* verschiebbar)
+  zeigt Einträge von etwa sechs Wochen vor bis eine Woche nach dem Datum, nach Datum sortiert; der heutige Tag ist
+  farbig hervorgehoben. Ohne Einträge im Zeitraum fehlt der Block.
+- Demodaten: `python seed.py --jubilees`.
+
+## 25. Lesebestätigung
+
+- Für Beiträge, die alle gelesen haben sollen (Richtlinien, Regeln), ohne gleich eine Schulung anzulegen.
+- **Redaktion**: im Editor **Lesebestätigung anfordern** ankreuzen. Der Beitrag trägt dann das Zeichen
+  *Lesebestätigung*; unter dem Text sehen Redaktion und Administratoren **Lesebestätigungen**: *x von y bestätigt*,
+  wer wann bestätigt hat, wer noch offen ist (alle aktiven Personen im Verzeichnis, die den Beitrag sehen dürfen),
+  **CSV-Export**.
+- **Mitarbeitende**: am Ende des Beitrags **„Ich habe diesen Beitrag gelesen und verstanden“** – die Bestätigung wird
+  mit Datum und Uhrzeit gespeichert. Offene Bestätigungen stehen in der **Glocke** und im Block **Für Sie** auf der
+  Startseite. Nicht Angemeldete sehen den Hinweis *Zum Bestätigen anmelden*.
+- Der Unterschied zu Schulungen: keine Zuweisung, keine Frist, keine Runden, kein PDF-Nachweis – dafür ein Klick.
+  Für Unterweisungen mit Nachweispflicht bleiben die Schulungen (Kapitel 13).
+
+## 26. Statistik für die Redaktion
+
+- **Verwaltung → Statistik** (Redaktion und Administratoren). Zeitraum 7, 30, 90 oder 365 Tage.
+- **Aufrufe**: wie oft Beiträge geöffnet wurden – gesamt, im Zeitraum, je Tag als Balken – und die **meistgelesenen
+  Beiträge**. Gezählt wird je Beitrag und Tag nur die Anzahl, **nie wer** gelesen hat. Entwürfe zählen nicht.
+- **Suchen ohne Treffer**: Begriffe, die gesucht wurden, aber nichts gefunden haben (von der Ergebnisseite und aus der
+  Suche beim Tippen, wenn nach anderthalb Sekunden noch nichts gefunden ist) – ein Hinweis, welche Inhalte fehlen oder
+  anders heißen. Dazu die **häufigsten Suchen**. Gespeichert werden nur Begriff und Zähler, keine Person; die Liste
+  ist auf 5000 Begriffe begrenzt.
+
+## 27. Betrieb: Aufräumen und Passwörter
+
+- **Verwaiste Dateien**: Bilder gelöschter Beiträge und Kleinanzeigen, ersetzte Profilfotos und Grundrisse oder
+  abgebrochene Uploads räumt Lotse **einmal pro Nacht (3 Uhr)** weg. Eine Datei gilt erst dann als verwaist, wenn
+  **kein Text in der gesamten Datenbank** sie erwähnt – auch keine ältere Beitragsversion, kein von Hand eingefügter
+  Link in einem Beitrag, einer Schulung oder einer Einstellung. Dateien, die jünger als 24 Stunden sind, bleiben
+  immer liegen (sie können zu einem Beitrag gehören, der gerade geschrieben wird). Schulungsunterlagen werden nur
+  gelöscht, wenn keine Schulung sie mehr verwendet.
+- Von Hand (Ordner `backend`, aktivierte `.venv`): `python -m app.housekeeping --dry-run` listet nur auf,
+  ohne `--dry-run` wird gelöscht.
+- **Passwörter in der Datenbank**: LDAP-Bind-Passwort, SMTP-Passwort und die Teams-Webhook-Adresse werden
+  **verschlüsselt** gespeichert (Schlüssel aus `backend/data/.secret_key`) und nie an den Browser zurückgegeben.
+  Ältere, noch unverschlüsselte Einträge werden beim ersten Start automatisch verschlüsselt. Wer die Datenbank
+  sichert, sichert den Schlüssel mit – ohne ihn müssen die Passwörter neu eingegeben werden.

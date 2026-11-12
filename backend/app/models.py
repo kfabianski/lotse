@@ -147,6 +147,8 @@ class Article(Base):
     pinned: Mapped[bool] = mapped_column(Boolean, default=False)  # stays on top (e.g. annual plan)
     pinned_until: Mapped[date | None] = mapped_column(Date)  # None = until unpinned
     published: Mapped[bool] = mapped_column(Boolean, default=True)  # False = draft
+    # Readers confirm "read and understood" (Lesebestätigung) - for rules and policies, without creating a training.
+    ack_required: Mapped[bool] = mapped_column(Boolean, default=False)
     # Publication date (server local time). In the future = scheduled: invisible to readers until then.
     published_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.now, index=True)
     author_id: Mapped[int | None] = mapped_column(ForeignKey("users.id", ondelete="SET NULL"))
@@ -289,6 +291,62 @@ class Attachment(Base):
     name: Mapped[str] = mapped_column(String(200), default="")
     size: Mapped[int] = mapped_column(Integer, default=0)
     sort: Mapped[int] = mapped_column(Integer, default=0)
+
+
+class ArticleAck(Base):
+    """A person confirmed "read and understood" for an article that asks for it (``Article.ack_required``)."""
+
+    __tablename__ = "article_acks"
+
+    article_id: Mapped[int] = mapped_column(ForeignKey("articles.id", ondelete="CASCADE"), primary_key=True)
+    user_id: Mapped[int] = mapped_column(ForeignKey("users.id", ondelete="CASCADE"), primary_key=True)
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.now)
+
+
+class ArticleView(Base):
+    """How often an article was opened on one day - a counter only, never who opened it."""
+
+    __tablename__ = "article_views"
+
+    article_id: Mapped[int] = mapped_column(ForeignKey("articles.id", ondelete="CASCADE"), primary_key=True)
+    day: Mapped[date] = mapped_column(Date, primary_key=True)
+    count: Mapped[int] = mapped_column(Integer, default=0)
+
+
+class SearchLog(Base):
+    """Search terms with how often they were entered and how often nothing was found - shows which content is
+    missing. No person is stored, only the term and the counts."""
+
+    __tablename__ = "search_log"
+
+    query: Mapped[str] = mapped_column(String(100), primary_key=True)
+    searches: Mapped[int] = mapped_column(Integer, default=0)
+    misses: Mapped[int] = mapped_column(Integer, default=0)
+    last_hits: Mapped[int] = mapped_column(Integer, default=0)
+    last_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.now)
+
+
+JUBILEE_KINDS = ("service", "birthday", "retirement", "other")
+
+
+class Jubilee(Base):
+    """An anniversary entered by HR or an admin: years of service, a round birthday, retirement ... Shown on the
+    home page around its date. Linked to an account when there is one, otherwise just a name."""
+
+    __tablename__ = "jubilees"
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    user_id: Mapped[int | None] = mapped_column(ForeignKey("users.id", ondelete="SET NULL"), index=True)
+    name: Mapped[str] = mapped_column(String(160), default="")  # used when no account is linked
+    kind: Mapped[str] = mapped_column(String(12), default="service")
+    years: Mapped[int | None] = mapped_column(Integer)
+    on_date: Mapped[date] = mapped_column(Date, index=True)
+    text_de: Mapped[str] = mapped_column(String(300), default="")
+    text_en: Mapped[str] = mapped_column(String(300), default="")
+    created_by: Mapped[int | None] = mapped_column(ForeignKey("users.id", ondelete="SET NULL"))
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.now)
+
+    user: Mapped[User | None] = relationship(foreign_keys=[user_id])
 
 
 class ArticleRevision(Base):

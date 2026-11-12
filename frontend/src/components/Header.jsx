@@ -5,7 +5,7 @@ import {
   StickyNote, Sun, UserRound, Users, X,
 } from 'lucide-react';
 import { useAuth } from '../lib/auth';
-import { LANGUAGES, useI18n } from '../lib/i18n';
+import { KNOWLEDGE_GROUP, LANGUAGES, useI18n } from '../lib/i18n';
 import { api } from '../lib/api';
 import { Avatar } from './ui';
 import LiveSearch from './LiveSearch';
@@ -39,26 +39,27 @@ export function Logo({ company, compact = false }) {
   );
 }
 
-function useNavItems() {
+function useNavItems(hidden = []) {
   const { t } = useI18n();
   const { has, user } = useAuth();
+  const knowledgeOff = KNOWLEDGE_GROUP.every((c) => hidden.includes(c)); // every section of the group switched off
   return [
     { to: '/', label: t('nav_home'), icon: Home, end: true },
     { to: '/news', label: t('nav_news'), icon: Newspaper },
     { to: '/calendar', label: t('nav_calendar'), icon: CalendarDays },
-    { to: '/knowledge', label: t('nav_knowledge'), icon: BookOpen },
+    ...(knowledgeOff ? [] : [{ to: '/knowledge', label: t('nav_knowledge'), icon: BookOpen }]),
     ...(user ? [{ to: '/trainings', label: t('nav_trainings'), icon: GraduationCap }] : []),
     { to: '/board', label: t('nav_board'), icon: StickyNote },
     { to: '/ideas', label: t('nav_ideas'), icon: Lightbulb },
     { to: '/polls', label: t('nav_polls'), icon: BarChart3 },
     { to: '/people', label: t('nav_people'), icon: Users },
     { to: '/documents', label: t('nav_documents'), icon: FileText },
-    ...(has('trainings', 'quicklinks', 'locations', 'people', 'content_all') ? [{ to: '/admin', label: t('nav_admin'), icon: Settings }] : []),
+    ...(has('trainings', 'quicklinks', 'locations', 'people', 'content_all', 'jubilees', 'mails') ? [{ to: '/admin', label: t('nav_admin'), icon: Settings }] : []),
   ];
 }
 
-function NavList({ onNavigate, collapsed = false }) {
-  const items = useNavItems();
+function NavList({ onNavigate, collapsed = false, hidden }) {
+  const items = useNavItems(hidden);
   return (
     <ul className="space-y-0.5">
       {items.map(({ to, label, icon: Icon, end }) => (
@@ -75,13 +76,13 @@ function NavList({ onNavigate, collapsed = false }) {
 }
 
 /** Left navigation rail (desktop) + drawer (mobile). */
-export function Sidebar({ company, open, onClose, collapsed = false, onToggle }) {
+export function Sidebar({ company, open, onClose, collapsed = false, onToggle, hidden = [] }) {
   const { t } = useI18n();
   return (
     <>
       <aside className={`fixed inset-y-0 left-0 z-30 hidden flex-col border-r border-line bg-surface py-5 lg:flex ${collapsed ? 'w-[4.5rem] px-2' : 'w-60 px-3'}`}>
         <div className={collapsed ? 'flex justify-center pb-7' : 'px-2 pb-7'}><Logo company={company} compact={collapsed} /></div>
-        <nav aria-label={t('main_nav')} className="thin-scroll min-h-0 flex-1 overflow-y-auto"><NavList collapsed={collapsed} /></nav>
+        <nav aria-label={t('main_nav')} className="thin-scroll min-h-0 flex-1 overflow-y-auto"><NavList collapsed={collapsed} hidden={hidden} /></nav>
         <button type="button" onClick={onToggle} aria-expanded={!collapsed} aria-label={collapsed ? t('menu_expand') : t('menu_collapse')} title={collapsed ? t('menu_expand') : t('menu_collapse')}
           className={`mt-3 flex items-center gap-3 rounded-lg py-2 text-sm font-medium text-muted transition-colors hover:bg-surface-2 hover:text-ink ${collapsed ? 'justify-center px-2' : 'px-3'}`}>
           {collapsed ? <PanelLeftOpen size={18} aria-hidden /> : <><PanelLeftClose size={18} aria-hidden />{t('menu_collapse')}</>}
@@ -95,7 +96,7 @@ export function Sidebar({ company, open, onClose, collapsed = false, onToggle })
               <Logo company={company} />
               <button type="button" onClick={onClose} aria-label={t('close')} className="rounded-sm p-2 text-muted hover:bg-surface-2 hover:text-ink"><X size={20} /></button>
             </div>
-            <nav aria-label={t('main_nav')}><NavList onNavigate={onClose} /></nav>
+            <nav aria-label={t('main_nav')}><NavList onNavigate={onClose} hidden={hidden} /></nav>
           </aside>
         </div>
       )}

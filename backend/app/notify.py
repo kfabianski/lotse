@@ -24,13 +24,14 @@ from datetime import datetime, timedelta
 from email.message import EmailMessage
 from email.utils import formataddr, make_msgid
 
-from app import mail_templates
+from app import housekeeping, mail_templates
 from app.config import settings
 from app.db import SessionLocal
-from app.models import Article, Idea, Training, TrainingCompletion, TrainingNotice, User
+from app.models import AppSetting, Article, Idea, Training, TrainingCompletion, TrainingNotice, User
 
 log = logging.getLogger("lotse.notify")
 CHECK_SECONDS = 60
+DIGEST_KEY = "digest_sent_at"  # app_settings row: when the weekly digest last went out
 MAX_AGE = timedelta(days=1)  # older unannounced articles are not mailed (e.g. right after switching it on)
 CATEGORY_DE = {"news": "Neuigkeit", "events": "Termin", "people": "Neu im Team", "products": "Neues Produkt",
                "rules": "Richtlinie", "safety": "Arbeitssicherheit", "cyber": "IT-Sicherheit", "knowhow": "Know-how"}
@@ -143,7 +144,7 @@ def announce(db, article: Article) -> dict:
     lead = article.summary_de or ""
     when = article.event_date.strftime("%d.%m.%Y, %H:%M Uhr") if article.event_date else ""
     result = {"mails": 0, "teams": False}
-    if mail_ready():
+    if mail_ready() and settings.notify_mode != "weekly":  # weekly: the digest covers it (Teams still gets the card)
         people = db.query(User).filter(User.is_active.is_(True), User.notify_articles.is_(True), User.email.isnot(None),
                                        User.email != "").all()
         tpl = mail_templates.load(db)["article"]
@@ -212,13 +213,15 @@ def check_training_assignments() -> int:
     """Mail people a mandatory training is waiting for (once per training round). Returns the number of mails."""
     if not mail_ready():
         return 0
-    from app.routers.trainings import assigned_ids
+    from app.routers.trainings import assignment_map
     db = SessionLocal()
     try:
         tpl = mail_templates.load(db)["training"]
         msgs = []
-        for t in db.query(Training).filter(Training.active.is_(True)).all():
-            todo = assigned_ids(db, t)
+        active = db.query(Training).filter(Training.active.is_(True)).all()
+        assigned = assignment_map(db, active)
+        for t in active:
+            todo = assigned.get(t.id, set())
             if not todo:
                 continue
             completions = {c.user_id: c.version for c in
@@ -251,6 +254,96 @@ def in_background(fn, *args) -> None:
     threading.Thread(target=fn, args=args, daemon=True).start()
 
 
+# --- weekly digest ("Was war diese Woche") ----------------------------------------------------------------
+def _digest_list(articles: list[Article]) -> str:
+    """The articles as a safe HTML list for the {articles} shortcode (titles are escaped)."""
+    e = html.escape
+    items = []
+    for a in articles:
+        url = portal(f"/articles/{a.id}")
+        kind = CATEGORY_DE.get(a.category, "")
+        when = f" · {a.event_date:%d.%m.%Y, %H:%M} Uhr" if a.event_date else ""
+        title = f'<a href="{e(url)}">{e(a.title_de)}</a>' if url.startswith("http") else e(a.title_de)
+        extra = f"<br>{e(a.summary_de)}" if a.summary_de else ""
+        items.append(f'<li><b>{title}</b> <span style="color:#667">({e(kind)}{e(when)})</span>{extra}</li>')
+    return "<ul>" + "".join(items) + "</ul>"
+
+
+def digest_due(now: datetime, last: datetime | None) -> bool:
+    """Once a week on the configured weekday from the configured hour on (also later that day after a restart)."""
+    if now.weekday() != settings.digest_weekday or now.hour < settings.digest_hour:
+        return False
+    return last is None or now - last > timedelta(hours=20)
+
+
+def send_digest(db, articles: list[Article], since: datetime, now: datetime) -> int:
+    """One mail per person with the articles they may see. Returns how many mails went out."""
+    tpl = mail_templates.load(db)["digest"]
+    people = db.query(User).filter(User.is_active.is_(True), User.notify_articles.is_(True), User.email.isnot(None),
+                                   User.email != "").all()
+    msgs = []
+    for u in people:
+        mine = [a for a in articles if may_see(u, a)]
+        if not mine:
+            continue
+        values = {"count": str(len(mine)), "period": f"{since:%d.%m.} – {now:%d.%m.%Y}", "articles": _digest_list(mine),
+                  **_person(u)}
+        subject, page, text = mail_templates.render("digest", tpl, values, portal("/news"))
+        msgs.append(_message(u.email, subject, text, page))
+    return send_mails(msgs)
+
+
+def check_weekly_digest() -> int:
+    """Weekly mode: send the digest when it is due. Marks the time first, so a failing SMTP never doubles it."""
+    if not (mail_ready() and settings.notify_mode == "weekly"):
+        return 0
+    db = SessionLocal()
+    try:
+        now = datetime.now()
+        row = db.get(AppSetting, DIGEST_KEY)
+        last = datetime.fromisoformat(json.loads(row.value)) if row and row.value else None
+        if not digest_due(now, last):
+            return 0
+        if row is None:
+            db.add(AppSetting(key=DIGEST_KEY, value=json.dumps(now.isoformat())))
+        else:
+            row.value = json.dumps(now.isoformat())
+        db.commit()
+        since = max(last, now - timedelta(days=7)) if last else now - timedelta(days=7)
+        articles = (db.query(Article).filter(Article.live(), Article.published_at > since)
+                    .order_by(Article.published_at.desc()).all())
+        if not articles:
+            return 0  # a quiet week: no mail
+        return send_digest(db, articles, since, now)
+    finally:
+        db.close()
+
+
+# --- housekeeping ----------------------------------------------------------------------------------------
+SWEEP_HOUR = 3  # orphaned files are removed once a night, never right after a start
+
+
+def _next_night(now: datetime) -> datetime:
+    at = now.replace(hour=SWEEP_HOUR, minute=0, second=0, microsecond=0)
+    return at if at > now else at + timedelta(days=1)
+
+
+_next_sweep = _next_night(datetime.now())
+
+
+def check_housekeeping() -> int:
+    global _next_sweep
+    now = datetime.now()
+    if now < _next_sweep:
+        return 0
+    _next_sweep = _next_night(now)
+    removed = housekeeping.sweep()
+    for folder, names in removed.items():
+        for name in names:
+            log.info("housekeeping: removed %s/%s", folder, name)
+    return len(removed["uploads"]) + len(removed["trainings"])
+
+
 # --- loop ------------------------------------------------------------------------------------------------
 _started = False
 
@@ -263,7 +356,7 @@ def start_loop() -> None:
 
     def run():
         while True:
-            for check in (check_new_articles, check_training_assignments):
+            for check in (check_new_articles, check_training_assignments, check_weekly_digest, check_housekeeping):
                 try:
                     check()
                 except Exception:  # noqa: BLE001 - keep the loop alive

@@ -8,6 +8,8 @@ import AdminDepartments from './AdminDepartments';
 import AdminBranches from './AdminBranches';
 import AdminHomeLayout from './AdminHomeLayout';
 import AdminTrainings from './AdminTrainings';
+import AdminJubilees from './AdminJubilees';
+import AdminStats from './AdminStats';
 import AdminQuickLinks from './AdminQuickLinks';
 import AdminPermissions, { ROLES } from './AdminPermissions';
 import LdapSyncDialog from './AdminLdapSync';
@@ -519,7 +521,9 @@ export default function Admin() {
   const tabs = [['settings', t('admin_settings'), can('admin')], ['notify', t('admin_notify'), can('admin') || has('mails')],
     ['users', t('admin_users'), has('people')], ['departments', t('admin_departments'), has('people')], ['branches', t('admin_branches'), has('people')],
     ['locations', t('admin_locations'), has('locations')], ['trainings', t('admin_trainings'), has('trainings')],
-    ['home', t('admin_home'), has('content_all')], ['quicklinks', t('admin_quicklinks'), has('quicklinks')], ['permissions', t('admin_permissions'), can('admin')],
+    ['jubilees', t('admin_jubilees'), has('jubilees')],
+    ['home', t('admin_home'), has('content_all')], ['stats', t('admin_stats'), has('content_all')],
+    ['quicklinks', t('admin_quicklinks'), has('quicklinks')], ['permissions', t('admin_permissions'), can('admin')],
   ].filter((x) => x[2]);
   const [wanted, setTab] = useState(() => params.get('tab') || '');
   const tab = tabs.some((x) => x[0] === wanted) ? wanted : tabs[0]?.[0];
@@ -545,6 +549,8 @@ export default function Admin() {
         {tab === 'branches' && <AdminBranches />}
         {tab === 'home' && <AdminHomeLayout />}
         {tab === 'trainings' && <AdminTrainings />}
+        {tab === 'jubilees' && <AdminJubilees />}
+        {tab === 'stats' && <AdminStats />}
         {tab === 'quicklinks' && <AdminQuickLinks />}
         {tab === 'permissions' && <AdminPermissions />}
       </div>

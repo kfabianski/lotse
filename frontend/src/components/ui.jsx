@@ -1,7 +1,7 @@
 import { useEffect, useRef } from 'react';
 import { marked } from 'marked';
 import DOMPurify from 'dompurify';
-import { CalendarDays, HardHat, Lightbulb, MapPin, Newspaper, Package, Pin, Scale, ShieldCheck, Users, X } from 'lucide-react';
+import { BookOpenCheck, CalendarDays, HardHat, Lightbulb, MapPin, Newspaper, Package, Pin, Scale, ShieldCheck, Users, X } from 'lucide-react';
 import { useI18n } from '../lib/i18n';
 import { isImage, isPdf, useViewer } from '../lib/viewer';
 
@@ -143,6 +143,7 @@ export function StatusBadge({ article }) {
     <>
       {state}
       {article.pinned_now && <span className="inline-flex items-center gap-1 text-sm font-medium text-brand-text"><Pin size={13} aria-hidden />{t('pinned_badge')}</span>}
+      {article.ack_required && <span className="inline-flex items-center gap-1 text-sm font-medium text-muted"><BookOpenCheck size={13} aria-hidden />{t('ack_badge')}</span>}
       {branches.length > 0 && (
         <span className="inline-flex items-center gap-1 text-sm font-medium text-muted">
           <MapPin size={13} aria-hidden />{t('br_only', { names: branches.map((b) => b.name).join(', ') })}

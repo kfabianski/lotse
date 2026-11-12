@@ -8,10 +8,10 @@ from fastapi import APIRouter, Depends, File, HTTPException, UploadFile
 from pydantic import BaseModel, Field
 from sqlalchemy.orm import Session
 
-from app import ldap_auth
+from app import crypto, ldap_auth
 from app.config import EDITABLE, SECRET, settings
 from app.db import SessionLocal, get_db
-from app.models import AppSetting, User
+from app.models import CATEGORIES, AppSetting, User
 from app.security import require, require_perm
 from app.uploads import save_image
 
@@ -22,6 +22,7 @@ class SettingsIn(BaseModel):
     company_name: str = Field(min_length=1, max_length=120)
     public_read: bool
     color_scheme: Literal["hafen", "signal", "meer", "indigo", "nordsee", "fjord", "azur", "marine"] = "hafen"
+    hidden_categories: list[str] = Field(default=[], max_length=8)  # sections the company does not use
     holiday_regions: list[str] = Field(default=["DE", "AT", "CH"], max_length=12)
     sso_enabled: bool = False
     sso_mode: Literal["kerberos", "proxy"] = "kerberos"
@@ -60,6 +61,9 @@ class SettingsIn(BaseModel):
     social_instagram: str = Field(default="", max_length=300)
     portal_url: str = Field(default="", max_length=200, pattern=r"^(https?://[^\s]+)?$")
     notify_email: bool = False
+    notify_mode: Literal["immediate", "weekly"] = "immediate"
+    digest_weekday: int = Field(default=4, ge=0, le=6)
+    digest_hour: int = Field(default=16, ge=0, le=23)
     smtp_host: str = Field(default="", max_length=255, pattern=r"^[A-Za-z0-9.\-:\[\]]*$")
     smtp_port: int = Field(default=587, ge=1, le=65535)
     smtp_mode: Literal["starttls", "ssl", "none"] = "starttls"
@@ -75,11 +79,22 @@ class TestIn(BaseModel):
 
 
 def apply_overrides(db: Session) -> None:
-    """Copy stored admin settings onto the in-process settings object."""
+    """Copy stored admin settings onto the in-process settings object. Passwords are stored encrypted; values an
+    older version saved in plain text are encrypted on the way."""
     rows = db.query(AppSetting).all()
+    changed = False
     for row in rows:
-        if row.key in EDITABLE:
-            setattr(settings, row.key, json.loads(row.value))
+        if row.key not in EDITABLE:
+            continue
+        value = json.loads(row.value)
+        if row.key in SECRET:
+            if value and not crypto.is_sealed(value):
+                row.value = json.dumps(crypto.seal(value))
+                changed = True
+            value = crypto.unseal(value)
+        setattr(settings, row.key, value)
+    if changed:
+        db.commit()
     if settings.sso_enabled and "sso_mode" not in {row.key for row in rows}:
         settings.sso_mode = "proxy"  # saved before Kerberos existed: that Windows sign-in ran through a web server
 
@@ -112,6 +127,10 @@ def save_settings(body: SettingsIn, _: User = Depends(require("admin")), db: Ses
     if bad:
         raise HTTPException(422, f"Unknown holiday region: {', '.join(bad)}")
     body.holiday_regions = list(dict.fromkeys(body.holiday_regions))
+    hidden = [c for c in body.hidden_categories if c not in CATEGORIES or c in ("news", "events")]
+    if hidden:
+        raise HTTPException(422, f"These sections cannot be hidden: {', '.join(hidden)}")
+    body.hidden_categories = list(dict.fromkeys(body.hidden_categories))
     import ipaddress
     try:
         body.trusted_proxies = [str(ipaddress.ip_address(x.strip())) for x in body.trusted_proxies if x.strip()]
@@ -147,11 +166,12 @@ def save_settings(body: SettingsIn, _: User = Depends(require("admin")), db: Ses
         if not values[secret]:
             values.pop(secret)  # keep the stored one
     for key, value in values.items():
+        stored = crypto.seal(value) if key in SECRET else value  # passwords never sit in the database in plain text
         row = db.get(AppSetting, key)
         if row is None:
-            db.add(AppSetting(key=key, value=json.dumps(value)))
+            db.add(AppSetting(key=key, value=json.dumps(stored)))
         else:
-            row.value = json.dumps(value)
+            row.value = json.dumps(stored)
         setattr(settings, key, value)
     db.commit()
     return current_view()
@@ -233,10 +253,11 @@ class TemplatesIn(BaseModel):
     article: TemplateIn
     idea: TemplateIn
     training: TemplateIn
+    digest: TemplateIn
 
 
 class PreviewIn(BaseModel):
-    kind: Literal["article", "idea", "training"]
+    kind: Literal["article", "idea", "training", "digest"]
     subject: str = Field("", max_length=300)
     body: str = Field("", max_length=30000)
     to: str = Field("", max_length=200)

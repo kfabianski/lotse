@@ -2,18 +2,19 @@ import { useEffect, useRef, useState } from 'react';
 import { useLocation } from 'react-router-dom';
 import { Bell } from 'lucide-react';
 import { useAuth } from '../lib/auth';
+import { useBriefing } from '../lib/briefing';
 import { useI18n } from '../lib/i18n';
-import { useFetch } from '../lib/useFetch';
 import { BriefingList, briefingCount } from './Greeting';
 
-/** Bell next to the avatar: what concerns this person (today's events, open trainings, polls, answers to ideas). */
+/** Bell next to the avatar: what concerns this person (today's events, open trainings, posts to confirm, polls,
+ * answers to ideas). The data is shared with the "Für Sie" block on the home page. */
 export default function Notifications() {
   const { user } = useAuth();
   const { t } = useI18n();
   const { pathname } = useLocation();
   const [open, setOpen] = useState(false);
   const box = useRef(null);
-  const { data, reload } = useFetch(user ? '/me/briefing' : null, undefined, `brief-${user?.id}`);
+  const { data, reload } = useBriefing();
 
   useEffect(() => { setOpen(false); }, [pathname]);
   useEffect(() => { if (user) reload(); }, [pathname]); // eslint-disable-line react-hooks/exhaustive-deps

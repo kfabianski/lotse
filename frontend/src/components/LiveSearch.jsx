@@ -70,6 +70,11 @@ export default function LiveSearch({ inputRef, inline = false, onDone }) {
 
   const items = flatten(data, t, pick, openViewer);
   const total = data ? Object.values(data).reduce((n, v) => n + v.length, 0) : 0;
+  useEffect(() => {  // a live search that found nothing is worth knowing for the editors (statistics)
+    if (!data || total > 0 || term.length < 3) return undefined;
+    const id = setTimeout(() => api('/search/log', { method: 'POST', body: { q: term, hits: 0 } }).catch(() => {}), 1500);
+    return () => clearTimeout(id);
+  }, [data, total, term]);
 
   const done = () => { setOpen(false); setActive(-1); inputRef?.current?.blur(); onDone?.(); };
   const showAll = () => { if (term) { navigate(`/search?q=${encodeURIComponent(term)}`); done(); } };

@@ -22,7 +22,7 @@ from sqlalchemy.orm import Session, selectinload
 
 from app.config import settings
 from app.db import get_db
-from app.models import (Training, TrainingCompletion, TrainingGroup, TrainingGroupMember, TrainingMaterial,
+from app.models import (Branch, Training, TrainingCompletion, TrainingGroup, TrainingGroupMember, TrainingMaterial,
                         TrainingTarget, User)
 from app.routers.quicklinks import URL_PATTERN
 from app.security import current_user, has_perm, require_perm
@@ -73,27 +73,42 @@ def _staff_query(db: Session):
 NEWCOMER_DAYS = 90  # onboarding trainings reach people this long after their first day
 
 
+def assignment_map(db: Session, trainings: list[Training]) -> dict[int, set[int]]:
+    """Who each training is assigned to (union of its targets, active accounts only). The staff list and the group
+    members are read once for all trainings - not once per training and target."""
+    staff = db.query(User.id, User.department, User.branch_id, User.position, User.start_date).filter(
+        User.is_active.is_(True), User.show_in_directory.is_(True)).all()
+    active = {u for (u,) in db.query(User.id).filter(User.is_active.is_(True))}
+    members: dict[int, set[int]] = {}
+    for group_id, user_id in db.query(TrainingGroupMember.group_id, TrainingGroupMember.user_id):
+        members.setdefault(group_id, set()).add(user_id)
+    since = date.today() - timedelta(days=NEWCOMER_DAYS)
+    out: dict[int, set[int]] = {}
+    for t in trainings:
+        ids: set[int] = set()
+        for x in t.targets:
+            if x.kind == "all":
+                ids |= {u.id for u in staff}
+            elif x.kind == "newcomers":  # people in their first NEWCOMER_DAYS days (start date set by hand or from LDAP)
+                ids |= {u.id for u in staff if u.start_date and u.start_date >= since}
+            elif x.kind == "department":
+                ids |= {u.id for u in staff if u.department == x.value}
+            elif x.kind == "branch" and x.value.isdigit():
+                ids |= {u.id for u in staff if u.branch_id == int(x.value)}
+            elif x.kind == "position" and x.value.strip():  # job title, e.g. from LDAP "title"
+                wanted = x.value.strip().casefold()
+                ids |= {u.id for u in staff if (u.position or "").casefold() == wanted}
+            elif x.kind == "group" and x.value.isdigit():
+                ids |= members.get(int(x.value), set())
+            elif x.kind == "user" and x.value.isdigit():
+                ids.add(int(x.value))
+        out[t.id] = ids & active
+    return out
+
+
 def assigned_ids(db: Session, training: Training) -> set[int]:
-    """Active people the training is assigned to (union of all targets)."""
-    ids: set[int] = set()
-    for t in training.targets:
-        if t.kind == "all":
-            ids |= {u.id for u in _staff_query(db)}
-        elif t.kind == "newcomers":  # people in their first NEWCOMER_DAYS days (start date set by hand or from LDAP)
-            since = date.today() - timedelta(days=NEWCOMER_DAYS)
-            ids |= {u.id for u in _staff_query(db).filter(User.start_date.isnot(None), User.start_date >= since)}
-        elif t.kind == "department":
-            ids |= {u.id for u in _staff_query(db).filter(User.department == t.value)}
-        elif t.kind == "branch" and t.value.isdigit():
-            ids |= {u.id for u in _staff_query(db).filter(User.branch_id == int(t.value))}
-        elif t.kind == "position" and t.value.strip():  # job title, e.g. from LDAP "title"
-            ids |= {u.id for u in _staff_query(db).filter(User.position.ilike(t.value.strip()))}
-        elif t.kind == "group" and t.value.isdigit():
-            ids |= {m.user_id for m in db.query(TrainingGroupMember).filter(TrainingGroupMember.group_id == int(t.value))}
-        elif t.kind == "user" and t.value.isdigit():
-            ids.add(int(t.value))
-    active = {u for (u,) in db.query(User.id).filter(User.is_active.is_(True), User.id.in_(ids))} if ids else set()
-    return active
+    """Active people one training is assigned to."""
+    return assignment_map(db, [training]).get(training.id, set())
 
 
 def _sign(name: str, exp: int) -> str:
@@ -126,10 +141,10 @@ def _visible_to(db: Session, training: Training, user: User) -> bool:
     return has_perm(user, "trainings") or (training.active and (training.open_to_all or user.id in assigned_ids(db, training)))
 
 
-def _detail(db: Session, t: Training, user: User) -> dict:
+def _detail(db: Session, t: Training, user: User, ids: set[int] | None = None) -> dict:
     done = _done(db, t, user.id)
     earlier = db.get(TrainingCompletion, (t.id, user.id))
-    assigned = user.id in assigned_ids(db, t)
+    assigned = user.id in (assigned_ids(db, t) if ids is None else ids)
     return {
         "id": t.id, "title_de": t.title_de, "title_en": t.title_en, "description_de": t.description_de,
         "description_en": t.description_en, "due_date": t.due_date, "active": t.active, "version": t.version,
@@ -140,8 +155,8 @@ def _detail(db: Session, t: Training, user: User) -> dict:
     }
 
 
-def _report(db: Session, t: Training) -> dict:
-    ids = assigned_ids(db, t)
+def _report(db: Session, t: Training, ids: set[int] | None = None) -> dict:
+    ids = assigned_ids(db, t) if ids is None else ids
     people = db.query(User).filter(User.id.in_(ids)).order_by(User.last_name, User.first_name).all() if ids else []
     rows = {c.user_id: c for c in db.query(TrainingCompletion).filter(TrainingCompletion.training_id == t.id)}
     done, open_ = [], []
@@ -165,8 +180,8 @@ def _report(db: Session, t: Training) -> dict:
     return {"version": t.version, "done": done, "open": open_, "voluntary": voluntary}
 
 
-def _admin_row(db: Session, t: Training) -> dict:
-    r = _report(db, t)
+def _admin_row(db: Session, t: Training, ids: set[int] | None = None) -> dict:
+    r = _report(db, t, ids)
     return {"id": t.id, "title_de": t.title_de, "title_en": t.title_en, "description_de": t.description_de,
             "description_en": t.description_en, "due_date": t.due_date, "active": t.active, "version": t.version,
             "open_to_all": t.open_to_all, "voluntary": len(r["voluntary"]),
@@ -182,10 +197,12 @@ def _admin_row(db: Session, t: Training) -> dict:
 def my_trainings(user: User = Depends(current_user), db: Session = Depends(get_db)):
     """The trainings assigned to the signed-in person, plus the voluntary ones open to everybody."""
     out = []
-    for t in db.query(Training).filter(Training.active.is_(True)).options(selectinload(Training.targets)).all():
-        if not t.open_to_all and user.id not in assigned_ids(db, t):
+    active = db.query(Training).filter(Training.active.is_(True)).options(selectinload(Training.targets)).all()
+    assigned = assignment_map(db, active)
+    for t in active:
+        if not t.open_to_all and user.id not in assigned.get(t.id, set()):
             continue
-        d = _detail(db, t, user)
+        d = _detail(db, t, user, assigned.get(t.id, set()))
         d.pop("description_de"), d.pop("description_en")
         d["materials"] = [{"kind": m["kind"]} for m in d["materials"]]
         out.append(d)
@@ -216,6 +233,33 @@ def complete(training_id: int, user: User = Depends(current_user), db: Session =
     return _detail(db, t, user)
 
 
+@router.get("/{training_id}/certificate.pdf")
+def certificate(training_id: int, user_id: int | None = None, lang: str = Query("de", pattern="^(de|en)$"),
+                me: User = Depends(current_user), db: Session = Depends(get_db)):
+    """Printable proof (PDF) that a person confirmed the training - for the person themselves, or for any person
+    when the caller manages trainings. Exists only after the confirmation of the current round."""
+    from app.certificate import training_certificate
+    t = _training(db, training_id)
+    person = me
+    if user_id and user_id != me.id:
+        if not has_perm(me, "trainings"):
+            raise HTTPException(403, "Only training managers can download other people's certificates")
+        person = db.get(User, user_id)
+        if not person:
+            raise HTTPException(404, "User not found")
+    elif not _visible_to(db, t, me):
+        raise HTTPException(404, "Training not found")
+    done = _done(db, t, person.id)
+    if not done:
+        raise HTTPException(409, "Not confirmed yet - the certificate exists only after the confirmation")
+    manager = db.get(User, person.manager_id) if person.manager_id else None
+    branch = db.get(Branch, person.branch_id) if person.branch_id else None
+    pdf = training_certificate(t, person, done, manager, branch.name if branch else "", lang)
+    safe = "".join(c for c in person.username if c.isalnum() or c in "._-") or str(person.id)
+    return Response(pdf, media_type="application/pdf",
+                    headers={"Content-Disposition": f'attachment; filename="schulungsnachweis-{t.id}-{safe}.pdf"'})
+
+
 # --- admin ----------------------------------------------------------------------------------
 
 
@@ -223,7 +267,8 @@ def complete(training_id: int, user: User = Depends(current_user), db: Session =
 def list_all(_: User = Depends(require_perm("trainings")), db: Session = Depends(get_db)):
     ts = db.query(Training).options(selectinload(Training.targets), selectinload(Training.materials)) \
         .order_by(Training.active.desc(), Training.updated_at.desc()).all()
-    return [_admin_row(db, t) for t in ts]
+    assigned = assignment_map(db, ts)
+    return [_admin_row(db, t, assigned.get(t.id, set())) for t in ts]
 
 
 def _apply(db: Session, t: Training, body: TrainingIn) -> None:

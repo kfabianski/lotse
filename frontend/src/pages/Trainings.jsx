@@ -2,7 +2,7 @@
 import { useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import {
-  AlertTriangle, ArrowLeft, CheckCircle2, ChevronRight, Clock, ExternalLink, FileText, GraduationCap, Image as ImageIcon,
+  AlertTriangle, ArrowLeft, CheckCircle2, ChevronRight, Clock, ExternalLink, FileDown, FileText, GraduationCap, Image as ImageIcon,
   Link2, PlayCircle, RotateCcw,
 } from 'lucide-react';
 import { Button, Empty } from '../components/ui';
@@ -11,7 +11,7 @@ import { useI18n } from '../lib/i18n';
 import { useFetch } from '../lib/useFetch';
 import { useAuth } from '../lib/auth';
 import { Plus, Settings2 } from 'lucide-react';
-import { api } from '../lib/api';
+import { api, downloadFile } from '../lib/api';
 import { useViewer } from '../lib/viewer';
 import { fileSize } from './Documents';
 
@@ -166,7 +166,12 @@ export function TrainingView() {
       {(tr.assigned || tr.optional) && (
         <div className={`mt-10 rounded-2xl border-2 p-5 ${tr.completed_at ? 'border-safe/40 bg-safe/5' : 'border-brand/40 bg-brand-soft/40'}`}>
           {tr.completed_at ? (
-            <p className="flex items-center gap-2 font-semibold text-safe"><CheckCircle2 size={20} />{t('tr_confirmed', { d: fmtDate(tr.completed_at, { day: 'numeric', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit' }) })}</p>
+            <div className="flex flex-wrap items-center justify-between gap-3">
+              <p className="flex items-center gap-2 font-semibold text-safe"><CheckCircle2 size={20} />{t('tr_confirmed', { d: fmtDate(tr.completed_at, { day: 'numeric', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit' }) })}</p>
+              <Button variant="outline" onClick={() => downloadFile(`/trainings/${tr.id}/certificate.pdf?lang=${lang}`, `schulungsnachweis-${tr.id}.pdf`).catch((e) => setErr(e.message))}>
+                <FileDown size={16} />{t('tr_certificate')}
+              </Button>
+            </div>
           ) : (
             <div className="flex flex-wrap items-center justify-between gap-4">
               <p className="text-sm text-muted">{t('tr_confirm_hint')}</p>

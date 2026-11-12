@@ -90,3 +90,13 @@ die Namen in Lotse sind erfunden.
 
 Das Bild auf der Anmeldeseite lässt sich unter **Verwaltung → Einstellungen → Allgemein** durch ein eigenes
 Teamfoto ersetzen.
+
+## Schriften
+
+| Schrift | Verwendung | Lizenz | Dateien |
+|---|---|---|---|
+| Hanken Grotesk (Hanken Design Co.) | Oberfläche und PDF-Schulungsnachweise | [SIL Open Font License 1.1](../frontend/public/fonts/OFL-hankengrotesk.txt) | `frontend/public/fonts/hanken-grotesk-*.woff2`, `backend/app/assets/fonts/HankenGrotesk-*.ttf` |
+| IBM Plex Mono (IBM) | Zahlen, Daten, Tastenkürzel | [SIL Open Font License 1.1](../frontend/public/fonts/OFL-ibmplexmono.txt) | `frontend/public/fonts/ibm-plex-mono-*.woff2` |
+
+Die Schriften liegen im Repository und werden vom Lotse-Server ausgeliefert; beim Öffnen der Seite wird kein
+externer Dienst (z. B. Google Fonts) angefragt.

@@ -4,8 +4,8 @@ import MailTemplates from '../components/MailTemplates';
 import { applyScheme } from '../lib/scheme';
 import SchemePicker from '../components/SchemePicker';
 import { useAuth } from '../lib/auth';
-import { Button, Field, inputClass } from '../components/ui';
-import { useI18n } from '../lib/i18n';
+import { Button, CategoryTag, Field, inputClass } from '../components/ui';
+import { CATEGORIES, useI18n } from '../lib/i18n';
 import { api } from '../lib/api';
 import { useFetch } from '../lib/useFetch';
 
@@ -85,7 +85,9 @@ export function MailTexts() {
 export default function AdminSettings({ part = 'general' }) {
   const general = part === 'general';
   const { user: me } = useAuth();
-  const { t } = useI18n();
+  const { t, lang } = useI18n();
+  const locale = lang === 'de' ? 'de-DE' : 'en-GB';
+  const weekdays = Array.from({ length: 7 }, (_, i) => new Intl.DateTimeFormat(locale, { weekday: 'long' }).format(new Date(2024, 0, 1 + i)));
   const [form, setForm] = useState(null);
   const [password, setPassword] = useState('');
   const [smtpPassword, setSmtpPassword] = useState('');
@@ -199,6 +201,24 @@ export default function AdminSettings({ part = 'general' }) {
         <p className="text-sm text-muted">{t('cs_note')}</p>
       </Section>
 
+      <Section title={t('settings_categories')} description={t('settings_categories_hint')}>
+        <div className="grid gap-2 sm:grid-cols-2">
+          {CATEGORIES.map((c) => {
+            const fixed = c === 'news' || c === 'events';
+            const hiddenList = form.hidden_categories || [];
+            const on = fixed || !hiddenList.includes(c);
+            return (
+              <label key={c} className={`flex items-center gap-3 rounded-xl border border-line px-3 py-2 ${on ? '' : 'opacity-60'} ${fixed ? '' : 'cursor-pointer'}`}>
+                <input type="checkbox" disabled={fixed} checked={on} className="h-4 w-4 accent-[var(--brand)]"
+                  onChange={(e) => set('hidden_categories')(e.target.checked ? hiddenList.filter((x) => x !== c) : [...hiddenList, c])} />
+                <CategoryTag category={c} className="!text-ink" />
+                {fixed && <span className="ml-auto text-xs text-muted">{t('settings_categories_always')}</span>}
+              </label>
+            );
+          })}
+        </div>
+      </Section>
+
       <HolidaySettings value={form.holiday_regions || []} onChange={set('holiday_regions')} />
       </>)}
 
@@ -208,6 +228,32 @@ export default function AdminSettings({ part = 'general' }) {
           <input className={inputClass} placeholder="https://intranet.firma.local" value={form.portal_url || ''} onChange={set('portal_url')} />
         </Field>
         <Toggle checked={form.notify_email} onChange={set('notify_email')} label={t('nt_email')} hint={t('nt_email_hint')} />
+        <div>
+          <span className="mb-1 block text-sm font-medium text-muted">{t('nt_mode')}</span>
+          <div className="grid gap-2 sm:grid-cols-2">
+            {[['immediate', t('nt_mode_immediate'), t('nt_mode_immediate_hint')], ['weekly', t('nt_mode_weekly'), t('nt_mode_weekly_hint')]].map(([mode, label, hint]) => (
+              <label key={mode} className={`cursor-pointer rounded-xl border p-3 transition-colors ${(form.notify_mode || 'immediate') === mode ? 'border-brand bg-brand-soft' : 'border-line hover:border-muted'}`}>
+                <input type="radio" name="notify_mode" className="sr-only" checked={(form.notify_mode || 'immediate') === mode} onChange={() => set('notify_mode')(mode)} />
+                <span className="block font-medium">{label}</span>
+                <span className="block text-sm text-muted">{hint}</span>
+              </label>
+            ))}
+          </div>
+          {form.notify_mode === 'weekly' && (
+            <div className="mt-3 grid gap-4 sm:grid-cols-2">
+              <Field label={t('nt_digest_day')}>
+                <select className={inputClass} value={form.digest_weekday ?? 4} onChange={(e) => set('digest_weekday')(Number(e.target.value))}>
+                  {weekdays.map((name, i) => <option key={name} value={i}>{name}</option>)}
+                </select>
+              </Field>
+              <Field label={t('nt_digest_hour')}>
+                <select className={inputClass} value={form.digest_hour ?? 16} onChange={(e) => set('digest_hour')(Number(e.target.value))}>
+                  {Array.from({ length: 24 }, (_, h) => <option key={h} value={h}>{String(h).padStart(2, '0')}:00</option>)}
+                </select>
+              </Field>
+            </div>
+          )}
+        </div>
         <div className="grid gap-4 sm:grid-cols-[minmax(0,1fr)_120px_160px]">
           <Field label={t('nt_smtp_host')}><input className={inputClass} placeholder="smtp.office365.com" value={form.smtp_host || ''} onChange={set('smtp_host')} /></Field>
           <Field label={t('settings_ldap_port')}><input type="number" min={1} max={65535} className={inputClass} value={form.smtp_port} onChange={set('smtp_port')} /></Field>

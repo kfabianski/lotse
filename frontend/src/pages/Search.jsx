@@ -1,9 +1,11 @@
+import { useEffect } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import { BarChart3, DoorOpen, FileText, GraduationCap, Lightbulb, Link2, StickyNote } from 'lucide-react';
 import { Avatar, CategoryTag, Empty } from '../components/ui';
 import { QUICK_ICONS } from '../components/QuickLinks';
 import { ArticleGrid } from './Articles';
 import { useI18n } from '../lib/i18n';
+import { api } from '../lib/api';
 import { useFetch } from '../lib/useFetch';
 import { useViewer } from '../lib/viewer';
 import { ROOM_TYPES } from '../lib/rooms';
@@ -52,6 +54,9 @@ export default function Search() {
   const pick = (x, k) => (lang === 'en' && x[`${k}_en`]) || x[`${k}_de`];
   const total = data ? Object.values(data).reduce((n, v) => n + v.length, 0) : 0;
   const docs = data?.documents || [];
+  useEffect(() => {  // statistics for the editors: which terms are searched for, and which find nothing
+    if (data && q.trim().length >= 3) api('/search/log', { method: 'POST', body: { q: q.trim(), hits: total } }).catch(() => {});
+  }, [data]); // eslint-disable-line react-hooks/exhaustive-deps
 
   return (
     <div>

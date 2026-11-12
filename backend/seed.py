@@ -17,7 +17,7 @@ from app.config import settings
 from app.db import Base, SessionLocal, engine
 from app.models import (DEFAULT_DEPARTMENTS, Article, Attachment, Classified, Department, EventRsvp, Idea, IdeaVote, Location,
                         QuickLink, Room, Seat, Training, TrainingCompletion, TrainingGroup, TrainingGroupMember,
-                        TrainingMaterial, TrainingTarget, User, Poll, PollVote, Branch)
+                        TrainingMaterial, TrainingTarget, User, Poll, PollVote, Branch, Jubilee)
 from app.security import hash_password
 
 random.seed(7)
@@ -1174,6 +1174,7 @@ def seed(reset: bool):
     add_demo_org(db)
     add_demo_branches(db)
     add_demo_pinned(db)
+    add_demo_jubilees(db)
     db.flush()
     add_demo_photos(db)
     db.commit()
@@ -1301,8 +1302,41 @@ def add_demo_polls(db) -> int:
     return len(polls)
 
 
+JUBILEES = [  # username (None = no account), kind, years, days from today, text
+    ("anna.becker", "service", 10, 3, "Zehn Jahre Geschäftsführung – danke für die ruhige Hand in bewegten Zeiten."),
+    ("paul.schroeder", "service", 25, 12, "Ein Vierteljahrhundert im Lager – Paul kennt jedes Regal mit Vornamen."),
+    ("elena.richter", "birthday", 50, 20, ""),
+    ("tim.neumann", "service", 5, -3, ""),
+    (None, "retirement", None, 30, "Hans Meier geht nach 38 Jahren in den Ruhestand – Abschied am Freitag in der Kantine."),
+]
+
+
+def add_demo_jubilees(db) -> int:
+    """A few anniversaries around today for the home block, and one policy that asks readers to confirm it."""
+    n = 0
+    if not db.query(Jubilee).count():
+        users = {u.username: u for u in db.query(User).all()}
+        hr = db.query(User).filter(User.role == "hr").first() or db.query(User).filter(User.role == "admin").first()
+        for username, kind, years, offset, text in JUBILEES:
+            u = users.get(username) if username else None
+            if username and not u:
+                continue
+            db.add(Jubilee(user_id=u.id if u else None, name="" if u else "Hans Meier", kind=kind, years=years,
+                           on_date=date.today() + timedelta(days=offset), text_de=text, created_by=hr.id if hr else None))
+            n += 1
+    if not db.query(Article).filter(Article.ack_required.is_(True)).count():
+        policy = db.query(Article).filter(Article.category == "rules", Article.title_de.ilike("%Mobiles Arbeiten%")).first()
+        if policy:
+            policy.ack_required = True  # "Lesebestätigung": every reader confirms "read and understood"
+    return n
+
+
 if __name__ == "__main__":
-    if "--photos" in sys.argv:  # real photos for an existing database (only where nothing is set)
+    if "--jubilees" in sys.argv:  # demo anniversaries + one policy with read confirmation for an existing database
+        db = SessionLocal()
+        print(f"{add_demo_jubilees(db)} anniversaries added.")
+        db.commit()
+    elif "--photos" in sys.argv:  # real photos for an existing database (only where nothing is set)
         db = SessionLocal()
         print(f"{add_demo_photos(db)} photos added.")
         db.commit()

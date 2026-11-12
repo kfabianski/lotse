@@ -8,6 +8,7 @@
 /* Hallmark · dropped setRsvps, onChange={patch}, onChange={setEvent}, onClick={toggle} · the user removed the "Ich bin dabei" sign-up everywhere (home, Veranstaltungen, article page) */
 /* Hallmark · the slider text sits on a half-transparent white panel over the photograph, at the user's request */
 @import "tailwindcss";
+@import "./styles/fonts.css";
 @import "./styles/tokens.css";
 @import "./styles/base.css" layer(base);
 

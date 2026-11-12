@@ -39,16 +39,17 @@ API, Uploads und Oberfläche aus. Anmeldung lokal oder über **LDAP/Active Direc
 | ![Anmeldung](docs/screenshots/12-anmeldung.png) | |
 | **Anmeldung** – Lesen ohne Login, Anmelden nur zum Schreiben | |
 
-Alle Funktionen im Detail: **[docs/FUNKTIONEN.md](docs/FUNKTIONEN.md)** · Bildnachweise: [docs/CREDITS.md](docs/CREDITS.md)
+Alle Funktionen im Detail: **[docs/FUNKTIONEN.md](docs/FUNKTIONEN.md)** · Was ist neu: [docs/AENDERUNGEN.md](docs/AENDERUNGEN.md) · Bildnachweise: [docs/CREDITS.md](docs/CREDITS.md)
 
 ## Funktionen
 
 ### Für alle Mitarbeitenden
 
-- **Startseite**: **persönliche Begrüßung** („Guten Morgen, Mehmet“) mit heutigen Terminen, offenen Schulungen
-  (rot bei Überfälligkeit) und Neuem zu den eigenen Ideen, großer **Slider** mit den
-  wichtigsten Beiträgen, **Schnellzugriff**-Kacheln, nächste **Termine** mit Monatskalender, **Fotos** aus dem
-  Firmenleben, **Neuigkeiten**, **Neu im Team**, zuletzt veröffentlichte Artikel und neue Anzeigen.
+- **Startseite**: Begrüßung („Guten Morgen, Mehmet“) in der Kopfzeile, darunter für Angemeldete der Block **Für Sie**
+  mit dem, was ansteht (offene Schulungen – rot bei Überfälligkeit –, Beiträge zum Bestätigen, heutige Termine, neue
+  Umfragen, Neues zu den eigenen Ideen), großer **Slider** mit den wichtigsten Beiträgen, **Schnellzugriff**-Kacheln,
+  nächste **Termine** mit Monatskalender, **Fotos** aus dem Firmenleben, **Neuigkeiten**, **Neu im Team**,
+  **Jubiläen**, zuletzt veröffentlichte Artikel und neue Anzeigen.
 - **Schnellzugriff**: Kacheln zu Zeiterfassung, ERP, Outlook, Helpdesk usw., zu Sammel-Postfächern
   (Buchhaltung, Eingangsrechnungen, IT-Support – Adresse per Knopf kopieren) und wichtigen Telefonnummern.
 - **Aktuelles** und **Wissen & Regeln**: Neuigkeiten, Veranstaltungen, neue Kolleg:innen, neue Produkte,
@@ -57,6 +58,9 @@ Alle Funktionen im Detail: **[docs/FUNKTIONEN.md](docs/FUNKTIONEN.md)** · Bildn
   Besprechungsraum buchen, IT-Probleme melden.
 - **Versionshistorie**: Bei jedem Artikel ist sichtbar, wer was wann geändert hat (mit Änderungsgrund) –
   inklusive Vergleich mit der Vorversion und hinzugefügten/entfernten Dokumenten. Öffentlich wie der Artikel.
+- **Lesebestätigung**: Die Redaktion kann bei einem Beitrag (z. B. einer Richtlinie) eine Bestätigung anfordern;
+  Angemeldete klicken am Ende „Ich habe diesen Beitrag gelesen und verstanden“, offene Bestätigungen stehen in der
+  Glocke und im Block *Für Sie*. Die Redaktion sieht, wer bestätigt hat (mit CSV-Export) – ohne eine Schulung anzulegen.
 - **Veranstaltungen**: Demnächst, Monatskalender, Rückblick mit Fotos; **„Ich bin dabei“** mit
   Teilnehmerliste; Kalender-Abo (`.ics`) für Outlook, Google und Apple.
 - **Feiertage** im Kalender und auf der Startseite: gesetzliche Feiertage für **Deutschland, Österreich und die
@@ -65,7 +69,8 @@ Alle Funktionen im Detail: **[docs/FUNKTIONEN.md](docs/FUNKTIONEN.md)** · Bildn
 - **Schulungen** (nach Anmeldung): **Pflichtschulungen** für die eigene Person (Reiter *Offen*, mit Fälligkeit),
   **freiwillige Schulungen für alle** (z. B. Anleitungen, Reiter *Freiwillig*) und *Erledigt*; Unterlagen (PDF,
   **Video**, Bild, Link) und die Bestätigung **„durchgearbeitet und verstanden“**. Fachschulungen sehen nur die
-  Zugewiesenen.
+  Zugewiesenen. Nach der Bestätigung gibt es den **Schulungsnachweis als PDF** – zum Ausdrucken, Unterschreiben
+  und für die Personalakte.
 - **Mitarbeitende**: Verzeichnis nach Abteilungen mit Suche (Name, Abteilung, Position, Durchwahl, E-Mail).
 - **Lageplan**: Gebäudeansicht (Etagen übereinander, Lagerhallen daneben), Räume als echte Flächen in den
   Abteilungsfarben, Besprechungsräume mit Plätzen, Ausstattung und Raum-E-Mail, Hover-Karte mit Foto und
@@ -79,9 +84,12 @@ Alle Funktionen im Detail: **[docs/FUNKTIONEN.md](docs/FUNKTIONEN.md)** · Bildn
 - **Niederlassungen**: Artikel und Termine nur für bestimmte Standorte; Personen gehören zu einer Niederlassung
   (von Hand oder aus LDAP), Schulungen lassen sich einer Niederlassung zuweisen.
 - **Benachrichtigungen** per **E-Mail** (neue Artikel und Termine, Antworten auf eigene Ideen, **zugewiesene Pflichtschulungen**) und als Karte in
-  einem **Teams-Kanal**; jede Person kann sie im Profil abschalten. Betreff und Text der Mails gestaltet der Admin
-  selbst (**Mail anpassen**: Editor mit Platzhaltern wie `{article}`, Vorschau, Test-Mail).
+  einem **Teams-Kanal**; jede Person kann sie im Profil abschalten. Wahlweise **sofort je Beitrag** oder als
+  **wöchentliche Zusammenfassung** („Was war diese Woche“, Wochentag und Uhrzeit einstellbar). Betreff und Text der
+  Mails gestaltet der Admin selbst (**Mail anpassen**: Editor mit Platzhaltern wie `{article}`, Vorschau, Test-Mail).
 - **Social Media**: Facebook-, LinkedIn- und Instagram-Seite der Firma als Links auf der Startseite und in der Fußzeile.
+- **Jubiläen**: Dienstjubiläen, runde Geburtstage, Ruhestand – von Personal (HR) oder der Verwaltung von Hand
+  eingetragen (nichts wird aus Personaldaten berechnet), auf der Startseite rund um das Datum sichtbar.
 - **Kleinanzeigen**: Biete, Suche, Zu verschenken, Fahrgemeinschaften – mit Foto, Preis und Kontakt; verschwinden nach 90 Tagen automatisch.
 - **Ideenbox**: Ideen einreichen (auf Wunsch **wirklich anonym** – der Name wird dann gar nicht gespeichert),
   mit **1–5 Sternen** bewerten, Sortierung *Beste Bewertung* oder *Neueste*, Status von *Neu* bis *Umgesetzt*
@@ -102,6 +110,9 @@ Alle Funktionen im Detail: **[docs/FUNKTIONEN.md](docs/FUNKTIONEN.md)** · Bildn
 - Artikel in allen Bereichen schreiben (Markdown mit Vorschau), Titelbild, Fotos und PDFs anhängen,
   **Entwurf** oder **geplante Veröffentlichung** zu Datum und Uhrzeit, Beiträge für den Slider auswählen.
 - **Änderungsgrund** beim Speichern für die Versionshistorie; alte Versionen **wiederherstellen**.
+- **Lesebestätigung** für einen Beitrag anfordern und sehen, wer bestätigt hat.
+- **Statistik**: meistgelesene Beiträge (Aufrufe je Tag) und **Suchen ohne Treffer** – zeigt, welche Inhalte fehlen.
+  Gezählt wird nur, wie oft, nie wer.
 - Status und Antwort bei Ideen setzen, fremde Anzeigen entfernen.
 
 ### Für die Verwaltung (Administrator)
@@ -125,8 +136,11 @@ Alle Funktionen im Detail: **[docs/FUNKTIONEN.md](docs/FUNKTIONEN.md)** · Bildn
 - **LDAP-Abgleich mit Vorschau**: zeigt neue, zu verknüpfende, geänderte und nicht mehr vorhandene Personen
   sowie neue und überzählige Abteilungen – übernommen wird nur, was abgehakt ist. **LDAP ist führend**;
   Personen werden über Benutzername und **E-Mail-Adresse** erkannt, so entstehen keine Doppelkonten.
-- **Einstellungen**: Firmenname, Anmeldebild, *Lesen ohne Anmeldung*, **Feiertage** (Länder, Bundesland/Kanton),
-  **LDAP/Active Directory** mit Verbindungstest, **Windows-Anmeldung (SSO)**.
+- **Einstellungen**: Firmenname, Anmeldebild, *Lesen ohne Anmeldung*, **Bereiche** (nicht genutzte Rubriken wie
+  *Neue Produkte* abschalten), **Feiertage** (Länder, Bundesland/Kanton), **LDAP/Active Directory** mit
+  Verbindungstest, **Windows-Anmeldung (SSO)**.
+- **Jubiläen** (auch Personal/HR): Einträge für die Startseite – Person aus dem Verzeichnis oder Name, Anlass, Jahre,
+  Datum, Text.
 
 ### Rollen und Rechte
 
@@ -138,17 +152,17 @@ Rolle und bei Bedarf **zusätzliche Rechte** (z. B. *Etagen, Räume & Plätze* o
 | Besucher (nicht angemeldet) | lesen – nur wenn *Lesen ohne Anmeldung* eingeschaltet ist (keine Schulungen) |
 | Mitarbeitende | zusätzlich Anzeigen, Ideen, Sternebewertung, Zusagen, eigene Schulungen bestätigen, Profil |
 | Autor:in | zusätzlich **eigene** Artikel und Veranstaltungen |
-| Personal (HR) | wie Autor:in, dazu Mitarbeitenden-Karten, Schulungen verwalten und **E-Mail-Texte** anpassen (ohne Postfach-Zugangsdaten) |
+| Personal (HR) | wie Autor:in, dazu Mitarbeitenden-Karten, Schulungen verwalten, **Jubiläen** eintragen und **E-Mail-Texte** anpassen (ohne Postfach-Zugangsdaten) |
 | Moderator:in | wie Autor:in, dazu Schulungen verwalten, Ideen & Kleinanzeigen moderieren, Schnellzugriff, Umfragen |
-| Redaktion | wie Moderator:in, dazu **alle** Artikel, Entwürfe, Slider, Versionen wiederherstellen |
+| Redaktion | wie Moderator:in, dazu **alle** Artikel, Entwürfe, Slider, Versionen wiederherstellen, Lesebestätigungen, Startseite gestalten, **Statistik** |
 | Administrator | alles – nur Administratoren ändern **Einstellungen, LDAP, Windows-Anmeldung, Rollen & Rechte** und starten den **LDAP-Abgleich** |
 
 ## Technik
 
 | Teil | Technik |
 |---|---|
-| Backend | Python 3.11+, FastAPI, SQLAlchemy, **SQLite** (eine Datei, kein Datenbankserver), `holidays` (Feiertage, offline) |
-| Frontend | React 19, Vite, Tailwind CSS 4, TipTap (Texteditor), Schrift Geist, Icons Lucide |
+| Backend | Python 3.11+, FastAPI, SQLAlchemy, **SQLite** (eine Datei, kein Datenbankserver; Volltextsuche mit FTS5), `holidays` (Feiertage, offline), `fpdf2` (Schulungsnachweis als PDF), `cryptography` (gespeicherte Passwörter verschlüsselt) |
+| Frontend | React 19, Vite, Tailwind CSS 4, TipTap (Texteditor), Schriften Hanken Grotesk und IBM Plex Mono (liegen im Repository und kommen **vom eigenen Server**, kein Google Fonts), Icons Lucide |
 | Anmeldung | lokal (bcrypt + JWT) oder LDAP/AD über LDAPS bzw. STARTTLS (ldap3); Windows-Anmeldung per Kerberos (pyspnego) |
 | Betrieb | ein Prozess (uvicorn) liefert API, Uploads und die gebaute Oberfläche aus |
 
@@ -205,6 +219,7 @@ cd frontend && npm run dev                           # Oberfläche auf :5173 mit
 | `python seed.py --photos` | ergänzt echte Fotos: Profilfotos aller Demo-Personen, Titelbilder, Fotogalerien und Bilder bei Kleinanzeigen – nur dort, wo noch nichts gesetzt ist |
 | `python seed.py --rooms` | ergänzt die Demo-Räume für Etagen, die noch keine Räume haben |
 | `python seed.py --trainings` | ergänzt Schnellzugriff-Kacheln und Beispiel-Schulungen mit Gruppen, wenn noch keine vorhanden sind |
+| `python seed.py --jubilees` | ergänzt Beispiel-Jubiläen für die Startseite und schaltet bei einer Richtlinie die Lesebestätigung ein |
 
 ## Konfiguration
 
@@ -235,6 +250,10 @@ Einstellungen erst nach einem Neustart sehen.
 **Daten sichern:** Der Ordner `backend/data/` enthält Datenbank, Uploads, Schulungsunterlagen
 (`trainings/`) und den Token-Schlüssel – diesen Ordner regelmäßig sichern.
 
+**Aufräumen:** Dateien, die kein Text in der Datenbank mehr erwähnt (Bilder gelöschter Beiträge, ersetzte Fotos und Grundrisse),
+räumt Lotse einmal pro Nacht (3 Uhr) selbst weg – nie Dateien, die jünger als 24 Stunden sind. Von Hand (im Ordner `backend`,
+mit aktivierter `.venv`): `python -m app.housekeeping --dry-run` zeigt nur, was gehen würde; ohne `--dry-run` wird gelöscht.
+
 ## Sicherheit
 
 - Passwörter mit bcrypt, Anmeldung per signiertem Token (JWT, HS256) im `Authorization`-Header – keine
@@ -249,6 +268,11 @@ Einstellungen erst nach einem Neustart sehen.
   nur einmal.
 - LDAP nur verschlüsselt (LDAPS/STARTTLS) mit Zertifikatsprüfung; Suchfilter werden maskiert; das Passwort
   des Dienstkontos wird nie an den Browser zurückgegeben.
+- **Passwörter verschlüsselt gespeichert**: Dienstkonto (LDAP), SMTP-Passwort und die Teams-Webhook-Adresse liegen
+  in der Datenbank verschlüsselt (Schlüssel aus `LOTSE_SECRET_KEY` bzw. `data/.secret_key`; ältere Klartext-Werte
+  werden beim nächsten Start verschlüsselt). Wer den Schlüssel ändert, muss sie neu eingeben. Titelbilder von
+  Beiträgen und Anzeigen dürfen nur auf eigene Uploads zeigen.
+- **Keine Verbindung nach draußen** beim Öffnen der Seite: Schriften und Symbole kommen vom eigenen Server.
 - Uploads: Dateityp wird am Inhalt geprüft; SVGs mit CSP-Sandbox; PDFs nur innerhalb des Portals einbettbar;
   Artikeltexte werden vor der Anzeige bereinigt (DOMPurify).
 - **Schulungen** sind nur für zugewiesene Personen sichtbar; ihre Dateien liegen außerhalb des öffentlichen
@@ -329,6 +353,7 @@ frontend/
   src/lib/          API-Zugriff, Anmeldung, Übersetzungen (i18n.jsx)
 docs/
   FUNKTIONEN.md     ausführliche Funktionsbeschreibung
+  AENDERUNGEN.md    Änderungen je Version (was ist neu, was beim Aktualisieren tun)
   screenshots/      Bildschirmfotos
   make_screenshots.py
 start.ps1           Einrichtung und Start unter Windows

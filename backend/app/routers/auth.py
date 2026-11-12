@@ -17,6 +17,7 @@ router = APIRouter(prefix="/api/auth", tags=["auth"])
 def public_config():
     """What the login screen needs to know before anyone is signed in."""
     return {"company_name": settings.company_name, "color_scheme": settings.color_scheme, "footer_text": settings.footer_text, "ldap_enabled": settings.ldap_enabled,
+            "hidden_categories": list(settings.hidden_categories or []),
             "public_read": settings.public_read, "login_image_url": settings.login_image_url or None,
             "ldap_departments_auto": settings.ldap_enabled and settings.ldap_departments_auto,
             "ldap_branch_attr": bool(settings.ldap_enabled and settings.ldap_attr_branch),

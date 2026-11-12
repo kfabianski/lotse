@@ -13,7 +13,8 @@ from app.config import settings
 from app.models import AppSetting
 
 KEY = "mail_templates"
-KINDS = ("article", "idea", "training")
+KINDS = ("article", "idea", "training", "digest")
+RAW = {"button", "articles"}  # shortcodes whose value is HTML built by Lotse itself (never user text)
 
 DEFAULTS = {
     "article": {
@@ -30,6 +31,11 @@ DEFAULTS = {
         "body": "<h2>{training}</h2><p>Hallo {first_name}, im Intranet wartet eine Schulung auf Sie. Bitte arbeiten Sie "
                 "sie durch und bestätigen Sie am Ende mit „durchgearbeitet und verstanden“.</p><p>{round}</p>"
                 "<p>{due}</p><p>{button}</p>",
+    },
+    "digest": {
+        "subject": "Was war diese Woche im Intranet",
+        "body": "<h2>Was war diese Woche</h2><p>Hallo {first_name}, {count} neue Beiträge und Termine ({period}):</p>"
+                "{articles}<p>{button}</p>",
     },
 }
 
@@ -52,6 +58,11 @@ SHORTCODES = {
         "due": ("Fälligkeit, z. B. „Bitte erledigen bis 31.12.2026.“", "Due date, e.g. “Please complete by …”"),
         "round": ("Hinweis bei neuer Runde", "Note for a new round"),
     },
+    "digest": {
+        "articles": ("Liste der neuen Beiträge mit Links", "List of the new posts with links"),
+        "count": ("Anzahl der Beiträge", "Number of posts"),
+        "period": ("Zeitraum, z. B. 03.07. – 10.07.2027", "Period, e.g. 03.07. – 10.07.2027"),
+    },
 }
 COMMON = {
     "name": ("Name der Empfänger:in", "Recipient's name"),
@@ -69,8 +80,13 @@ SAMPLE = {
              "path": "/ideas"},
     "training": {"training": "Unterweisung Brandschutz 2027", "due": "Bitte erledigen bis 31.03.2027.",
                  "round": "Neue Runde – bitte erneut bestätigen.", "path": "/trainings"},
+    "digest": {"count": "3", "period": "03.07. – 10.07.2027", "path": "/news",
+               "articles": "<ul><li><b>Sommerfest am 12. Juli</b> <span style=\"color:#667\">(Termin · 12.07.2027, 16:00 Uhr)</span>"
+                           "<br>Grillen, Musik und Kinderprogramm im Hof.</li>"
+                           "<li><b>Neue Fahrwege im Lager Süd</b> <span style=\"color:#667\">(Arbeitssicherheit)</span></li>"
+                           "<li><b>Kantine: neue Öffnungszeiten</b> <span style=\"color:#667\">(Neuigkeit)</span></li></ul>"},
 }
-BUTTON_LABEL = {"article": "Weiterlesen", "idea": "Zur Idee", "training": "Zur Schulung"}
+BUTTON_LABEL = {"article": "Weiterlesen", "idea": "Zur Idee", "training": "Zur Schulung", "digest": "Zum Intranet"}
 
 FOOTER = ("Sie erhalten diese Nachricht, weil Benachrichtigungen in Ihrem Profil eingeschaltet sind. "
           "Abbestellen: Intranet → Profil → Benachrichtigungen.")
@@ -186,7 +202,7 @@ def _fill(text: str, values: dict, escape: bool) -> str:
         if key not in values:
             return m.group(0)
         v = values[key]
-        return v if key == "button" else (html.escape(v) if escape else v)
+        return v if key in RAW else (html.escape(v) if escape else v)
     return re.sub(r"\{([a-z_]+)\}", rep, text)
 
 

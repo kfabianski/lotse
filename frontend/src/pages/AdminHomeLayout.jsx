@@ -6,24 +6,24 @@ import { api } from '../lib/api';
 import { layoutRows } from './Home';
 
 const B = (id, width = 'full', show = true) => ({ id, show, width });
-const ALL = ['slider', 'quicklinks', 'upcoming', 'news', 'people', 'photos', 'recent', 'poll', 'board', 'social'];
+const ALL = ['foryou', 'slider', 'quicklinks', 'upcoming', 'news', 'people', 'photos', 'recent', 'poll', 'board', 'jubilees', 'social'];
 const complete = (list) => [...list, ...ALL.filter((id) => !list.some((b) => b.id === id)).map((id) => B(id, 'full', false))];
 
 /** Ready-made layouts – one click, then fine-tune by dragging. */
 const PRESETS = {
   standard: null, // = server default
-  news: complete([B('news'), B('upcoming', 'half'), B('poll', 'half'), B('quicklinks'),
-    B('people'), B('photos'), B('board')]),
-  events: complete([B('slider'), B('upcoming'), B('photos'), B('news'), B('people', 'half'),
-    B('board', 'half'), B('quicklinks')]),
-  compact: complete([B('quicklinks'), B('upcoming', 'half'), B('poll', 'half'),
+  news: complete([B('foryou'), B('news'), B('upcoming', 'half'), B('poll', 'half'), B('quicklinks'),
+    B('people'), B('photos'), B('board'), B('jubilees')]),
+  events: complete([B('foryou'), B('slider'), B('upcoming'), B('photos'), B('news'), B('people', 'half'),
+    B('board', 'half'), B('jubilees'), B('quicklinks')]),
+  compact: complete([B('foryou'), B('quicklinks'), B('upcoming', 'half'), B('poll', 'half'),
     B('news', 'half'), B('board', 'half')]),
 };
 
 /** Rough block heights for the preview (in rem). */
-const HEIGHT = { slider: 7, quicklinks: 3.5, upcoming: 6, news: 7, people: 5, photos: 7, recent: 5, poll: 5, board: 4 };
-const TINT = { slider: '#0f766e', quicklinks: '#0891b2', upcoming: '#7c3aed',
-  news: '#2563eb', people: '#db2777', photos: '#ea580c', recent: '#64748b', poll: '#16a34a', board: '#d97706', social: '#1877f2' };
+const HEIGHT = { foryou: 2.5, slider: 7, quicklinks: 3.5, upcoming: 6, news: 7, people: 5, photos: 7, recent: 5, poll: 5, board: 4, jubilees: 4, social: 2.5 };
+const TINT = { foryou: '#be123c', slider: '#0f766e', quicklinks: '#0891b2', upcoming: '#7c3aed',
+  news: '#2563eb', people: '#db2777', photos: '#ea580c', recent: '#64748b', poll: '#16a34a', board: '#d97706', jubilees: '#9333ea', social: '#1877f2' };
 
 export default function AdminHomeLayout() {
   const { t } = useI18n();

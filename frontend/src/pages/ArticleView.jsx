@@ -9,6 +9,7 @@ import { useViewer } from '../lib/viewer';
 import { fileSize } from './Documents';
 import { FileText, Images } from 'lucide-react';
 import VersionHistory from '../components/VersionHistory';
+import ReadAcks from '../components/ReadAcks';
 
 export default function ArticleView() {
   const { id } = useParams();
@@ -103,6 +104,7 @@ export default function ArticleView() {
               </ul>
             </section>
           )}
+          <ReadAcks key={`ack-${a.id}`} article={a} canReport={has('content_all')} />
           <VersionHistory key={`${a.id}-${a.version}`} articleId={a.id} canRestore={mayEdit} onRestored={reload} />
         </div>
         <aside className="order-first text-sm text-muted md:order-last">

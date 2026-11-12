@@ -10,6 +10,7 @@ import { useAuth } from '../lib/auth';
 const EMPTY = {
   category: 'news', title_de: '', title_en: '', summary_de: '', summary_en: '', body_de: '', body_en: '',
   image_url: null, event_date: null, event_location: '', featured: false, published: true, attachments: [], change_note: '', branch_ids: [], pinned: false, pinned_until: '',
+  ack_required: false,
 };
 
 function Attachments({ value, onChange }) {
@@ -128,6 +129,8 @@ export default function ArticleEdit() {
   const [preview, setPreview] = useState(false);
   const [error, setError] = useState('');
   const branches = useFetch('/branches', undefined, 'branches');
+  const config = useFetch('/auth/config', undefined, 'auth-config');
+  const hidden = config.data?.hidden_categories || []; // sections switched off by the admin: not offered for new articles
 
   useEffect(() => {
     if (id) {
@@ -168,7 +171,7 @@ export default function ArticleEdit() {
       <div className="mt-8 grid gap-5 sm:grid-cols-2">
         <Field label={t('category')}>
           <select className={inputClass} value={form.category} onChange={set('category')}>
-            {CATEGORIES.map((c) => <option key={c} value={c}>{t(`cat_${c}`)}</option>)}
+            {CATEGORIES.filter((c) => !hidden.includes(c) || c === form.category).map((c) => <option key={c} value={c}>{t(`cat_${c}`)}</option>)}
           </select>
         </Field>
         <div className="flex flex-col justify-end gap-2">
@@ -199,6 +202,12 @@ export default function ArticleEdit() {
             )}
             <span className="w-full text-xs text-muted">{t('pin_hint')}</span>
           </div>
+        )}
+        {has('content_all') && (
+          <label className="flex items-start gap-2 rounded-xl border border-line bg-bg p-3 sm:col-span-2">
+            <input type="checkbox" checked={Boolean(form.ack_required)} onChange={set('ack_required')} className="mt-1 h-4 w-4 accent-[var(--brand)]" />
+            <span><span className="block font-medium">{t('ack_required')}</span><span className="block text-xs text-muted">{t('ack_required_hint')}</span></span>
+          </label>
         )}
         <Field label={t('publish_at')} hint={isScheduled ? t('publish_at_scheduled') : t('publish_at_hint')}>
           <div className="flex gap-2">

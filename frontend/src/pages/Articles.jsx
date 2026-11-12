@@ -88,7 +88,7 @@ export function ArticleGrid({ articles, lead = false }) {
   );
 }
 
-export default function Articles({ group, titleKey }) {
+export default function Articles({ group, titleKey, hidden = [] }) {
   const { t } = useI18n();
   const { has } = useAuth();
   const [params, setParams] = useSearchParams();
@@ -96,6 +96,9 @@ export default function Articles({ group, titleKey }) {
   const categories = selected && group.includes(selected) ? [selected] : group;
   const withPinned = titleKey === 'nav_news' && !selected; // Aktuelles: pinned posts of any category on top
   const { data, loading, error } = useFetch('/articles', { params: { category: categories, with_pinned: withPinned } }, `${categories.join()}-${withPinned}`);
+  const counts = useFetch('/articles/counts', undefined, 'article-counts');
+  // Filter chips only for sections in use: not switched off by the admin and not empty (the chosen one always stays).
+  const chips = group.filter((c) => c === selected || (!hidden.includes(c) && (!counts.data || (counts.data[c] || 0) > 0)));
 
   return (
     <div>
@@ -109,7 +112,7 @@ export default function Articles({ group, titleKey }) {
         )}
       </div>
       <div role="tablist" className="mt-6 flex flex-wrap gap-2 border-b border-line pb-4">
-        {[null, ...group].map((cat) => {
+        {[null, ...chips].map((cat) => {
           const active = (cat || null) === (selected && group.includes(selected) ? selected : null);
           return (
             <button key={cat || 'all'} type="button" role="tab" aria-selected={active}

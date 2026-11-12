@@ -3,15 +3,16 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
 
-from app import migrate
+from app import migrate, search_index
 from app.config import settings
 from app.db import Base, engine
-from app.routers import (admin_settings, auth, calendar, content, departments, ideas, locations, quicklinks, revisions, search, me, polls, branches,
-                         trainings, users)
+from app.routers import (admin_settings, auth, calendar, content, departments, ideas, jubilees, locations, quicklinks, revisions, search, me, polls,
+                         branches, stats, trainings, users)
 from app.db import SessionLocal
 
 Base.metadata.create_all(bind=engine)
 migrate.upgrade(engine)
+search_index.setup()  # FTS5 table for the search (rebuilt lazily when content changes)
 admin_settings.load_overrides_at_startup()
 with SessionLocal() as _db:
     departments.ensure_defaults(_db)
@@ -21,7 +22,8 @@ app = FastAPI(title="Lotse Intranet API", version="1.0.0")
 app.add_middleware(CORSMiddleware, allow_origins=settings.cors_origins, allow_credentials=True,
                    allow_methods=["*"], allow_headers=["*"])
 
-for module in (auth, users, me, content, search, revisions, quicklinks, trainings, locations, ideas, polls, calendar, admin_settings, departments, branches):
+for module in (auth, users, me, content, search, revisions, quicklinks, trainings, locations, ideas, polls, calendar, admin_settings, departments, branches,
+               jubilees, stats):
     app.include_router(module.router)
 app.include_router(trainings.files_router)
 
