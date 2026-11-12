@@ -514,3 +514,37 @@ class PollVote(Base):
     user_id: Mapped[int] = mapped_column(ForeignKey("users.id", ondelete="CASCADE"), primary_key=True)
     choices: Mapped[str] = mapped_column(Text, default="[]")  # JSON list of option indexes
     created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.now)
+
+
+JOB_TYPES = ("full", "part", "mini", "apprentice", "intern", "other")
+
+
+class JobPosting(Base):
+    """Stellenangebot / interne Ausschreibung: an open position colleagues can apply for. Entered by HR or admins,
+    shown on its own page and on the home page while it is open. The whole feature is switched on in the settings."""
+
+    __tablename__ = "job_postings"
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    title_de: Mapped[str] = mapped_column(String(160))
+    title_en: Mapped[str] = mapped_column(String(160), default="")
+    department: Mapped[str] = mapped_column(String(80), default="")
+    branch_id: Mapped[int | None] = mapped_column(ForeignKey("branches.id", ondelete="SET NULL"))
+    employment: Mapped[str] = mapped_column(String(12), default="full")
+    hours: Mapped[str] = mapped_column(String(60), default="")  # free text, e.g. "30 Std./Woche"
+    start: Mapped[str] = mapped_column(String(60), default="")  # free text, e.g. "ab sofort", "01.03.2027"
+    description_de: Mapped[str] = mapped_column(Text, default="")  # HTML from the text editor
+    description_en: Mapped[str] = mapped_column(Text, default="")
+    contact_id: Mapped[int | None] = mapped_column(ForeignKey("users.id", ondelete="SET NULL"))
+    apply_until: Mapped[date | None] = mapped_column(Date, index=True)  # empty = open until closed by hand
+    active: Mapped[bool] = mapped_column(Boolean, default=True)  # False = draft or filled
+    created_by: Mapped[int | None] = mapped_column(ForeignKey("users.id", ondelete="SET NULL"))
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.now, index=True)
+    updated_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.now, onupdate=datetime.now)
+
+    contact: Mapped[User | None] = relationship(foreign_keys=[contact_id])
+    branch: Mapped[Branch | None] = relationship()
+
+    def is_open(self, today: date | None = None) -> bool:
+        today = today or date.today()
+        return self.active and (self.apply_until is None or self.apply_until >= today)

@@ -1,4 +1,4 @@
-/** Verwaltung → Jubiläen: anniversaries entered by HR or admins for the home page. Nothing is computed from
+/** Einstellungen → Jubiläen: anniversaries entered by HR or admins for the home page. Nothing is computed from
  * personal data - every entry is typed in by hand. */
 import { useMemo, useState } from 'react';
 import { PartyPopper, PenLine, Plus, Search, Trash2, X } from 'lucide-react';
@@ -12,7 +12,7 @@ import { JUBILEE_KINDS, jubileeLabel } from '../lib/jubilees';
 const EMPTY = { user_id: null, name: '', kind: 'service', years: '', date: '', text_de: '', text_en: '' };
 
 /** Pick a person from the directory (search as you type), or clear the choice to enter a name by hand. */
-function PersonPicker({ people, value, onChange }) {
+export function PersonPicker({ people, value, onChange }) {
   const { t } = useI18n();
   const [q, setQ] = useState('');
   const chosen = people.find((p) => p.id === value);

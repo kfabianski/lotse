@@ -33,7 +33,7 @@ API, Uploads und Oberfläche aus. Anmeldung lokal oder über **LDAP/Active Direc
 | ![Raum-Editor](docs/screenshots/14-raum-editor.png) | ![Fotogalerie](docs/screenshots/10-galerie.png) |
 | **Raum-Editor** – Räume aufziehen, verschieben, Größe ändern | **Fotos** von Veranstaltungen als Galerie |
 | ![Dunkles Design](docs/screenshots/02-startseite-dunkel.png) | ![LDAP-Einstellungen](docs/screenshots/11-verwaltung-ldap.png) |
-| **Dunkles Design** – umschaltbar oben rechts | **Verwaltung** – LDAP-Server, Abteilungen, Benutzer, Etagen |
+| **Dunkles Design** – umschaltbar oben rechts | **Einstellungen** – LDAP-Server, Abteilungen, Benutzer, Etagen |
 | ![Suche beim Tippen](docs/screenshots/20-suche-live.png) | ![Suche](docs/screenshots/19-suche.png) |
 | **Suche beim Tippen** – Treffer erscheinen sofort, Pfeiltasten + Enter | **Alle Treffer** – gruppiert nach Bereichen |
 | ![Anmeldung](docs/screenshots/12-anmeldung.png) | |
@@ -45,11 +45,11 @@ Alle Funktionen im Detail: **[docs/FUNKTIONEN.md](docs/FUNKTIONEN.md)** · Was i
 
 ### Für alle Mitarbeitenden
 
-- **Startseite**: Begrüßung („Guten Morgen, Mehmet“) in der Kopfzeile, darunter für Angemeldete der Block **Für Sie**
-  mit dem, was ansteht (offene Schulungen – rot bei Überfälligkeit –, Beiträge zum Bestätigen, heutige Termine, neue
+- **Startseite**: Begrüßung („Guten Morgen, Mehmet“) in der Kopfzeile, die **Glocke** zeigt Angemeldeten, was
+  ansteht (offene Schulungen – rot bei Überfälligkeit –, Beiträge zum Bestätigen, heutige Termine, neue
   Umfragen, Neues zu den eigenen Ideen), großer **Slider** mit den wichtigsten Beiträgen, **Schnellzugriff**-Kacheln,
   nächste **Termine** mit Monatskalender, **Fotos** aus dem Firmenleben, **Neuigkeiten**, **Neu im Team**,
-  **Jubiläen**, zuletzt veröffentlichte Artikel und neue Anzeigen.
+  **Jubiläen**, **Stellenangebote** (wenn eingeschaltet), zuletzt veröffentlichte Artikel und neue Anzeigen.
 - **Schnellzugriff**: Kacheln zu Zeiterfassung, ERP, Outlook, Helpdesk usw., zu Sammel-Postfächern
   (Buchhaltung, Eingangsrechnungen, IT-Support – Adresse per Knopf kopieren) und wichtigen Telefonnummern.
 - **Aktuelles** und **Wissen & Regeln**: Neuigkeiten, Veranstaltungen, neue Kolleg:innen, neue Produkte,
@@ -60,7 +60,7 @@ Alle Funktionen im Detail: **[docs/FUNKTIONEN.md](docs/FUNKTIONEN.md)** · Was i
   inklusive Vergleich mit der Vorversion und hinzugefügten/entfernten Dokumenten. Öffentlich wie der Artikel.
 - **Lesebestätigung**: Die Redaktion kann bei einem Beitrag (z. B. einer Richtlinie) eine Bestätigung anfordern;
   Angemeldete klicken am Ende „Ich habe diesen Beitrag gelesen und verstanden“, offene Bestätigungen stehen in der
-  Glocke und im Block *Für Sie*. Die Redaktion sieht, wer bestätigt hat (mit CSV-Export) – ohne eine Schulung anzulegen.
+  Glocke. Die Redaktion sieht, wer bestätigt hat (mit CSV-Export) – ohne eine Schulung anzulegen.
 - **Veranstaltungen**: Demnächst, Monatskalender, Rückblick mit Fotos; **„Ich bin dabei“** mit
   Teilnehmerliste; Kalender-Abo (`.ics`) für Outlook, Google und Apple.
 - **Feiertage** im Kalender und auf der Startseite: gesetzliche Feiertage für **Deutschland, Österreich und die
@@ -90,6 +90,8 @@ Alle Funktionen im Detail: **[docs/FUNKTIONEN.md](docs/FUNKTIONEN.md)** · Was i
 - **Social Media**: Facebook-, LinkedIn- und Instagram-Seite der Firma als Links auf der Startseite und in der Fußzeile.
 - **Jubiläen**: Dienstjubiläen, runde Geburtstage, Ruhestand – von Personal (HR) oder der Verwaltung von Hand
   eingetragen (nichts wird aus Personaldaten berechnet), auf der Startseite rund um das Datum sichtbar.
+- **Stellenangebote** (zuschaltbar): interne Ausschreibungen mit Ansprechperson, Bewerbungsfrist und Beschreibung –
+  eigene Seite im Menü und Block auf der Startseite unter den Jubiläen; gepflegt von Personal (HR).
 - **Kleinanzeigen**: Biete, Suche, Zu verschenken, Fahrgemeinschaften – mit Foto, Preis und Kontakt; verschwinden nach 90 Tagen automatisch.
 - **Ideenbox**: Ideen einreichen (auf Wunsch **wirklich anonym** – der Name wird dann gar nicht gespeichert),
   mit **1–5 Sternen** bewerten, Sortierung *Beste Bewertung* oder *Neueste*, Status von *Neu* bis *Umgesetzt*
@@ -144,7 +146,7 @@ Alle Funktionen im Detail: **[docs/FUNKTIONEN.md](docs/FUNKTIONEN.md)** · Was i
 
 ### Rollen und Rechte
 
-Der Administrator vergibt unter **Verwaltung → Rollen & Rechte** an Personen, die schon im System sind, eine
+Der Administrator vergibt unter **Einstellungen → Rollen & Rechte** an Personen, die schon im System sind, eine
 Rolle und bei Bedarf **zusätzliche Rechte** (z. B. *Etagen, Räume & Plätze* oder *Personen & Abteilungen*).
 
 | Rolle | Darf |
@@ -220,10 +222,11 @@ cd frontend && npm run dev                           # Oberfläche auf :5173 mit
 | `python seed.py --rooms` | ergänzt die Demo-Räume für Etagen, die noch keine Räume haben |
 | `python seed.py --trainings` | ergänzt Schnellzugriff-Kacheln und Beispiel-Schulungen mit Gruppen, wenn noch keine vorhanden sind |
 | `python seed.py --jubilees` | ergänzt Beispiel-Jubiläen für die Startseite und schaltet bei einer Richtlinie die Lesebestätigung ein |
+| `python seed.py --jobs` | ergänzt drei Beispiel-Stellenangebote und schaltet *Stellenangebote* ein |
 
 ## Konfiguration
 
-Fast alles lässt sich in der Oberfläche unter **Verwaltung → Einstellungen** einstellen:
+Fast alles lässt sich in der Oberfläche unter **Einstellungen → Allgemein** einstellen:
 
 - **Allgemein**: Firmenname, Anmeldebild, *Lesen ohne Anmeldung* an/aus.
 - **Feiertage im Kalender**: Deutschland, Österreich, Schweiz – je Land aus, landesweit oder mit Bundesland/Kanton.
@@ -286,7 +289,7 @@ mit aktivierter `.venv`): `python -m app.housekeeping --dry-run` zeigt nur, was 
 ## Windows-Anmeldung (SSO) einrichten
 
 Mitarbeitende, die am Firmen-PC angemeldet sind, werden ohne Passwort erkannt. Zwei Wege, umschaltbar unter
-**Verwaltung → Einstellungen → Windows-Anmeldung**:
+**Einstellungen → Allgemein → Windows-Anmeldung**:
 
 | Art | Wann | Anleitung |
 |---|---|---|
@@ -305,7 +308,7 @@ Lotse läuft hinter **IIS** mit Windows-Authentifizierung (Kerberos):
 4. Für Kerberos den SPN `HTTP/intranet.firma.local` auf das Konto des Servers bzw. App-Pools eintragen und
    die Adresse per Gruppenrichtlinie zur **Lokales Intranet**-Zone hinzufügen (Edge/Chrome melden dann
    automatisch an).
-5. In Lotse unter **Verwaltung → Einstellungen → Windows-Anmeldung** einschalten, Art *Über einen Webserver*; Header `X-Remote-User`,
+5. In Lotse unter **Einstellungen → Allgemein → Windows-Anmeldung** einschalten, Art *Über einen Webserver*; Header `X-Remote-User`,
    vertrauenswürdige Webserver `127.0.0.1`.
 
 Lotse akzeptiert den Header nur von den eingetragenen Adressen und nur für LDAP-Konten. Lokale Konten (z. B. ein

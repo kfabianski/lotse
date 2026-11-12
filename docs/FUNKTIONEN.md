@@ -15,7 +15,7 @@ Diese Beschreibung erklärt, was Lotse kann und wer was darf. Installation und K
 8. [Lageplan](#8-lageplan)
 9. [Kleinanzeigen](#9-kleinanzeigen)
 10. [Ideenbox](#10-ideenbox)
-11. [Verwaltung](#11-verwaltung)
+11. [Einstellungen (Verwaltung)](#11-einstellungen-verwaltung)
 12. [LDAP / Active Directory](#12-ldap--active-directory)
 13. [Schulungen und Pflichtlektüre](#13-schulungen-und-pflichtlektüre)
 14. [Umfragen](#14-umfragen)
@@ -32,12 +32,13 @@ Diese Beschreibung erklärt, was Lotse kann und wer was darf. Installation und K
 25. [Lesebestätigung](#25-lesebestätigung)
 26. [Statistik für die Redaktion](#26-statistik-für-die-redaktion)
 27. [Betrieb: Aufräumen und Passwörter](#27-betrieb-aufräumen-und-passwörter)
+28. [Stellenangebote (interne Ausschreibungen)](#28-stellenangebote-interne-ausschreibungen)
 
 ---
 
 ## 1. Rollen und Anmeldung
 
-Der **Administrator** vergibt unter **Verwaltung → Rollen & Rechte** jeder Person, die schon im System ist,
+Der **Administrator** vergibt unter **Einstellungen → Rollen & Rechte** jeder Person, die schon im System ist,
 eine Rolle und – zusätzlich zur Rolle – einzelne Rechte.
 
 | Rolle | Darf (zusätzlich zum Lesen) |
@@ -45,19 +46,19 @@ eine Rolle und – zusätzlich zur Rolle – einzelne Rechte.
 | **Besucher** (nicht angemeldet) | nur lesen – wenn *Lesen ohne Anmeldung* eingeschaltet ist; keine Schulungen |
 | **Mitarbeitende** | Anzeigen und Ideen (auch anonym), Sterne vergeben, bei Veranstaltungen zusagen, eigene Schulungen bestätigen, Profil |
 | **Autor:in** | zusätzlich **eigene** Artikel und Veranstaltungen schreiben, bearbeiten, löschen (eigene Entwürfe) |
-| **Personal (HR)** | wie Autor:in, dazu **Mitarbeitenden-Karten** anlegen und bearbeiten, **Schulungen verwalten**, **Jubiläen** eintragen und **E-Mail-Texte** ändern (siehe Kapitel 16, 21 und 24) |
+| **Personal (HR)** | wie Autor:in, dazu **Mitarbeitenden-Karten** anlegen und bearbeiten, **Schulungen verwalten**, **Jubiläen** und **Stellenangebote** eintragen und **E-Mail-Texte** ändern (siehe Kapitel 16, 21, 24 und 28) |
 | **Moderator:in** | wie Autor:in, dazu **Schulungen verwalten**, **Ideen & Kleinanzeigen moderieren**, **Schnellzugriff** pflegen, **Umfragen** erstellen |
 | **Redaktion** | wie Moderator:in, dazu **alle** Artikel bearbeiten, alle Entwürfe sehen, Slider, Versionen wiederherstellen, **Lesebestätigungen** anfordern und auswerten, Startseite gestalten, **Statistik** |
 | **Administrator** | alles, auch die **Systemeinstellungen** |
 
 **Einzelne Rechte**, die der Administrator pro Person zusätzlich einschalten kann: *Eigene Artikel &
 Veranstaltungen*, *Alle Artikel & Veranstaltungen*, *Schulungen verwalten*, *Ideen & Kleinanzeigen moderieren*,
-*Schnellzugriff pflegen*, *Umfragen erstellen*, *Etagen, Räume & Plätze*, *E-Mail-Texte*, *Jubiläen pflegen*,
+*Schnellzugriff pflegen*, *Umfragen erstellen*, *Etagen, Räume & Plätze*, *E-Mail-Texte*, *Jubiläen pflegen*, *Stellenangebote pflegen*,
 *Personen & Abteilungen* (nur Konten **ohne** besondere Rechte; keine Rollen- oder Rechtevergabe).
 
 **Nie übertragbar** – nur Administratoren: allgemeine Einstellungen, **LDAP**, Windows-Anmeldung,
 **Rollen & Rechte**, **LDAP-Abgleich**. Wer kein Administrator ist, kann sich und anderen keine Rechte geben.
-Die Verwaltung zeigt jeder Person nur die Bereiche, für die sie Rechte hat.
+Der Menüpunkt *Einstellungen* zeigt jeder Person nur die Bereiche, für die sie Rechte hat.
 
 - **Anmeldung**: oben rechts über *Anmelden*. Lokale Konten oder Windows-Konto (LDAP).
 - **Windows-Anmeldung (SSO)**: Ist sie eingerichtet, prüft Lotse **bei jedem Öffnen der Seite**, wer am
@@ -74,8 +75,9 @@ Die Verwaltung zeigt jeder Person nur die Bereiche, für die sie Rechte hat.
 
 ## 2. Oberfläche
 
-- **Navigation links**: Start, Aktuelles, Veranstaltungen, Wissen & Regeln, Schulungen (angemeldet), Kleinanzeigen,
-  Ideen, Umfragen, Mitarbeitende, Dokumente, Verwaltung (für alle mit einem Verwaltungsrecht). Auf dem Handy als
+- **Navigation links**: Start, Aktuelles, Veranstaltungen, Wissen & Regeln, Schulungen (angemeldet), Ideen,
+  Umfragen, Mitarbeitende, Stellenangebote (wenn eingeschaltet), Dokumente, Kleinanzeigen, Einstellungen (für alle mit
+  einem Verwaltungsrecht). Auf dem Handy als
   ausklappbares Menü. Sind alle Bereiche von *Wissen & Regeln* abgeschaltet (Kapitel 11), fehlt der Eintrag.
 - **Oben rechts**: Suche (Tastenkürzel **Strg + K**), Sprache **DE/EN**, **helles/dunkles Design**,
   Avatar mit Profil und Abmelden.
@@ -101,15 +103,9 @@ Die Verwaltung zeigt jeder Person nur die Bereiche, für die sie Rechte hat.
 ## 3. Startseite
 
 - **Begrüßung** oben links in der Kopfzeile: Datum und *Guten Morgen / Guten Tag / Guten Abend, Mehmet*.
-- **Für Sie** (nur angemeldet, ganz oben auf der Startseite): bis zu drei Karten mit dem, was für die Person
-  ansteht – dieselben Punkte wie in der Glocke (Kapitel 20):
-  - **offene Pflicht-Schulungen** – rot, wenn eine Frist überschritten ist,
-  - **Beiträge mit Lesebestätigung**, die noch nicht bestätigt sind (Kapitel 25),
-  - **heutige Termine** (Uhrzeit, Titel, Ort),
-  - **neue Umfragen**, bei denen die Person noch nicht abgestimmt hat,
-  - **Neues zu den eigenen Ideen** (neuer Status oder Antwort der Redaktion); nach dem Besuch der Ideenseite gilt
-    es als gelesen. Anonyme Ideen tauchen hier nicht auf – sie sind niemandem zugeordnet.
-  Steht nichts an, fehlt der Block; weitere Punkte zeigt die Glocke (*+2 weitere in der Glocke*).
+- Was für die angemeldete Person ansteht (offene Schulungen, Beiträge zum Bestätigen, heutige Termine, neue
+  Umfragen, Neues zu eigenen Ideen), zeigt die **Glocke** in der Kopfzeile (Kapitel 20) – die Startseite selbst
+  bleibt frei davon und beginnt mit dem Slider.
 - **Slider** über die ganze Breite mit den Beiträgen, die die Redaktion als *Im Slider zeigen* markiert hat
   (z. B. *Weihnachtsfeier 2026*). Wechselt automatisch, hält beim Überfahren mit der Maus an, lässt sich
   pausieren und mit Pfeilen steuern. Bei „Bewegung reduzieren“ im Betriebssystem läuft er nicht von selbst.
@@ -213,7 +209,7 @@ Drei Ansichten unter **Veranstaltungen**:
 - **Abteilungsfilter** der Etage hebt eine Abteilung hervor, alle anderen werden ausgeblendet.
 - **Auf dem Plan zeigen** (Verzeichnis, *Neu im Team* auf der Startseite) öffnet die richtige Etage und
   zoomt zur Person.
-- Die Räume zeichnet die Verwaltung im **Raum-Editor** (siehe Verwaltung). Etagen ohne Räume zeigen ihren
+- Die Räume zeichnet die Verwaltung im **Raum-Editor** (siehe Kapitel 11). Etagen ohne Räume zeigen ihren
   hochgeladenen Grundriss mit den Plätzen darauf.
 
 ## 9. Kleinanzeigen
@@ -239,9 +235,14 @@ Drei Ansichten unter **Veranstaltungen**:
 - **Status** als Ablauf: *Neu → In Prüfung → Geplant → Umgesetzt* oder *Abgelehnt*, mit **Antwort** der
   Redaktion und Datum.
 
-## 11. Verwaltung
+## 11. Einstellungen (Verwaltung)
 
-Nur für Administratoren, über **Verwaltung** in der Navigation:
+Der Menüpunkt **Einstellungen** (früher *Verwaltung*) bündelt alles, was Rechte braucht. Seine Bereiche stehen als **senkrechtes Menü links** neben dem Inhalt (auf dem Handy als Zeile zum
+Wischen); jede Person sieht nur die Bereiche, für die sie Rechte hat. Unter **Allgemein** sind *Windows-Anmeldung
+(SSO)* und *LDAP / Active Directory* eingeklappt (mit Anzeige *Ein/Aus*) und öffnen sich per Klick; das
+**Farbschema** steht als letzter Abschnitt von *Allgemein*.
+
+Nur für Administratoren, über **Einstellungen** in der Navigation:
 
 - **Benutzer**: anlegen, bearbeiten, Rolle, Abteilung (Auswahl aus der Liste), Position, Durchwahl,
   Eintrittsdatum, Platz, aktiv / im Verzeichnis sichtbar, Foto hochladen (Klick auf das Bild), löschen.
@@ -285,7 +286,7 @@ Nur für Administratoren, über **Verwaltung** in der Navigation:
 
 ## 12. LDAP / Active Directory
 
-Unter **Verwaltung → Einstellungen → LDAP / Active Directory**:
+Unter **Einstellungen → Allgemein → LDAP / Active Directory**:
 
 | Feld | Beispiel |
 |---|---|
@@ -310,7 +311,7 @@ Unter **Verwaltung → Einstellungen → LDAP / Active Directory**:
   den Namen (der unterschiedlich geschrieben sein kann). Ein lokales Konto mit derselben E-Mail-Adresse wird
   beim ersten Anmelden **verknüpft** statt doppelt angelegt (Platz, Schulungen, Bewertungen bleiben). Konten
   mit besonderen Rechten (z. B. ein lokaler Administrator) werden **nie automatisch** verknüpft.
-- **LDAP-Abgleich** (Verwaltung → Benutzer, nur Administrator): liest das Verzeichnis und zeigt **vorher**, was
+- **LDAP-Abgleich** (Einstellungen → Benutzer, nur Administrator): liest das Verzeichnis und zeigt **vorher**, was
   sich ändern würde – zum Abhaken:
   - *Neue Personen* aus dem Verzeichnis anlegen;
   - *Bestehende Konten verknüpfen* (gleiche E-Mail-Adresse oder gleicher Benutzername);
@@ -323,7 +324,7 @@ Unter **Verwaltung → Einstellungen → LDAP / Active Directory**:
   an ist – so entsteht keine Mischung aus Verzeichnis- und Handpflege.
 - Eine Rolle, die der Administrator in Lotse vergeben hat, bleibt beim Anmelden erhalten. Rollen aus den
   LDAP-Gruppen (Administratoren, Redaktion) werden bei jeder Anmeldung neu geprüft und auch wieder entzogen.
-- **Windows-Anmeldung (SSO)** – *Verwaltung → Einstellungen → Windows-Anmeldung*, zwei Arten:
+- **Windows-Anmeldung (SSO)** – *Einstellungen → Allgemein → Windows-Anmeldung*, zwei Arten:
   - **Kerberos direkt (ohne IIS)** – Standard: Lotse prüft das Kerberos-Ticket des Browsers selbst
     (*Negotiate*; fällt der Browser auf NTLM zurück, klappt das ebenfalls). Kein Webserver davor, ein Prozess.
     Felder: *Adresse des Portals* (wie im SPN, z. B. `intranet.firma.local`) und *Keytab-Datei* (nur Linux).
@@ -366,7 +367,7 @@ allgemeine Anleitungen. Es gibt zwei Arten der Sichtbarkeit, frei kombinierbar:
   Weitergeben, auf Deutsch oder Englisch je nach Oberflächensprache. In der **Auswertung** lädt die Verwaltung den
   Nachweis jeder Person herunter.
 
-**Für die Verwaltung** (Verwaltung → **Schulungen**):
+**Für die Verwaltung** (Einstellungen → **Schulungen**):
 
 - **Neue Schulung** (auch direkt aus *Meine Schulungen* oder dem Benutzermenü): großes Fenster mit Titel und
   Beschreibung (Deutsch/Englisch) im **Texteditor** – Überschriften H1–H4, fett, kursiv, unterstrichen,
@@ -416,7 +417,7 @@ allgemeine Anleitungen. Es gibt zwei Arten der Sichtbarkeit, frei kombinierbar:
 
 ## 16. Benachrichtigungen (E-Mail, Teams)
 
-- **Verwaltung → Benachrichtigungen** (eigener Reiter, direkt nach *Einstellungen*, die ganz links stehen).
+- **Einstellungen → Benachrichtigungen** (eigener Menüpunkt, direkt nach *Allgemein*, das ganz oben steht).
 - **Einschalten** (nur Administratoren): Adresse des Intranets
   (für Links), SMTP-Server, Port, Verschlüsselung (STARTTLS, SSL/TLS oder keine), Benutzer, Passwort, Absender.
   **Test-Mail senden** prüft die Einstellungen sofort. Passwort und Teams-Adresse werden nie angezeigt und liegen
@@ -455,19 +456,19 @@ allgemeine Anleitungen. Es gibt zwei Arten der Sichtbarkeit, frei kombinierbar:
 
 ## 17. Startseite gestalten
 
-- **Verwaltung → Startseite** (Redaktion und Administratoren). Die Startseite besteht aus Blöcken: *Für Sie*,
+- **Einstellungen → Startseite** (Redaktion und Administratoren). Die Startseite besteht aus Blöcken:
   *Slider*, *Schnellzugriff*, *Was kommt*, *Was gibt’s Neues*, *Neu im Team*, *So war’s*,
-  *Frisch erschienen*, *Umfrage*, *Kleinanzeigen*, *Jubiläen*, *Social Media*. Ein Block, den eine neue Version
+  *Frisch erschienen*, *Umfrage*, *Kleinanzeigen*, *Jubiläen*, *Stellenangebote*, *Social Media*. Ein Block, den eine neue Version
   mitbringt, erscheint an seiner Standardstelle (z. B. *Jubiläen* vor *Social Media*), die eigene Reihenfolge bleibt.
 - Blöcke **ziehen** (oder mit den Pfeilen verschieben), mit dem Auge **ein-/ausblenden**, Breite **Breit** oder
   **Halb** wählen. Zwei halbe Blöcke stehen nebeneinander; ein einzelner halber Block wird automatisch breit – so
   bleibt die Seite ohne Lücken. Rechts zeigt die **Vorschau** die Anordnung.
 - **Vorlagen** mit einem Klick: *Standard*, *Nachrichten zuerst*, *Bilder & Termine*, *Kompakt (Werk/Lager)* –
   danach nach Belieben anpassen und speichern. *Standard wiederherstellen* setzt alles zurück.
-- Leere Blöcke (keine Umfrage, keine Jubiläen im Zeitraum, *Für Sie* ohne offene Punkte oder für nicht Angemeldete)
+- Leere Blöcke (keine Umfrage, keine Jubiläen im Zeitraum, keine offenen Stellen)
   werden übersprungen.
 - **Zurück im Browser** führt wieder an die Stelle, an der man auf der Seite war.
-- **Farbschema** (nur Admin, *Verwaltung → Einstellungen*): *Hafen* (Marineblau, Eisblau, Rot; Standard), *Signal* (Rot-Orange),
+- **Farbschema** (nur Admin, *Einstellungen → Allgemein*, letzter Abschnitt): *Hafen* (Marineblau, Eisblau, Rot; Standard), *Signal* (Rot-Orange),
   *Meer* (Türkis), *Indigo*, *Nordsee* (Kobalt), *Fjord* (Petrol), *Azur* (Himmelblau), *Marine* (Dunkelblau). Ein Klick zeigt
   die Vorschau, *Speichern* übernimmt es für alle; jedes Schema hat eigene Töne für den Dunkelmodus.
   Jede Person kann im **Profil → Meine Farben** ein eigenes Schema wählen (gespeichert am Konto, gilt auf jedem Gerät)
@@ -475,8 +476,8 @@ allgemeine Anleitungen. Es gibt zwei Arten der Sichtbarkeit, frei kombinierbar:
 
 ## 18. Niederlassungen
 
-- **Verwaltung → Niederlassungen**: Standorte anlegen, umbenennen, löschen (Recht *Personen & Abteilungen*).
-- **Personen** bekommen in der Verwaltung eine Niederlassung – oder aus LDAP (Attribut
+- **Einstellungen → Niederlassungen**: Standorte anlegen, umbenennen, löschen (Recht *Personen & Abteilungen*).
+- **Personen** bekommen unter *Einstellungen → Benutzer* eine Niederlassung – oder aus LDAP (Attribut
   `physicalDeliveryOfficeName`, in den LDAP-Einstellungen änderbar; unbekannte Standorte werden angelegt).
 - **Artikel und Termine**: im Editor unter *Sichtbar für* „Alle Niederlassungen“ oder einzelne wählen. Begrenzte
   Beiträge tragen das Zeichen *Nur München* o. ä.
@@ -500,9 +501,9 @@ allgemeine Anleitungen. Es gibt zwei Arten der Sichtbarkeit, frei kombinierbar:
   ein kleines Fenster mit Treffern beim Tippen), Sprache, Hell/Dunkel, die **Glocke** und das Konto.
 - **Glocke**: alles, was die Person betrifft – offene Schulungen (überfällige rot), Beiträge mit offener
   Lesebestätigung, neue Umfragen ohne eigene Stimme, Antworten auf eigene Ideen, Termine von heute. Die Zahl zeigt,
-  wie viele Punkte offen sind; die ersten drei stehen auch im Block *Für Sie* auf der Startseite.
+  wie viele Punkte offen sind.
 - **Menü links** lässt sich unten mit dem Pfeil **einklappen** (nur Symbole) und wieder ausklappen; das bleibt gespeichert.
-- **Fußzeile**: © Jahr und Firmenname, ein freier Text aus *Verwaltung → Einstellungen* (z. B. Anschrift,
+- **Fußzeile**: © Jahr und Firmenname, ein freier Text aus *Einstellungen → Allgemein* (z. B. Anschrift,
   Handelsregister, Datenschutzhinweis), Links zu Dokumenten, Mitarbeitenden, Ideen und Profil sowie die Symbole der
   Social-Media-Seiten.
 - **Empfohlene Bildgrößen** stehen an jedem Upload: Titelbild 1920 × 1080 px, Kleinanzeige 1200 × 900 px, Profilfoto
@@ -546,7 +547,7 @@ allgemeine Anleitungen. Es gibt zwei Arten der Sichtbarkeit, frei kombinierbar:
 
 ## 23. Social Media
 
-- **Einrichten** (Administrator): *Verwaltung → Einstellungen → Social Media* – Adressen der Firmenseiten bei
+- **Einrichten** (Administrator): *Einstellungen → Allgemein → Social Media* – Adressen der Firmenseiten bei
   **Facebook**, **LinkedIn** und **Instagram** (vollständige Adresse, z. B. `https://www.linkedin.com/company/…`; andere
   Adressen werden abgelehnt).
 - **Startseite**: Block *Folgen Sie uns* mit je einer Karte pro Netzwerk (öffnet die Seite in einem neuen Tab). Der Block
@@ -556,7 +557,7 @@ allgemeine Anleitungen. Es gibt zwei Arten der Sichtbarkeit, frei kombinierbar:
 
 ## 24. Jubiläen
 
-- **Verwaltung → Jubiläen** (Recht *Jubiläen pflegen* – Personal (HR) und Administratoren): Dienstjubiläen, runde
+- **Einstellungen → Jubiläen** (Recht *Jubiläen pflegen* – Personal (HR) und Administratoren): Dienstjubiläen, runde
   Geburtstage, Ruhestand oder andere Anlässe. Jeder Eintrag wird **von Hand** angelegt – nichts wird aus
   Eintrittsdatum oder Geburtsdatum berechnet; was öffentlich wird, entscheiden Menschen.
 - Eintrag: **Person** aus dem Verzeichnis (mit Foto und Link ins Verzeichnis) oder ein **Name** ohne Konto (z. B.
@@ -575,14 +576,13 @@ allgemeine Anleitungen. Es gibt zwei Arten der Sichtbarkeit, frei kombinierbar:
   wer wann bestätigt hat, wer noch offen ist (alle aktiven Personen im Verzeichnis, die den Beitrag sehen dürfen),
   **CSV-Export**.
 - **Mitarbeitende**: am Ende des Beitrags **„Ich habe diesen Beitrag gelesen und verstanden“** – die Bestätigung wird
-  mit Datum und Uhrzeit gespeichert. Offene Bestätigungen stehen in der **Glocke** und im Block **Für Sie** auf der
-  Startseite. Nicht Angemeldete sehen den Hinweis *Zum Bestätigen anmelden*.
+  mit Datum und Uhrzeit gespeichert. Offene Bestätigungen stehen in der **Glocke**. Nicht Angemeldete sehen den Hinweis *Zum Bestätigen anmelden*.
 - Der Unterschied zu Schulungen: keine Zuweisung, keine Frist, keine Runden, kein PDF-Nachweis – dafür ein Klick.
   Für Unterweisungen mit Nachweispflicht bleiben die Schulungen (Kapitel 13).
 
 ## 26. Statistik für die Redaktion
 
-- **Verwaltung → Statistik** (Redaktion und Administratoren). Zeitraum 7, 30, 90 oder 365 Tage.
+- **Einstellungen → Statistik** (Redaktion und Administratoren). Zeitraum 7, 30, 90 oder 365 Tage.
 - **Aufrufe**: wie oft Beiträge geöffnet wurden – gesamt, im Zeitraum, je Tag als Balken – und die **meistgelesenen
   Beiträge**. Gezählt wird je Beitrag und Tag nur die Anzahl, **nie wer** gelesen hat. Entwürfe zählen nicht.
 - **Suchen ohne Treffer**: Begriffe, die gesucht wurden, aber nichts gefunden haben (von der Ergebnisseite und aus der
@@ -604,3 +604,25 @@ allgemeine Anleitungen. Es gibt zwei Arten der Sichtbarkeit, frei kombinierbar:
   **verschlüsselt** gespeichert (Schlüssel aus `backend/data/.secret_key`) und nie an den Browser zurückgegeben.
   Ältere, noch unverschlüsselte Einträge werden beim ersten Start automatisch verschlüsselt. Wer die Datenbank
   sichert, sichert den Schlüssel mit – ohne ihn müssen die Passwörter neu eingegeben werden.
+
+## 28. Stellenangebote (interne Ausschreibungen)
+
+- **Einschalten**: *Einstellungen → Allgemein → Zusatzfunktionen → Stellenangebote*. Standardmäßig **aus**.
+  Eingeschaltet erscheint **Stellenangebote** im Menü links (nach *Mitarbeitende*) und auf der Startseite ein Block
+  **Stellenangebote** – standardmäßig direkt **unter den Jubiläen**, auch in bestehenden Startseiten-Layouts; unter
+  *Startseite gestalten* lässt er sich verschieben oder ausblenden. Ausgeschaltet verschwinden Seite, Menüeintrag und
+  Block sofort; die eingetragenen Stellen bleiben gespeichert.
+- **Wer pflegt**: Personen mit dem Recht **Stellenangebote pflegen** – die Rolle **Personal (HR)** hat es, der
+  Administrator kann es einzelnen Personen zusätzlich geben. Sie sehen auf der Seite **Neue Stelle** und können jede
+  Stelle bearbeiten oder löschen.
+- **Eine Stelle hat**: Bezeichnung (Deutsch, optional Englisch), Art (*Vollzeit, Teilzeit, Minijob, Ausbildung,
+  Praktikum, Sonstiges*), Arbeitszeit und Beginn als freien Text (z. B. *30 Std./Woche*, *ab sofort*), Abteilung,
+  Niederlassung, **Bewerbung bis** (leer = bis die Stelle geschlossen wird), **Ansprechperson** aus dem Verzeichnis
+  und eine Beschreibung im Texteditor (Deutsch/Englisch).
+- **Sichtbar** ist eine Stelle, solange *Veröffentlicht* an ist und *Bewerbung bis* nicht vorbei ist. Danach
+  verschwindet sie für alle anderen von selbst. Wer Stellen pflegt, sieht darunter **Entwürfe, besetzte und
+  abgelaufene Stellen** mit Kennzeichen und kann sie wieder öffnen.
+- **Bewerben**: Ein Klick auf eine Stelle zeigt die Beschreibung und die Ansprechperson mit **Per E-Mail bewerben**
+  (Betreff *Interne Bewerbung: …* ist schon ausgefüllt) und Durchwahl. Lotse **speichert keine Bewerbungen** – sie
+  gehen direkt an die Ansprechperson und bleiben vertraulich.
+- Demodaten: `python seed.py --jobs` (drei Stellen, schaltet die Funktion ein).

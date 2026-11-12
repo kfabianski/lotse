@@ -22,15 +22,50 @@ function Toggle({ checked, onChange, label, hint }) {
   );
 }
 
-function Section({ title, description, children }) {
+/** A settings card. With `collapsible` it starts folded to one line (title, description, on/off state) and opens on
+ * click - for the rarely touched technical parts. Folding only hides the fields; their values stay in the form. */
+function Section({ title, description, children, collapsible = false, state = null }) {
+  const { t } = useI18n();
+  const [open, setOpen] = useState(!collapsible);
+  if (collapsible && !open) {
+    return (
+      <section className="card">
+        <button type="button" onClick={() => setOpen(true)} aria-expanded={false}
+          className="flex w-full items-center gap-4 rounded-[inherit] p-6 text-left hover:bg-surface-2">
+          <span className="min-w-0 flex-1">
+            <span className="block font-display text-lg font-semibold">{title}</span>
+            {description && <span className="mt-1 block text-sm text-muted">{description}</span>}
+          </span>
+          {state}
+          <ChevronDown size={20} aria-hidden className="shrink-0 text-muted" />
+        </button>
+      </section>
+    );
+  }
   return (
     <section className="card grid gap-6 p-6 lg:grid-cols-[260px_minmax(0,1fr)]">
       <div>
         <h2 className="font-display text-lg font-semibold">{title}</h2>
         {description && <p className="mt-1 text-sm text-muted">{description}</p>}
+        {collapsible && (
+          <button type="button" onClick={() => setOpen(false)} aria-expanded
+            className="mt-3 inline-flex items-center gap-1.5 text-sm font-medium text-muted hover:text-ink">
+            <ChevronDown size={16} aria-hidden className="rotate-180" />{t('settings_fold')}
+          </button>
+        )}
       </div>
       <div className="space-y-4">{children}</div>
     </section>
+  );
+}
+
+/** "Ein" / "Aus" chip shown on a folded section, optionally with a detail such as the server name. */
+function OnOff({ on, detail = '' }) {
+  const { t } = useI18n();
+  return (
+    <span className={`hidden shrink-0 rounded-sm px-2 py-0.5 text-xs font-medium sm:inline ${on ? 'bg-brand-soft text-brand-text' : 'bg-surface-2 text-muted'}`}>
+      {on ? t('state_on') : t('state_off')}{on && detail ? ` · ${detail}` : ''}
+    </span>
   );
 }
 
@@ -81,7 +116,7 @@ export function MailTexts() {
   );
 }
 
-/** part="general": everything except notifications; part="notify": mailbox, Teams and mail texts (admins). */
+/** part="general": everything except notifications (colour scheme last); part="notify": mailbox, Teams and mail texts. */
 export default function AdminSettings({ part = 'general' }) {
   const general = part === 'general';
   const { user: me } = useAuth();
@@ -122,6 +157,7 @@ export default function AdminSettings({ part = 'general' }) {
         smtp_password: smtpPassword || null, teams_webhook_url: webhook || null,
       } });
       setForm(saved);
+      window.dispatchEvent(new Event('lotse-config'));
       applyScheme(me?.color_scheme || saved.color_scheme);
       setPassword('');
       setSmtpPassword('');
@@ -196,11 +232,6 @@ export default function AdminSettings({ part = 'general' }) {
         </div>
       </Section>
 
-      <Section title={t('cs_title')} description={t('cs_hint')}>
-        <SchemePicker value={form.color_scheme || 'hafen'} onChange={(id) => { set('color_scheme')(id); applyScheme(id, { cache: false }); }} />
-        <p className="text-sm text-muted">{t('cs_note')}</p>
-      </Section>
-
       <Section title={t('settings_categories')} description={t('settings_categories_hint')}>
         <div className="grid gap-2 sm:grid-cols-2">
           {CATEGORIES.map((c) => {
@@ -219,10 +250,14 @@ export default function AdminSettings({ part = 'general' }) {
         </div>
       </Section>
 
+      <Section title={t('settings_modules')} description={t('settings_modules_hint')}>
+        <Toggle checked={Boolean(form.jobs_enabled)} onChange={set('jobs_enabled')} label={t('settings_jobs')} hint={t('settings_jobs_hint')} />
+      </Section>
+
       <HolidaySettings value={form.holiday_regions || []} onChange={set('holiday_regions')} />
       </>)}
 
-      {!general && (
+      {part === 'notify' && (
       <Section title={t('nt_title')} description={t('nt_hint')}>
         <Field label={t('nt_portal_url')} hint={t('nt_portal_url_hint')}>
           <input className={inputClass} placeholder="https://intranet.firma.local" value={form.portal_url || ''} onChange={set('portal_url')} />
@@ -300,7 +335,7 @@ export default function AdminSettings({ part = 'general' }) {
       )}
 
       {general && (<>
-      <Section title={t('sso_title')} description={t('sso_hint')}>
+      <Section collapsible title={t('sso_title')} description={t('sso_hint')} state={<OnOff on={form.sso_enabled} />}>
         <Toggle checked={form.sso_enabled} onChange={set('sso_enabled')} label={t('sso_enabled')} hint={t('sso_enabled_hint')} />
         <div className="grid gap-2 sm:grid-cols-2">
           {[['kerberos', t('sso_mode_kerberos'), t('sso_mode_kerberos_hint')], ['proxy', t('sso_mode_proxy'), t('sso_mode_proxy_hint')]].map(([mode, label, hint]) => (
@@ -333,7 +368,7 @@ export default function AdminSettings({ part = 'general' }) {
         )}
       </Section>
 
-      <Section title={t('settings_ldap')} description={t('settings_ldap_hint')}>
+      <Section collapsible title={t('settings_ldap')} description={t('settings_ldap_hint')} state={<OnOff on={form.ldap_enabled} detail={form.ldap_enabled ? form.ldap_host : ''} />}>
         <Toggle checked={form.ldap_enabled} onChange={set('ldap_enabled')} label={t('settings_ldap_enabled')} hint={t('settings_ldap_enabled_hint')} />
 
         <div className="grid gap-4 sm:grid-cols-[minmax(0,1fr)_120px]">
@@ -421,6 +456,11 @@ export default function AdminSettings({ part = 'general' }) {
             </div>
           )}
         </div>
+      </Section>
+
+      <Section title={t('cs_title')} description={t('cs_hint')}>
+        <SchemePicker value={form.color_scheme || 'hafen'} onChange={(id) => { set('color_scheme')(id); applyScheme(id, { cache: false }); }} />
+        <p className="text-sm text-muted">{t('cs_note')}</p>
       </Section>
       </>)}
 

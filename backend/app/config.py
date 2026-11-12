@@ -86,6 +86,7 @@ class Settings(BaseSettings):
     social_facebook: str = ""
     social_linkedin: str = ""
     social_instagram: str = ""
+    jobs_enabled: bool = False  # "Stellenangebote": internal job postings page, menu entry and home block
     ldap_departments_auto: bool = True  # create departments from the LDAP "department" attribute
     ldap_admin_group: str = ""  # full DN; members become admins
     ldap_editor_group: str = ""  # full DN; members become editors
@@ -98,7 +99,7 @@ EDITABLE = {
     "ldap_verify_cert", "ldap_bind_dn", "ldap_bind_password", "ldap_base_dn", "ldap_user_filter",
     "ldap_sync_filter", "ldap_admin_group", "ldap_departments_auto", "ldap_editor_group", "ldap_attr_username", "ldap_attr_first_name",
     "ldap_attr_last_name", "ldap_attr_email", "ldap_attr_department", "ldap_attr_title", "ldap_attr_phone",
-    "ldap_attr_photo", "ldap_attr_manager", "ldap_attr_branch", "ldap_attr_start_date", "footer_text", "social_facebook", "social_linkedin", "social_instagram", "portal_url", "notify_email", "smtp_host", "smtp_port", "smtp_mode",
+    "ldap_attr_photo", "ldap_attr_manager", "ldap_attr_branch", "ldap_attr_start_date", "footer_text", "social_facebook", "social_linkedin", "social_instagram", "jobs_enabled", "portal_url", "notify_email", "smtp_host", "smtp_port", "smtp_mode",
     "smtp_user", "smtp_password", "smtp_from", "notify_teams", "teams_webhook_url", "notify_mode", "digest_weekday", "digest_hour",
 }
 SECRET = {"ldap_bind_password", "smtp_password", "teams_webhook_url"}  # never sent back to the browser

@@ -1,4 +1,4 @@
-/** Company social media: links (Facebook, LinkedIn, Instagram) set in Verwaltung -> Einstellungen, shown as a
+/** Company social media: links (Facebook, LinkedIn, Instagram) set in Einstellungen -> Allgemein, shown as a
  * home block and in the footer. */
 import { ExternalLink, Facebook, Instagram, Linkedin } from 'lucide-react';
 import { SectionHeading } from './ui';

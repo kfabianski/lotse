@@ -1,6 +1,6 @@
 """Editable notification e-mails: subject + HTML body per mail type, with {shortcodes}.
 
-Admins edit them in Verwaltung -> Einstellungen -> Benachrichtigungen -> "Mail anpassen". The body is
+Admins edit them in Einstellungen -> Allgemein -> Benachrichtigungen -> "Mail anpassen". The body is
 sanitised (allow-list of simple formatting tags, links only http/https/mailto or {link}); shortcode values
 are always HTML-escaped, so article titles cannot inject markup. The company header and the unsubscribe
 footer are added around every mail and cannot be removed."""

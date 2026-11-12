@@ -1175,6 +1175,7 @@ def seed(reset: bool):
     add_demo_branches(db)
     add_demo_pinned(db)
     add_demo_jubilees(db)
+    add_demo_jobs(db)
     db.flush()
     add_demo_photos(db)
     db.commit()
@@ -1331,8 +1332,51 @@ def add_demo_jubilees(db) -> int:
     return n
 
 
+JOBS = [  # title_de, title_en, department, branch, employment, hours, start, days left, description_de
+    ("Teamleitung Versand (m/w/d)", "Team lead shipping (m/f/d)", "Versand", "Hamburg", "full", "40 Std./Woche", "ab 01.02.2027", 21,
+     "<h2>Ihre Aufgaben</h2><ul><li>Führung des Versandteams in der Frühschicht (8 Personen)</li>"
+     "<li>Schichtplanung und Einarbeitung neuer Kolleg:innen</li><li>Ansprechpartner:in für Speditionen</li></ul>"
+     "<h2>Was Sie mitbringen</h2><ul><li>Erfahrung im Versand oder Lager, gern mit Staplerschein</li>"
+     "<li>Ruhe, auch wenn es am Freitagnachmittag eng wird</li></ul>"
+     "<p>Interne Bewerbungen bitte formlos per E-Mail an die Ansprechpartnerin. Ihre Führungskraft wird erst nach "
+     "Ihrem Einverständnis informiert.</p>"),
+    ("Sachbearbeitung Einkauf (Teilzeit)", "Purchasing clerk (part-time)", "Einkauf", "Hamburg", "part", "25 Std./Woche", "ab sofort", 30,
+     "<h2>Ihre Aufgaben</h2><ul><li>Bestellungen anlegen und nachverfolgen</li><li>Lieferantenstammdaten pflegen</li>"
+     "<li>Reklamationen mit dem Wareneingang klären</li></ul><p>Arbeitszeit vormittags, flexibel absprechbar.</p>"),
+    ("Ausbildung Fachkraft für Lagerlogistik 2027", "Apprenticeship warehouse logistics 2027", "Fulfillment", "München", "apprentice", "", "01.09.2027", None,
+     "<p>Kennen Sie jemanden, der eine Ausbildung sucht? Wir bilden im Lager München aus – Empfehlungen aus dem Team "
+     "sind ausdrücklich willkommen.</p><ul><li>3 Jahre, Berufsschule in München</li><li>Übernahme bei guter Leistung</li></ul>"),
+]
+
+
+def add_demo_jobs(db) -> int:
+    """Three open positions (internal job postings) and the feature switched on, so the page and the home block show."""
+    from app.models import AppSetting, JobPosting
+    import json as _json
+    row = db.get(AppSetting, "jobs_enabled")
+    if row is None:
+        db.add(AppSetting(key="jobs_enabled", value=_json.dumps(True)))
+    if db.query(JobPosting).count():
+        return 0
+    hr = db.query(User).filter(User.role == "hr").first() or db.query(User).filter(User.role == "admin").first()
+    branches = {b.name: b.id for b in db.query(Branch).all()}
+    n = 0
+    for title, title_en, dept, branch, kind, hours, start, days, text in JOBS:
+        db.add(JobPosting(title_de=title, title_en=title_en, department=dept, branch_id=branches.get(branch),
+                          employment=kind, hours=hours, start=start, description_de=text,
+                          apply_until=date.today() + timedelta(days=days) if days else None,
+                          contact_id=hr.id if hr else None, created_by=hr.id if hr else None,
+                          created_at=datetime.now() - timedelta(days=n * 3)))
+        n += 1
+    return n
+
+
 if __name__ == "__main__":
-    if "--jubilees" in sys.argv:  # demo anniversaries + one policy with read confirmation for an existing database
+    if "--jobs" in sys.argv:  # demo job postings for an existing database (switches the feature on)
+        db = SessionLocal()
+        print(f"{add_demo_jobs(db)} job postings added, Stellenangebote switched on.")
+        db.commit()
+    elif "--jubilees" in sys.argv:  # demo anniversaries + one policy with read confirmation for an existing database
         db = SessionLocal()
         print(f"{add_demo_jubilees(db)} anniversaries added.")
         db.commit()

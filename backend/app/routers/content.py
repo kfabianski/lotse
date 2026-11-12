@@ -11,6 +11,7 @@ from sqlalchemy.orm import Session, joinedload
 from app.config import settings
 from app.db import get_db
 from app.models import AppSetting, Article, ArticleAck, Attachment, Branch, Classified, User
+from app.routers.jobs import open_jobs
 from app.routers.jubilees import upcoming as upcoming_jubilees
 from app.routers.stats import count_view
 from app.schemas import (ArticleCard, ArticleIn, ArticleOut, ClassifiedIn, ClassifiedOut, DocumentOut, HomeOut,
@@ -84,14 +85,14 @@ def _may_edit(user: User, article: Article) -> bool:
     return has_perm(user, "content_all") or (has_perm(user, "content_own") and article.author_id == user.id)
 
 
-HOME_BLOCKS = ("foryou", "slider", "quicklinks", "upcoming", "news", "people", "photos", "recent", "poll", "board", "jubilees", "social")
+HOME_BLOCKS = ("slider", "quicklinks", "upcoming", "news", "people", "photos", "recent", "poll", "board", "jubilees", "jobs", "social")
 DEFAULT_LAYOUT = [
-    {"id": "foryou", "show": True, "width": "full"},  # the signed-in person's reminders (hidden for visitors)
     {"id": "slider", "show": True, "width": "full"}, {"id": "quicklinks", "show": True, "width": "full"},
     {"id": "upcoming", "show": True, "width": "full"}, {"id": "news", "show": True, "width": "full"},
     {"id": "people", "show": True, "width": "full"}, {"id": "photos", "show": True, "width": "full"},
     {"id": "poll", "show": True, "width": "half"}, {"id": "board", "show": True, "width": "half"},
     {"id": "jubilees", "show": True, "width": "full"},
+    {"id": "jobs", "show": True, "width": "full"},  # only when job postings are switched on
     {"id": "social", "show": True, "width": "full"}, {"id": "recent", "show": False, "width": "full"},
 ]
 
@@ -166,6 +167,7 @@ def home(viewer: User | None = Depends(reader), db: Session = Depends(get_db)):
                          .order_by(pinned_first(), Article.published_at.desc()).limit(6).all(),
         "layout": home_layout(db),
         "jubilees": upcoming_jubilees(db),
+        "jobs": open_jobs(db),
         "events": with_rsvps(db, published.filter(Article.category == "events", Article.event_date >= datetime.now()
                                    - timedelta(hours=12)).order_by(Article.event_date).limit(3).all(), viewer),
         "recent": newest.limit(6).all(),

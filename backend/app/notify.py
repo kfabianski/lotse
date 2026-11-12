@@ -11,7 +11,7 @@
   later, and everyone again when a new round starts. Not for voluntary trainings, not for people who already
   confirmed this round. Mandatory, so it ignores the profile switches.
 
-Everything is off until an administrator enables it in Verwaltung -> Einstellungen."""
+Everything is off until an administrator enables it in Einstellungen -> Allgemein."""
 import html
 import json
 import logging

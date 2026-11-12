@@ -58,7 +58,7 @@ openssl pkcs12 -in lotse.pfx -nocerts -nodes -out key.pem
 
 ## In Lotse einschalten
 
-**Verwaltung → Einstellungen**: zuerst **LDAP** einrichten und testen, dann **Windows-Anmeldung** einschalten,
+**Einstellungen → Allgemein**: zuerst **LDAP** einrichten und testen, dann **Windows-Anmeldung** einschalten,
 Art **Kerberos direkt (ohne IIS)**, *Adresse des Portals* = `intranet.firma.local`.
 
 ## Browser freigeben (Gruppenrichtlinie)

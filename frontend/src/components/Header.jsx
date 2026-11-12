@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { Link, NavLink, useLocation, useNavigate } from 'react-router-dom';
 import {
-  BarChart3, BookOpen, PanelLeftClose, PanelLeftOpen, Search, CalendarDays, FileText, GraduationCap, Home, Lightbulb, LogIn, LogOut, Menu, Moon, Newspaper, Settings,
+  BarChart3, BookOpen, BriefcaseBusiness, PanelLeftClose, PanelLeftOpen, Search, CalendarDays, FileText, GraduationCap, Home, Lightbulb, LogIn, LogOut, Menu, Moon, Newspaper, Settings,
   StickyNote, Sun, UserRound, Users, X,
 } from 'lucide-react';
 import { useAuth } from '../lib/auth';
@@ -39,7 +39,7 @@ export function Logo({ company, compact = false }) {
   );
 }
 
-function useNavItems(hidden = []) {
+function useNavItems(hidden = [], jobs = false) {
   const { t } = useI18n();
   const { has, user } = useAuth();
   const knowledgeOff = KNOWLEDGE_GROUP.every((c) => hidden.includes(c)); // every section of the group switched off
@@ -49,17 +49,18 @@ function useNavItems(hidden = []) {
     { to: '/calendar', label: t('nav_calendar'), icon: CalendarDays },
     ...(knowledgeOff ? [] : [{ to: '/knowledge', label: t('nav_knowledge'), icon: BookOpen }]),
     ...(user ? [{ to: '/trainings', label: t('nav_trainings'), icon: GraduationCap }] : []),
-    { to: '/board', label: t('nav_board'), icon: StickyNote },
     { to: '/ideas', label: t('nav_ideas'), icon: Lightbulb },
     { to: '/polls', label: t('nav_polls'), icon: BarChart3 },
     { to: '/people', label: t('nav_people'), icon: Users },
+    ...(jobs ? [{ to: '/jobs', label: t('nav_jobs'), icon: BriefcaseBusiness }] : []),
     { to: '/documents', label: t('nav_documents'), icon: FileText },
+    { to: '/board', label: t('nav_board'), icon: StickyNote },
     ...(has('trainings', 'quicklinks', 'locations', 'people', 'content_all', 'jubilees', 'mails') ? [{ to: '/admin', label: t('nav_admin'), icon: Settings }] : []),
   ];
 }
 
-function NavList({ onNavigate, collapsed = false, hidden }) {
-  const items = useNavItems(hidden);
+function NavList({ onNavigate, collapsed = false, hidden, jobs }) {
+  const items = useNavItems(hidden, jobs);
   return (
     <ul className="space-y-0.5">
       {items.map(({ to, label, icon: Icon, end }) => (
@@ -76,13 +77,13 @@ function NavList({ onNavigate, collapsed = false, hidden }) {
 }
 
 /** Left navigation rail (desktop) + drawer (mobile). */
-export function Sidebar({ company, open, onClose, collapsed = false, onToggle, hidden = [] }) {
+export function Sidebar({ company, open, onClose, collapsed = false, onToggle, hidden = [], jobs = false }) {
   const { t } = useI18n();
   return (
     <>
       <aside className={`fixed inset-y-0 left-0 z-30 hidden flex-col border-r border-line bg-surface py-5 lg:flex ${collapsed ? 'w-[4.5rem] px-2' : 'w-60 px-3'}`}>
         <div className={collapsed ? 'flex justify-center pb-7' : 'px-2 pb-7'}><Logo company={company} compact={collapsed} /></div>
-        <nav aria-label={t('main_nav')} className="thin-scroll min-h-0 flex-1 overflow-y-auto"><NavList collapsed={collapsed} hidden={hidden} /></nav>
+        <nav aria-label={t('main_nav')} className="thin-scroll min-h-0 flex-1 overflow-y-auto"><NavList collapsed={collapsed} hidden={hidden} jobs={jobs} /></nav>
         <button type="button" onClick={onToggle} aria-expanded={!collapsed} aria-label={collapsed ? t('menu_expand') : t('menu_collapse')} title={collapsed ? t('menu_expand') : t('menu_collapse')}
           className={`mt-3 flex items-center gap-3 rounded-lg py-2 text-sm font-medium text-muted transition-colors hover:bg-surface-2 hover:text-ink ${collapsed ? 'justify-center px-2' : 'px-3'}`}>
           {collapsed ? <PanelLeftOpen size={18} aria-hidden /> : <><PanelLeftClose size={18} aria-hidden />{t('menu_collapse')}</>}
@@ -96,7 +97,7 @@ export function Sidebar({ company, open, onClose, collapsed = false, onToggle, h
               <Logo company={company} />
               <button type="button" onClick={onClose} aria-label={t('close')} className="rounded-sm p-2 text-muted hover:bg-surface-2 hover:text-ink"><X size={20} /></button>
             </div>
-            <nav aria-label={t('main_nav')}><NavList onNavigate={onClose} hidden={hidden} /></nav>
+            <nav aria-label={t('main_nav')}><NavList onNavigate={onClose} hidden={hidden} jobs={jobs} /></nav>
           </aside>
         </div>
       )}

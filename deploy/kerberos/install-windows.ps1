@@ -60,6 +60,6 @@ $scheme = if ($tls) { "https" } else { "http" }
 $url = if (($tls -and $Port -eq 443) -or (-not $tls -and $Port -eq 80)) { "${scheme}://$HostName" } else { "${scheme}://${HostName}:$Port" }
 Write-Host ""
 Write-Host "Lotse runs on $url" -ForegroundColor Green
-Write-Host "Next: Verwaltung -> Einstellungen -> LDAP einrichten, dann Windows-Anmeldung einschalten,"
+Write-Host "Next: Einstellungen -> Allgemein -> LDAP einrichten, dann Windows-Anmeldung einschalten,"
 Write-Host "      Art 'Kerberos direkt', Adresse des Portals: $HostName"
 Write-Host "      Browser per Gruppenrichtlinie freigeben - siehe deploy\kerberos\README.md"

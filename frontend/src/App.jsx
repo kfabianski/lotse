@@ -14,6 +14,7 @@ import ArticleView from './pages/ArticleView';
 import ArticleEdit from './pages/ArticleEdit';
 import Board from './pages/Board';
 import People from './pages/People';
+import Jobs from './pages/Jobs';
 import Profile from './pages/Profile';
 import Admin from './pages/Admin';
 import Search from './pages/Search';
@@ -88,7 +89,10 @@ export default function App() {
   const { pathname } = useLocation();
 
   useEffect(() => {
-    api('/auth/config').then(setConfig).catch(() => setConfig({ public_read: false }));
+    const load = () => api('/auth/config').then(setConfig).catch(() => setConfig({ public_read: false }));
+    load();
+    window.addEventListener('lotse-config', load); // the admin saved the settings: menu entries may change
+    return () => window.removeEventListener('lotse-config', load);
   }, []);
   useEffect(() => { if (config) applyScheme(user?.color_scheme || config.color_scheme); }, [config, user?.color_scheme]);
   useScrollMemory();
@@ -103,7 +107,7 @@ export default function App() {
         {t('skip')}
       </a>
       <Sidebar company={config?.company_name} open={drawer} onClose={() => setDrawer(false)} collapsed={collapsed} onToggle={toggleCollapsed}
-        hidden={config?.hidden_categories || []} />
+        hidden={config?.hidden_categories || []} jobs={Boolean(config?.jobs_enabled)} />
       <div className={collapsed ? 'lg:pl-[4.5rem]' : 'lg:pl-60'}>
       <Header onMenu={() => setDrawer(true)} company={config?.company_name} />
       <main id="main" className="mx-auto max-w-[1240px] px-4 pb-24 pt-8 sm:px-8">
@@ -120,6 +124,7 @@ export default function App() {
           <Route path="/calendar" element={<Events />} />
           <Route path="/documents" element={<Documents />} />
           <Route path="/people" element={<People />} />
+          <Route path="/jobs" element={config?.jobs_enabled ? <Jobs /> : <Empty>{t('not_found')}</Empty>} />
           <Route path="/search" element={<Search />} />
           <Route path="/profile" element={<Guard role="user"><Profile /></Guard>} />
           <Route path="/trainings" element={<Guard role="user"><Trainings /></Guard>} />

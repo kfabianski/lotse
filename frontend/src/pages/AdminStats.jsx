@@ -1,4 +1,4 @@
-/** Verwaltung → Statistik: what is read, what is searched for without a hit. Counts only, never people. */
+/** Einstellungen → Statistik: what is read, what is searched for without a hit. Counts only, never people. */
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { BarChart3, Eye, Search as SearchIcon } from 'lucide-react';

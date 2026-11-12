@@ -5,7 +5,7 @@ from pydantic import BaseModel, ConfigDict, EmailStr, Field
 
 Role = Literal["admin", "editor", "moderator", "hr", "author", "user"]
 Permission = Literal["content_own", "content_all", "trainings", "moderate", "quicklinks", "polls", "locations", "people", "mails",
-                     "jubilees"]
+                     "jubilees", "jobs"]
 Category = Literal["news", "events", "people", "products", "rules", "safety", "cyber", "knowhow"]
 ClassifiedKind = Literal["offer", "search", "give", "carpool", "other"]
 
@@ -295,6 +295,7 @@ class HomeOut(BaseModel):
     photos: list[PhotoOut] = []
     layout: list[dict] = []
     jubilees: list[dict] = []
+    jobs: list[dict] = []
     counts: dict[str, int]
 
 

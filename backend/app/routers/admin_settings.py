@@ -59,6 +59,7 @@ class SettingsIn(BaseModel):
     social_facebook: str = Field(default="", max_length=300)
     social_linkedin: str = Field(default="", max_length=300)
     social_instagram: str = Field(default="", max_length=300)
+    jobs_enabled: bool = False
     portal_url: str = Field(default="", max_length=200, pattern=r"^(https?://[^\s]+)?$")
     notify_email: bool = False
     notify_mode: Literal["immediate", "weekly"] = "immediate"

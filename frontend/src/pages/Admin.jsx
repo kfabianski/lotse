@@ -532,15 +532,19 @@ export default function Admin() {
   return (
     <div>
       <h1 className="font-display text-[2rem] font-semibold leading-tight">{t('nav_admin')}</h1>
-      <div role="tablist" className="mt-6 flex flex-wrap gap-x-6 gap-y-1 border-b border-line">
+      <div className="mt-6 lg:grid lg:grid-cols-[13rem_minmax(0,1fr)] lg:items-start lg:gap-10">
+      {/* Vertical menu on wide screens (sticks while the page scrolls), one scrollable row on phones. */}
+      <div role="tablist" aria-orientation="vertical"
+        className="thin-scroll -mx-4 flex gap-1 overflow-x-auto border-b border-line px-4 pb-2 lg:sticky lg:top-24 lg:mx-0 lg:max-h-[calc(100dvh-7rem)] lg:flex-col lg:overflow-y-auto lg:overflow-x-hidden lg:border-b-0 lg:border-r lg:px-0 lg:pb-0 lg:pr-4">
         {tabs.map(([key, label]) => (
           <button key={key} type="button" role="tab" aria-selected={tab === key} onClick={() => setTab(key)}
-            className={`-mb-px whitespace-nowrap border-b-[3px] pb-2.5 font-medium ${tab === key ? 'border-brand text-ink' : 'border-transparent text-muted hover:text-ink'}`}>
+            className={`shrink-0 whitespace-nowrap rounded-lg px-3 py-2 text-left text-[0.9375rem] font-medium transition-colors ${
+              tab === key ? 'bg-brand-soft font-semibold text-ink' : 'text-ink-2 hover:bg-surface-2 hover:text-ink'}`}>
             {label}
           </button>
         ))}
       </div>
-      <div className="mt-6">
+      <div className="mt-6 min-w-0 lg:mt-0">
         {locations.data && tab === 'users' && <UsersTab locations={locations.data} reloadLocations={locations.reload} />}
         {locations.data && tab === 'locations' && <LocationsTab locations={locations.data} reload={locations.reload} />}
         {tab === 'settings' && <AdminSettings part="general" />}
@@ -553,6 +557,7 @@ export default function Admin() {
         {tab === 'stats' && <AdminStats />}
         {tab === 'quicklinks' && <AdminQuickLinks />}
         {tab === 'permissions' && <AdminPermissions />}
+      </div>
       </div>
     </div>
   );

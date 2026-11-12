@@ -23,7 +23,7 @@ def public_config():
             "ldap_branch_attr": bool(settings.ldap_enabled and settings.ldap_attr_branch),
             "sso_enabled": settings.sso_enabled and settings.ldap_enabled, "sso_mode": settings.sso_mode,
             "social_facebook": settings.social_facebook, "social_linkedin": settings.social_linkedin,
-            "social_instagram": settings.social_instagram}
+            "social_instagram": settings.social_instagram, "jobs_enabled": settings.jobs_enabled}
 
 
 @router.post("/login", response_model=TokenOut)

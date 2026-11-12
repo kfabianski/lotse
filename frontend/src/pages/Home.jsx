@@ -1,14 +1,13 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { PartyPopper, Pin } from 'lucide-react';
+import { BriefcaseBusiness, PartyPopper, Pin } from 'lucide-react';
 import HeroSlider from '../components/HeroSlider';
 import { Avatar, CategoryTag, Empty, SectionHeading, relativeDay } from '../components/ui';
-import { briefingItems } from '../components/Greeting';
 import { useAuth } from '../lib/auth';
-import { useBriefing } from '../lib/briefing';
 import { isoDay } from '../lib/holidays';
 import { useI18n } from '../lib/i18n';
 import { jubileeLabel } from '../lib/jubilees';
+import { jobFacts, jobTitle } from '../lib/jobs';
 import { useFetch } from '../lib/useFetch';
 import { useViewer } from '../lib/viewer';
 import MiniCalendar from '../components/MiniCalendar';
@@ -235,34 +234,6 @@ function PollBlock({ poll, onChange }) {
   );
 }
 
-/** "Für Sie": the signed-in person's reminders, three at most, as cards above the fold. The bell holds the rest. */
-function ForYouBlock({ items }) {
-  const { t } = useI18n();
-  const shown = items.slice(0, 3);
-  const rest = items.length - shown.length;
-  return (
-    <section aria-label={t('foryou_title')} className="rounded-2xl border border-brand/30 bg-brand-soft/40 p-4 sm:p-5">
-      <div className="mb-3 flex items-baseline justify-between gap-3">
-        <p className="font-display text-sm font-semibold uppercase tracking-wide text-brand-text">{t('foryou_title')}</p>
-        {rest > 0 && <span className="text-sm text-muted">{t('foryou_more', { n: rest })}</span>}
-      </div>
-      <ul className={`grid gap-3 ${shown.length > 1 ? 'sm:grid-cols-2' : ''} ${shown.length > 2 ? 'lg:grid-cols-3' : ''}`}>
-        {shown.map(({ key, to, icon: Icon, tone, title, lines }) => (
-          <li key={key}>
-            <Link to={to} className="card card-hover flex h-full items-start gap-3 p-4">
-              <Icon size={20} strokeWidth={1.75} aria-hidden className={`mt-0.5 shrink-0 ${tone === 'alert' ? 'text-alert' : 'text-brand-text'}`} />
-              <span className="min-w-0">
-                <span className={`block font-display font-semibold leading-snug ${tone === 'alert' ? 'text-alert' : 'text-ink'}`}>{title}</span>
-                {lines.slice(0, 2).map((l) => <span key={l} className="block truncate text-sm text-muted">{l}</span>)}
-              </span>
-            </Link>
-          </li>
-        ))}
-      </ul>
-    </section>
-  );
-}
-
 /** Jubiläen: a ruled register of date, face, name and occasion - entered by HR, never computed. */
 function JubileesBlock({ items, half }) {
   const { t, lang, fmtDate } = useI18n();
@@ -305,6 +276,30 @@ function JubileesBlock({ items, half }) {
   );
 }
 
+/** Stellenangebote: the newest open internal postings as a ruled list; a click opens the posting. */
+function JobsBlock({ items, half }) {
+  const { t, lang, fmtDate } = useI18n();
+  return (
+    <section>
+      <SectionHeading action={<ShowAll to="/jobs" />}>{t('jobs_title')}</SectionHeading>
+      <ul className={`grid gap-x-8 ${half ? '' : 'sm:grid-cols-2'}`}>
+        {items.map((j) => (
+          <li key={j.id} className="border-b border-line">
+            <Link to={`/jobs?open=${j.id}`} className="group flex items-center gap-4 py-3">
+              <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-brand-soft text-brand-text"><BriefcaseBusiness size={20} aria-hidden /></span>
+              <span className="min-w-0 flex-1">
+                <span className="block font-display font-semibold leading-tight text-ink group-hover:underline group-hover:decoration-brand-text">{jobTitle(j, lang)}</span>
+                <span className="block truncate text-sm text-muted">{jobFacts(t, j)}</span>
+                {j.apply_until && <span className="block text-sm text-ink-2">{t('job_until', { d: fmtDate(`${j.apply_until}T12:00`, { day: '2-digit', month: '2-digit', year: 'numeric' }) })}</span>}
+              </span>
+            </Link>
+          </li>
+        ))}
+      </ul>
+    </section>
+  );
+}
+
 /** Puts the visible blocks in rows: two "half" blocks next to each other share a row, a single half block
  * gets the full width - so the page never ends in one narrow column. */
 export function layoutRows(blocks) {
@@ -321,9 +316,7 @@ export function layoutRows(blocks) {
 }
 
 export default function Home() {
-  const { t, loc, lang } = useI18n();
-  const { user } = useAuth();
-  const briefing = useBriefing();
+  const { t } = useI18n();
   const { data, error, loading } = useFetch('/home');
   const polls = useFetch('/polls', { params: { state: 'open', limit: 1 } }, 'home-poll');
   const config = useFetch('/auth/config', undefined, 'auth-config');
@@ -333,23 +326,23 @@ export default function Home() {
   if (error) return <Empty>{t('error_generic', { msg: error.message })}</Empty>;
   const { events } = data;
   const currentPoll = poll || polls.data?.[0];
-  const reminders = user ? briefingItems(briefing.data, t, loc, lang) : [];
   const jubilees = data.jubilees || [];
+  const jobs = config.data?.jobs_enabled ? (data.jobs || []) : [];
 
   const has = {
-    foryou: reminders.length > 0,
     slider: data.slides.length > 0, quicklinks: true,
     upcoming: true, news: data.news.length > 0, people: data.new_people.length > 0, photos: (data.photos || []).length > 0,
     recent: data.recent.length > 0, poll: Boolean(currentPoll), board: data.classifieds.length > 0,
     jubilees: jubilees.length > 0,
+    jobs: jobs.length > 0,
     social: socialLinks(config.data).length > 0,
   };
   const blocks = (data.layout || []).filter((b) => b.show && has[b.id]);
 
   const render = (b, half) => {
     switch (b.id) {
-      case 'foryou': return <ForYouBlock items={reminders} />;
       case 'jubilees': return <JubileesBlock items={jubilees} half={half} />;
+      case 'jobs': return <JobsBlock items={jobs} half={half} />;
       case 'slider': return <HeroSlider slides={data.slides} />;
       case 'quicklinks': return <QuickLinks />;
       case 'upcoming': return <UpcomingBlock events={events} half={half} />;

@@ -6,7 +6,7 @@ from fastapi.staticfiles import StaticFiles
 from app import migrate, search_index
 from app.config import settings
 from app.db import Base, engine
-from app.routers import (admin_settings, auth, calendar, content, departments, ideas, jubilees, locations, quicklinks, revisions, search, me, polls,
+from app.routers import (admin_settings, auth, calendar, content, departments, ideas, jobs, jubilees, locations, quicklinks, revisions, search, me, polls,
                          branches, stats, trainings, users)
 from app.db import SessionLocal
 
@@ -23,7 +23,7 @@ app.add_middleware(CORSMiddleware, allow_origins=settings.cors_origins, allow_cr
                    allow_methods=["*"], allow_headers=["*"])
 
 for module in (auth, users, me, content, search, revisions, quicklinks, trainings, locations, ideas, polls, calendar, admin_settings, departments, branches,
-               jubilees, stats):
+               jubilees, jobs, stats):
     app.include_router(module.router)
 app.include_router(trainings.files_router)
 
